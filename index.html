@@ -10,7 +10,7 @@ layout: default
     {% for page in home_thumbs %}
       <td>
         {% if page.home-icon %}
-            <a href='{{page.url}}'>
+            <a href='{{page.url | prepend: site.baseurl}}'>
             <div class='icon-box'>
                 <div class='top'><i class="fa fa-inverse fa-{{page.home-icon}}"></i></div>
                 <div class='bottom'>{{page.tab}}</div>
@@ -21,6 +21,8 @@ layout: default
     {% endfor %}
   </tr>
   </table>
+
+  baseurl: {{site.baseurl}}
 
   <h1>Posts</h1>
 
