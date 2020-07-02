@@ -1,0 +1,353 @@
+---
+layout: page
+title: Forest Documentation and Tutorial
+permalink: /forest/
+home-icon: tree
+tab: Forest
+---
+
+<style>
+    svg {
+        border: 1px solid lightgrey;
+        display: block;
+        margin-left: auto;
+        margin-right: auto;
+       }
+</style>
+
+{% assign node_sz=100 %}
+{% assign node_half_sz=node_sz | divided_by: 2 %}
+{% assign node_radius=node_half_sz %}
+{% assign node_font_size=36 %}
+{% assign small_font_size=24 %}
+{% assign color_disabled="grey" %}
+
+<svg width='0' height='0'>
+    <defs>
+        <marker id="arrowhead" markerWidth="6" markerHeight="5" refX="5" refY="2.5" orient="auto">
+            <polygon points="0 0, 6 2.5, 0 5" />
+        </marker>
+        <g id='root'>
+            <rect width='{{node_sz}}' height='{{node_sz}}' x='-{{node_half_sz}}' y='-{{node_half_sz}}' fill='white' stroke='darkred' stroke-width='5'/>
+            <text font-size='{{node_font_size}}' text-anchor="middle" dominant-baseline="central">R</text>
+        </g>
+        <g id='node'>
+            <circle r='{{node_radius}}' fill='white' stroke='blue' stroke-width='5'/>
+            <text font-size='{{node_font_size}}' text-anchor="middle" dominant-baseline="central">N<tspan dy="15" font-size=".7em"></tspan></text>
+        </g>
+        <g id='parent'>
+            <circle r='{{node_radius}}' fill='white' stroke='{{color_disabled}}' stroke-width='5'/>
+            <text font-size='{{node_font_size}}' text-anchor="middle" fill='{{color_disabled}}' dominant-baseline="central">P<tspan dy="15" font-size=".7em"></tspan></text>
+        </g>
+        <g id='sib_prior'>
+            <circle r='{{node_radius}}' fill='white' stroke='{{color_disabled}}' stroke-width='5'/>
+            <text font-size='{{node_font_size}}' text-anchor="middle" fill='{{color_disabled}}' dominant-baseline="central">S<tspan dy="15" font-size=".7em">prior</tspan></text>
+        </g>
+        <g id='sib_next'>
+            <circle r='{{node_radius}}' fill='white' stroke='{{color_disabled}}' stroke-width='5'/>
+            <text font-size='{{node_font_size}}' text-anchor="middle" fill='{{color_disabled}}' dominant-baseline="central">S<tspan dy="15" font-size=".7em">next</tspan></text>
+        </g>
+        <g id='child_first'>
+            <circle r='{{node_radius}}' fill='white' stroke='{{color_disabled}}' stroke-width='5'/>
+            <text font-size='{{node_font_size}}' text-anchor="middle" fill='{{color_disabled}}' dominant-baseline="central">C<tspan dy="15" font-size=".7em">first</tspan></text>
+        </g>
+        <g id='child_last'>
+            <circle r='{{node_radius}}' fill='white' stroke='{{color_disabled}}' stroke-width='5'/>
+            <text font-size='{{node_font_size}}' text-anchor="middle" fill='{{color_disabled}}' dominant-baseline="central">C<tspan dy="15" font-size=".7em">last</tspan></text>
+        </g>
+        <g id='edge_lo_ti'>
+            <path d='M -25 50 Q -75 125 0 125 Q 75 125 25 50' fill='transparent' stroke='black' stroke-width='5' marker-end="url(#arrowhead)"/>?
+        </g>
+        <g id='edge_li'>
+            <line x1="-100" y1="-100" x2="-40" y2="-40" stroke='black' stroke-width='5' marker-end="url(#arrowhead)"/>?
+        </g>
+        <g id='edge_lo'>
+            <line x1="-40" y1="40" x2="-100" y2="100" stroke='black' stroke-width='5' marker-end="url(#arrowhead)"/>?
+        </g>
+        <g id='edge_ti'>
+            <line x1="100" y1="100" x2="40" y2="40" stroke='black' stroke-width='5' marker-end="url(#arrowhead)"/>?
+        </g>
+        <g id='edge_to'>
+            <line x1="40" y1="-40" x2="100" y2="-100" stroke='black' stroke-width='5' marker-end="url(#arrowhead)"/>?
+        </g>
+        <g id='edge_lo_li'>
+            <path d='M 0 50 Q -50 100 0 150' fill='transparent' stroke='black' stroke-width='5' marker-end="url(#arrowhead)"/>?
+        </g>
+        <g id='edge_lo_li_2'>
+            <path d='M 100 50 Q -50 100 0 150' fill='transparent' stroke='black' stroke-width='5' marker-end="url(#arrowhead)"/>?
+        </g>
+        <g id='edge_to_li'>
+            <path d='M 50 0 Q 100 -50 150 0' fill='transparent' stroke='black' stroke-width='5' marker-end="url(#arrowhead)"/>?
+        </g>
+        <g id='edge_to_ti'>
+            <path d='M 50 150 Q 100 100 50 50' fill='transparent' stroke='black' stroke-width='5' marker-end="url(#arrowhead)"/>?
+        </g>
+        <g id='edge_to_ti_2'>
+            <path d='M 50 150 Q 100 100 -50 50' fill='transparent' stroke='black' stroke-width='5' marker-end="url(#arrowhead)"/>?
+        </g>
+    </defs>
+</svg>
+
+* _TOC stub_
+{:toc}
+
+A forest is a hierarchical, node-based data structure. This document serves to cover the high-level concepts of a forest, `adobe::forest<T>` implementation details, as well as examples of frequent patterns.
+
+## Concepts
+
+### Terminology
+
+$N$: An exemplar node
+
+$P$: The parent node of $N$
+
+$C$: A child node of $N$. Child nodes may be subscripted for clarity, e.g., $C_{first}$ and $C_{last}$, etc.
+
+$S$: A sibling node of $N$. Sibling nodes may be subscripted for clarity, e.g., $S_{prev}$ and $S_{next}$, etc.
+
+$R$: A root node
+
+$I$: A forest (fullorder) iterator
+
+## Nodes
+
+Forest's fundamental element type is the node. They are heap-allocated by the forest as necessary for storing a value. Each node has exactly one parent and zero or more children. In this document we will draw nodes as circles:
+
+<svg width='75' height='75' viewBox='0 0 150 150'>
+    <use xlink:href='#node' x='75' y='75'/>
+</svg>
+
+## The Root Node
+
+Every forest has a root node, which is not a node used to store values in the forest. Rather, its primary purpose is as the anchor to which all top-level nodes in the forest are attached. In this document we will draw the root node as a rectangle:
+
+<svg width='75' height='75' viewBox='0 0 150 150'>
+    <use xlink:href='#root' x='75' y='75'/>
+</svg>
+
+## Edges
+
+Forest nodes are connected to one another with edges. For every node in the forest, there are exactly two edges that lead away from the node, and exactly two that lead towards the node. In this document edges will be drawn as arrows pointed in the direction of forward travel:
+
+<svg width='125' height='125' viewBox='0 0 250 250'>
+    <use xlink:href='#edge_li' x='125' y = '125'/>
+    <use xlink:href='#edge_lo' x='125' y = '125'/>
+    <use xlink:href='#edge_ti' x='125' y = '125'/>
+    <use xlink:href='#edge_to' x='125' y = '125'/>
+    <use xlink:href='#node' x='125' y='125'/>
+</svg>
+
+The two left edges are known as **leading edges**, and the two right edges are known as **trailing edges**:
+
+<svg width='175' height='125' viewBox='0 0 350 250'>
+    <use xlink:href='#edge_li' x='175' y = '125'/>
+    <use xlink:href='#edge_lo' x='175' y = '125'/>
+    <use xlink:href='#edge_ti' x='175' y = '125'/>
+    <use xlink:href='#edge_to' x='175' y = '125'/>
+    <use xlink:href='#node' x='175' y='125'/>
+    <line x1="175" y1="25" x2="175" y2="225" stroke='black' stroke-width='5' stroke-dasharray='10'/>?
+    <text font-size='{{small_font_size}}' x='25' y='125' dominant-baseline="central">leading</text>
+    <text font-size='{{small_font_size}}' x='245' y='125' dominant-baseline="central">trailing</text>
+</svg>
+
+The two edges that point to $N$ are known as **in edges** and the edges that point away from $N$ are **out edges**:
+
+<svg width='150' height='150' viewBox='0 0 300 300'>
+    <use xlink:href='#edge_li' x='150' y = '150'/>
+    <use xlink:href='#edge_lo' x='150' y = '150'/>
+    <use xlink:href='#edge_ti' x='150' y = '150'/>
+    <use xlink:href='#edge_to' x='150' y = '150'/>
+    <use xlink:href='#node' x='150' y='150'/>
+    <text font-size='{{small_font_size}}' x='25' y='30' dominant-baseline="central">in</text>
+    <text font-size='{{small_font_size}}' x='10' y='260' dominant-baseline="central">out</text>
+    <text font-size='{{small_font_size}}' x='250' y='260' dominant-baseline="central">in</text>
+    <text font-size='{{small_font_size}}' x='250' y='30' dominant-baseline="central">out</text>
+</svg>
+
+It is worth noting that the terms "in" and "out" are relative to $N$. In other words, an in edge for $N$ will also be an out edge for some other node.
+
+### Leading In Edge
+
+Visually, the northwest edge is the **leading in edge**. It originates (is an out edge) from one of two possible nodes:
+
+- If $N$ is the first child of its parent node $P$, this edge is the leading out edge of $P$:
+
+<svg width='100' height='175' viewBox='0 0 200 350'>
+    <use xlink:href='#parent' x='100' y='75'/>
+    <use xlink:href='#edge_lo_li' x='75' y = '75'/>
+    <use xlink:href='#node' x='100' y='275'/>
+</svg>
+
+- Otherwise, this edge is the trailing edge of $N$'s prior sibling $S_{prior}$:
+
+<svg width='175' height='100' viewBox='0 0 350 200'>
+    <use xlink:href='#sib_prior' x='75' y='100'/>
+    <use xlink:href='#edge_to_li' x='75' y = '75'/>
+    <use xlink:href='#node' x='275' y='100'/>
+</svg>
+
+### Leading Out Edge
+
+The southwest edge is the leading out edge. It terminates (is an in edge) at one of two possible nodes:
+
+- If $N$ is a parent, this edge is the leading edge of the first child of $N$, $C_{first}$:
+
+<svg width='100' height='175' viewBox='0 0 200 350'>
+    <use xlink:href='#node' x='100' y='75'/>
+    <use xlink:href='#edge_lo_li' x='75' y = '75'/>
+    <use xlink:href='#child_first' x='100' y='275'/>
+</svg>
+
+- Otherwise, this edge is the trailing edge of $N$ itself:
+
+<svg width='75' height='112.5' viewBox='0 0 150 225'>
+    <use xlink:href='#node' x='75' y='75'/>
+    <use xlink:href='#edge_lo_ti' x='75' y = '75'/>
+</svg>
+
+### Trailing In Edge
+
+The southeast edge is the trailing in edge. It terminates (is an in edge) at one of two possible nodes:
+
+- If $N$ is a parent, it comes from the trailing edge of $N$'s last child, $C_{last}$:
+
+<svg width='100' height='175' viewBox='0 0 200 350'>
+    <use xlink:href='#node' x='100' y='75'/>
+    <use xlink:href='#edge_to_ti' x='75' y = '75'/>
+    <use xlink:href='#child_last' x='100' y='275'/>
+</svg>
+
+- Otherwise, it comes from the leading edge of $N$ itself:
+
+<svg width='75' height='112.5' viewBox='0 0 150 225'>
+    <use xlink:href='#node' x='75' y='75'/>
+    <use xlink:href='#edge_lo_ti' x='75' y = '75'/>
+</svg>
+
+### Trailing Out Edge
+
+The northeast edge is the trailing out edge. It points to one of two related nodes:
+
+- If $N$ is the last child of $P$, this edge points to the trailing edge of $P$:
+
+<svg width='100' height='175' viewBox='0 0 200 350'>
+    <use xlink:href='#parent' x='100' y='75'/>
+    <use xlink:href='#edge_to_ti' x='75' y = '75'/>
+    <use xlink:href='#node' x='100' y='275'/>
+</svg>
+
+- Otherwise, this edge points to the leading edge of $N$'s next sibling:
+
+<svg width='175' height='100' viewBox='0 0 350 200'>
+    <use xlink:href='#node' x='75' y='100'/>
+    <use xlink:href='#edge_to_li' x='75' y = '75'/>
+    <use xlink:href='#sib_next' x='275' y='100'/>
+</svg>
+
+## Example Forests
+
+With the fundamental building blocks in place, here is how they combine to form some of the basic relationships in a forest. Note that (with the exception of the root node) every node in the forest maintains four relationships with the nodes around it.
+
+### Empty
+
+<svg width='75' height='112.5' viewBox='0 0 150 225'>
+    <use xlink:href='#root' x='75' y='75'/>
+    <use xlink:href='#edge_lo_ti' x='75' y = '75'/>
+</svg>
+
+Given a forest that contains only the root node, `forest<T>::empty()` will return `true`. Otherwise, it will return `false`.
+
+### One Node
+
+<svg width='75' height='215' viewBox='0 0 150 430'>
+    <use xlink:href='#root' x='75' y='75'/>
+    <use xlink:href='#edge_lo_li' x='50' y = '75'/>
+    <use xlink:href='#edge_to_ti' x='50' y = '75'/>
+    <use xlink:href='#node' x='75' y='275'/>
+    <use xlink:href='#edge_lo_ti' x='75' y = '275'/>
+</svg>
+
+### Two Sibling Nodes
+
+<svg width='175' height='215' viewBox='0 0 350 430'>
+    <use xlink:href='#root' x='175' y='75'/>
+    <use xlink:href='#edge_lo_li_2' x='50' y = '75'/>
+    <use xlink:href='#node' x='75' y='275'/>
+    <use xlink:href='#edge_lo_ti' x='75' y = '275'/>
+    <use xlink:href='#edge_to_li' x='75' y = '250'/>
+    <use xlink:href='#node' x='275' y='275'/>
+    <use xlink:href='#edge_lo_ti' x='275' y = '275'/>
+    <use xlink:href='#edge_to_ti_2' x='250' y = '75'/>
+</svg>
+
+## Iterators
+
+Iterators are comprised of two pieces of data:
+
+- The node ($N$) to which they point
+- Whether they are on the leading ($L$) or trailing ($T$) side of the node
+
+In this documentation, iterators will be described by this pair as `{node, side}`.
+
+### Examples
+
+- `{P, L}` is an iterator that points to node $P$ on the leading edge:
+
+<svg width='112.5' height='112.5' viewBox='0 0 225 225'>
+    <use xlink:href='#edge_li' x='150' y = '150'/>
+    <use xlink:href='#parent' x='150' y='150'/>
+    <text font-size='{{small_font_size}}' x='25' y='30' dominant-baseline="central">{P, L}</text>
+</svg>
+
+- `{N, T}` is an iterator that points to node $N$ on the trailing edge:
+
+<svg width='112.5' height='112.5' viewBox='0 0 225 225'>
+    <use xlink:href='#node' x='75' y='75'/>
+    <use xlink:href='#edge_ti' x='75' y = '75'/>
+    <text font-size='{{small_font_size}}' x='150' y='200' dominant-baseline="central">{N, T}</text>
+</svg>
+
+Since iterators always point to a node, we never speak of an iterator being on the out edge of a node it is leaving. Rather, we always consider it on the in edge of the node that it points to. Visually, iterators will only ever be on the northwest or southeast edge of the node to which they point.
+
+### Edge Flipping
+
+Utility functions `adobe::leading_of(I)` and `adobe::trailing_of(I)` change the edge of an iterator to leading or trailing, respectively. The iterator will still point to the same node. These are free functions, not members of `adobe::forest<T>`. In this document we will represent these routines in pseudocode as such:
+
+- `leading_of({P, T})` &rarr; `{P, L}`
+- `trailing_of({N, L})` &rarr; `{N, T}`
+
+### Iterator Adaptors
+
+Although there is one iterator type for forest, there are several iterator adaptors that facilitate various methods of traversal. More will be said about these later.
+
+### A note on `begin()` and `end()`
+
+`begin()` and `end()` in a forest behave just like their equivalent member functions found in a typical standard library container.
+
+- `forest<T>::end()` will always return `{R, T}`. This is true regardless of whether or not the forest is empty.
+
+- `forest<T>::begin()` will always return `++{R, L}`. This follows the rules of the leading out edge explained above, meaning that it will either point to the first node in the forest (if it is not empty), or `end()` (if it is).
+
+While iterators pointing to the root node $R$ are valid, they should never be dereferenced.
+
+## Forest Traversal
+
+The root node is not considered during forest traversal. As such it is omitted from traversal diagrams.
+
+### Fullorder
+
+The traversal behavior of `adobe::forest<T>::itrator` is always fullorder. This means every node is visited twice: first, right before any of its children are visited (on the leading edge), and then again after the last child is visited (on the trailing edge). This behavior is recursive, and results in a depth-first traversal of the forest:
+
+<svg width='230' height='250' viewBox='0 0 460 500'>
+    <use xlink:href='#edge_li' x='125' y = '125'/>
+    <text font-size='{{node_font_size}}' x='50' y='25' fill='blue' dominant-baseline="central">1</text>
+    <use xlink:href='#node' x='125' y='125'/>
+    <use xlink:href='#edge_lo_li' x='100' y = '125'/>
+    <use xlink:href='#edge_to_ti' x='100' y = '125'/>
+    <use xlink:href='#edge_to_li' x='125' y = '100'/>
+    <use xlink:href='#node' x='125' y='325'/>
+    <use xlink:href='#edge_lo_ti' x='125' y = '325'/>
+    <use xlink:href='#node' x='325' y='125'/>
+    <use xlink:href='#edge_lo_ti' x='325' y = '125'/>
+    <use xlink:href='#edge_to' x='325' y = '125'/>
+</svg>

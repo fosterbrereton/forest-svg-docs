@@ -1,0 +1,42 @@
+---
+layout: default
+---
+
+{% assign home_thumbs = site.pages | where_exp:"p","p.home-icon" | sort:"tab"%}
+
+<div class="home">
+  <table class='icon-table'>
+  <tr>
+    {% for page in home_thumbs %}
+      <td>
+        {% if page.home-icon %}
+            <a href='{{page.url}}'>
+            <div class='icon-box'>
+                <div class='top'><i class="fa fa-inverse fa-{{page.home-icon}}"></i></div>
+                <div class='bottom'>{{page.tab}}</div>
+            </div>
+            </a>
+        {% endif %}
+      </td>
+    {% endfor %}
+  </tr>
+  </table>
+
+  <h1>Posts</h1>
+
+  <ul class="post-list">
+    {% for post in site.posts %}
+      <li>
+        <span class="post-meta">{{ post.date | date: "%b %-d, %Y" }}</span>
+
+        <h2>
+          <a class="post-link" href="{{ post.url | prepend: site.baseurl }}">{{ post.title }}</a>
+        </h2>
+      {{ post.excerpt }}
+      </li>
+    {% endfor %}
+  </ul>
+
+  <p class="rss-subscribe">subscribe <a href='{{ "/feed.xml" | prepend: site.baseurl }}'>via RSS</a></p>
+
+</div>
