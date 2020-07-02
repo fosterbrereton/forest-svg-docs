@@ -1,0 +1,70 @@
+/*
+    Copyright 2013 Adobe
+    Distributed under the Boost Software License, Version 1.0.
+    (See accompanying file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
+*/
+/*************************************************************************************************/
+
+#ifndef ADOBE_IOMANIP_ASL_CEL_HPP
+#define ADOBE_IOMANIP_ASL_CEL_HPP
+
+/*************************************************************************************************/
+
+#include <adobe/config.hpp>
+
+#include <adobe/iomanip.hpp>
+
+/*************************************************************************************************/
+
+namespace adobe {
+
+/*************************************************************************************************/
+
+//!\ingroup manipulator
+class asl_cel_format : public format_base {
+    typedef format_base inherited_t;
+
+public:
+    typedef inherited_t::stream_type stream_type;
+
+    explicit asl_cel_format(bool safe_strings) : escape_m(safe_strings) {}
+
+    virtual void begin_format(stream_type& os);
+
+    virtual void begin_bag(stream_type& os, const std::string& ident);
+
+    virtual void begin_sequence(stream_type& os);
+
+    virtual void begin_atom(stream_type& os, const serializable_t&);
+
+private:
+    virtual void stack_event(stream_type& os, bool is_push);
+
+    void handle_atom(stream_type& os, bool is_push);
+
+    bool escape_m;
+};
+
+/*************************************************************************************************/
+
+//!\ingroup manipulator
+std::ostream& begin_asl_cel(std::ostream& os);
+
+//!\ingroup manipulator
+std::ostream& end_asl_cel(std::ostream& os);
+
+//!\ingroup manipulator
+std::ostream& begin_asl_cel_unsafe(std::ostream& os);
+
+//!\ingroup manipulator
+std::ostream& end_asl_cel_unsafe(std::ostream& os);
+
+/*************************************************************************************************/
+
+} // namespace adobe
+
+/*************************************************************************************************/
+
+#endif
+
+/*************************************************************************************************/
