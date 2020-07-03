@@ -23,6 +23,8 @@ get_filename_component(BOOST_PATH ${CMAKE_CURRENT_SOURCE_DIR}/boost ABSOLUTE)
 
 file(GLOB APP_SRC ${CMAKE_CURRENT_SOURCE_DIR}/sources/*.cpp)
 
+get_filename_component(JSON_PATH ${CMAKE_CURRENT_SOURCE_DIR}/json ABSOLUTE)
+
 get_filename_component(ASL_PATH ${CMAKE_CURRENT_SOURCE_DIR}/adobe_source_libraries ABSOLUTE)
 
 get_filename_component(APP_HEADERS_PATH ${CMAKE_CURRENT_SOURCE_DIR}/headers ABSOLUTE)
@@ -31,6 +33,7 @@ include_directories(fvg AFTER
                     ${ASL_PATH}
                     ${BOOST_PATH}
                     ${APP_HEADERS_PATH}
+                    ${JSON_PATH}
                     )
 
 add_executable(fvg ${APP_SRC})
