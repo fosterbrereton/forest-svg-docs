@@ -41,6 +41,7 @@ constexpr auto node_width_k{100};
 constexpr auto node_radius_k{node_width_k / 2};
 constexpr auto node_height_k{100};
 constexpr auto node_spacing_k{50};
+constexpr auto margin_k{25};
 
 /**************************************************************************************************/
 
@@ -91,9 +92,11 @@ auto derive_height(const adobe::forest<std::size_t>& counts) {
         ++first;
     }
 
-    auto height = max_depth ? (node_height_k + node_spacing_k) * max_depth - node_spacing_k : node_height_k;
+    ++max_depth;
 
-    return height + node_spacing_k * 2;
+    auto height{(node_height_k + node_spacing_k) * max_depth - node_spacing_k};
+
+    return height + margin_k * 2;
 }
 
 /**************************************************************************************************/
@@ -116,7 +119,7 @@ auto derive_width(const adobe::forest<std::size_t>& widths) {
         result -= node_spacing_k;
     }
 
-    return result + node_spacing_k * 2;
+    return result + margin_k * 2;
 }
 
 /**************************************************************************************************/
@@ -134,7 +137,8 @@ void derive_x_offsets(adobe::forest<std::size_t>::const_iterator src,
     auto dst_first{adobe::child_begin(dst)};
 
     while (src_first != src_last) {
-        *dst_first = parent_x_offset;
+        //auto old_width{*dst_first};
+        *dst_first = parent_x_offset; // + (old_width - parent_x_offset) / 2;
         derive_x_offsets(src_first.base(), dst_first.base(), parent_x_offset);
         parent_x_offset += *src_first + node_spacing_k;
         ++src_first;
@@ -150,7 +154,7 @@ void derive_x_offsets(adobe::forest<std::size_t>::const_iterator src,
 
 auto derive_x_offsets(const adobe::forest<std::size_t>& widths) {
     adobe::forest<std::size_t> result{widths};
-    detail::derive_x_offsets(widths.root(), result.root(), node_spacing_k);
+    detail::derive_x_offsets(widths.root(), result.root(), margin_k);
     return result;
 }
 
@@ -165,7 +169,7 @@ auto derive_y_offsets(const state& state) {
     while (first != last) {
         ++pos;
         if (first.edge() == adobe::forest_leading_edge) {
-            pos = result.insert(pos, node_spacing_k + (node_height_k + node_spacing_k) * first.depth());
+            pos = result.insert(pos, margin_k + (node_height_k + node_spacing_k) * first.depth());
         }
         ++first;
     }
@@ -277,11 +281,11 @@ void write_svg(const state& state, const std::filesystem::path& path) {
     })};
 
     apply_forest(svg.begin(), svg.end(), x_offsets.begin(), [](auto& a, auto& b){
-        a._attributes["cx"] = std::to_string(b);
+        a._attributes["cx"] = std::to_string(b + node_radius_k);
     });
 
     apply_forest(svg.begin(), svg.end(), y_offsets.begin(), [](auto& a, auto& b){
-        a._attributes["cy"] = std::to_string(b);
+        a._attributes["cy"] = std::to_string(b + node_radius_k);
     });
 
     out << "<?xml version='1.0' encoding='utf-8'?>\n";
