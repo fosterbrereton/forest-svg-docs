@@ -17,7 +17,7 @@ namespace fvg {
 
 /**************************************************************************************************/
 
-void write_svg(const state& state, const std::filesystem::path& path);
+void write_svg(state state, const std::filesystem::path& path);
 
 /**************************************************************************************************/
 

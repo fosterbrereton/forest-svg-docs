@@ -73,10 +73,21 @@ auto make_state_nodes(const json_array& array) {
 
 /**************************************************************************************************/
 
+auto make_state_graph_settings(const json_object& object) {
+    graph_settings result{
+        get<bool>(object, "with_root"),
+    };
+
+    return result;
+}
+
+/**************************************************************************************************/
+
 state make_state(const json_t& j) {
     return {
         make_state_forest(get<json_array>(j, "forest")),
         make_state_nodes(get<json_array>(j, "nodes")),
+        make_state_graph_settings(get<json_object>(j, "settings")),
     };
 }
 

@@ -298,6 +298,7 @@ auto derive_edges(const adobe::forest<xml_node>& f) {
     auto        first{f.begin()};
     auto        last{f.end()};
     bool        prev_leading{first.edge() == adobe::forest_leading_edge};
+    bool        prev_rect{first->_tag == "rect"};
     point       prev{first->_x, first->_y};
     std::size_t edge_count{0};
 
@@ -311,6 +312,7 @@ auto derive_edges(const adobe::forest<xml_node>& f) {
 
     while (first != last) {
         bool  cur_leading{first.edge() == adobe::forest_leading_edge};
+        bool  cur_rect{first->_tag == "rect"};
         point cur{first->_x, first->_y};
         point s;
         point c1;
@@ -321,10 +323,18 @@ auto derive_edges(const adobe::forest<xml_node>& f) {
             if (cur_leading) {
                 // down to first child
                 const point c_scale_k{1.5, 1.5};
-                s = prev + sw_k;
-                c1 = prev + sw_k * c_scale_k;
-                c2 = cur + nw_k * c_scale_k;
-                e = cur + nw_k;
+                if (!prev_rect) {
+                    s = prev + sw_k;
+                    c1 = prev + sw_k * c_scale_k;
+                    c2 = cur + nw_k * c_scale_k;
+                    e = cur + nw_k;
+                } else {
+                    s = prev;
+                    s.y += node_size_k / 2;
+                    c1 = prev + sw_k * c_scale_k;
+                    c2 = cur + nw_k * c_scale_k;
+                    e = cur + nw_k;
+                }
             } else {
                 // leaf node loop
                 const point c_scale_k{2.5, 3.5};
@@ -352,10 +362,20 @@ auto derive_edges(const adobe::forest<xml_node>& f) {
             } else {
                 // up to parent
                 const point c_scale_k{1.5, 1.5};
-                s = prev + ne_k;
-                c1 = prev + ne_k * c_scale_k;
-                c2 = cur + se_k * c_scale_k;
-                e = cur + se_k;
+                if (!cur_rect) {
+                    s = prev + ne_k;
+                    c1 = prev + ne_k * c_scale_k;
+                    c2 = cur + se_k * c_scale_k;
+                    e = cur + se_k;
+                } else {
+                    s = prev + ne_k;
+                    c1 = prev + ne_k * c_scale_k;
+                    //c2 = cur + se_k * c_scale_k;
+                    e = cur;
+                    e.x += node_size_k;
+                    e.y += node_size_k / 2;
+                    c2 = e + point{node_size_k / 2, 0};
+                }
             }
         }
 
@@ -399,6 +419,7 @@ auto derive_edges(const adobe::forest<xml_node>& f) {
             }});
 #endif
 
+        prev_rect = cur_rect;
         prev_leading = cur_leading;
         prev = cur;
 
@@ -410,11 +431,18 @@ auto derive_edges(const adobe::forest<xml_node>& f) {
 
 /**************************************************************************************************/
 
-void write_svg(const state& state, const std::filesystem::path& path) {
+void write_svg(state state, const std::filesystem::path& path) {
     std::ofstream out{path, std::ios::out | std::ios::binary};
 
     if (!out) {
         throw std::runtime_error("error creating output file");
+    }
+
+    // Add optional root
+    if (state._s._with_root) {
+        auto first{adobe::child_begin(state._f.root())};
+        auto last{adobe::child_end(state._f.root())};
+        state._f.insert_parent(first, last, "_root");
     }
 
     auto counts = child_counts(state);
@@ -438,7 +466,7 @@ void write_svg(const state& state, const std::filesystem::path& path) {
     // Construct the nodes.
 
     auto svg_nodes{transcribe_forest(state._f, [](const auto& n){
-        return xml_node{
+        static const xml_node circle_k{
             "circle",
             {
                 { "r", std::to_string(node_radius_k) },
@@ -449,16 +477,45 @@ void write_svg(const state& state, const std::filesystem::path& path) {
             "",
             0, 0, node_radius_k*2, node_radius_k*2
         };
+
+        static const xml_node square_k{
+            "rect",
+            {
+                { "width", std::to_string(node_size_k) },
+                { "height", std::to_string(node_size_k) },
+                { "fill", "white" },
+                { "stroke", "red" },
+                { "stroke-width", std::to_string(stroke_width_k) },
+            },
+            "",
+            0, 0, node_radius_k*2, node_radius_k*2
+        };
+
+        return n == "_root" ? square_k : circle_k;
     })};
 
     apply_forest(svg_nodes.begin(), svg_nodes.end(), x_offsets.begin(), [](auto& a, auto& b){
-        a._x = b + node_radius_k;
-        a._attributes["cx"] = std::to_string(a._x);
+        if (a._tag == "circle") {
+            a._x = b + node_radius_k;
+            a._attributes["cx"] = std::to_string(a._x);
+        } else if (a._tag == "rect") {
+            a._x = b;
+            a._attributes["x"] = std::to_string(a._x);
+        } else {
+            throw std::runtime_error("Uknown node shape");
+        }
     });
 
     apply_forest(svg_nodes.begin(), svg_nodes.end(), y_offsets.begin(), [](auto& a, auto& b){
-        a._y = b + node_radius_k;
-        a._attributes["cy"] = std::to_string(a._y);
+        if (a._tag == "circle") {
+            a._y = b + node_radius_k;
+            a._attributes["cy"] = std::to_string(a._y);
+        } else if (a._tag == "rect") {
+            a._y = b;
+            a._attributes["y"] = std::to_string(a._y);
+        } else {
+            throw std::runtime_error("Uknown node shape");
+        }
     });
 
     // Derive the edges.
