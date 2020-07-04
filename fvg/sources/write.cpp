@@ -37,11 +37,13 @@ auto child_counts(const state& state) {
 
 /**************************************************************************************************/
 
-constexpr auto node_width_k{100};
-constexpr auto node_radius_k{node_width_k / 2};
-constexpr auto node_height_k{100};
-constexpr auto node_spacing_k{50};
+constexpr auto node_size_k{50};
+constexpr auto node_radius_k{node_size_k / 2};
+constexpr auto node_spacing_k{25};
+constexpr auto tier_height_k{50};
 constexpr auto margin_k{25};
+constexpr auto stroke_width_k{2};
+constexpr auto font_size_k{16};
 
 /**************************************************************************************************/
 
@@ -58,7 +60,7 @@ auto derive_widths(const adobe::forest<std::size_t>& counts) {
         } else {
             // now that all the children have gone, let's update our width
             if (!adobe::has_children(pos)) {
-                *pos = node_width_k;
+                *pos = node_size_k;
             } else {
                 auto child_first{adobe::child_begin(pos)};
                 auto child_last{adobe::child_end(pos)};
@@ -95,7 +97,7 @@ auto derive_height(const adobe::forest<std::size_t>& counts) {
     ++max_depth;
 
     // Keep the extra node spacing for the leaf node edges on the bottom of the graph.
-    auto height{(node_height_k + node_spacing_k) * max_depth};
+    auto height{(tier_height_k + node_spacing_k) * max_depth};
 
     return height + margin_k * 2;
 }
@@ -138,8 +140,8 @@ void derive_x_offsets(adobe::forest<std::size_t>::const_iterator src,
     auto dst_first{adobe::child_begin(dst)};
 
     while (src_first != src_last) {
-        // auto old_width{*dst_first};
-        *dst_first = parent_x_offset;// + (old_width - parent_x_offset) / 2;
+        auto old_width{*dst_first};
+        *dst_first = parent_x_offset + (old_width - node_size_k) / 2;
         derive_x_offsets(src_first.base(), dst_first.base(), parent_x_offset);
         parent_x_offset += *src_first + node_spacing_k;
         ++src_first;
@@ -170,7 +172,7 @@ auto derive_y_offsets(const state& state) {
     while (first != last) {
         ++pos;
         if (first.edge() == adobe::forest_leading_edge) {
-            pos = result.insert(pos, margin_k + (node_height_k + node_spacing_k) * first.depth());
+            pos = result.insert(pos, margin_k + (tier_height_k + node_spacing_k) * first.depth());
         }
         ++first;
     }
@@ -364,7 +366,7 @@ auto derive_edges(const adobe::forest<xml_node>& f) {
                 { "d", make_cubic_curve(s, c1, c2, e) },
                 { "fill", "transparent" },
                 { "stroke", "black" },
-                { "stroke-width", "5" },
+                { "stroke-width", std::to_string(stroke_width_k) },
                 { "marker-end", "url(#arrowhead)" },
             }});
 
@@ -442,7 +444,7 @@ void write_svg(const state& state, const std::filesystem::path& path) {
                 { "r", std::to_string(node_radius_k) },
                 { "fill", "white" },
                 { "stroke", "blue" },
-                { "stroke-width", "5" },
+                { "stroke-width", std::to_string(stroke_width_k) },
             },
             "",
             0, 0, node_radius_k*2, node_radius_k*2
@@ -469,7 +471,7 @@ void write_svg(const state& state, const std::filesystem::path& path) {
         return xml_node{
             "text",
             {
-                { "font-size", std::to_string(36) },
+                { "font-size", std::to_string(font_size_k) },
                 { "text-anchor", "middle" },
                 { "dominant-baseline", "central" },
             },
