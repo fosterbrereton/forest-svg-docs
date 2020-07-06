@@ -311,6 +311,13 @@ auto derive_edges(const adobe::forest<xml_node>& f) {
     // angled lines, it does achieve the desired bezier symmetry, as well as helping to minimize
     // edges colliding with other graph elements. No doubt I could solve the same problem by
     // using non-symmetrical control points, except the bezier math gets crazy.
+    //
+    // Another improvement I can make is to lessen the angle of departure/approach for long edges.
+    // (i.e., not requiring the edges start exactly at NW, NE, SW, and SE.)
+    // The long ones have the most extreme angles and so the arrowheads / stubs can look pretty
+    // funny. Another alternative solution here is have a larger scale for the control points in
+    // these cases, or have the control point scale between two values depending on the length
+    // of the edge (some kind of linear interpolation.)
 
     
     std::vector<xml_node> result;
