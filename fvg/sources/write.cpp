@@ -370,6 +370,7 @@ auto derive_edges(const adobe::forest<xml_node>& f) {
             } else {
                 // leaf node loop
                 const point c_scale_k{2.5, 2.5};
+                stub_start = prev + sw_out_k;
                 s = prev + sw_stub_out_k;
                 c1 = prev + sw_stub_out_k * c_scale_k;
                 c2 = cur + se_in_k * c_scale_k;
@@ -432,7 +433,6 @@ auto derive_edges(const adobe::forest<xml_node>& f) {
                 { "fill", "transparent" },
                 { "stroke", "black" },
                 { "stroke-width", std::to_string(stroke_width_k) },
-                { "marker-start", "url(#edgestart)" },
                 { "marker-end", "url(#arrowhead)" },
             }});
 
@@ -627,7 +627,7 @@ void write_svg(state state, const std::filesystem::path& path) {
             { "markerWidth", "12" },
             { "markerHeight", "10" },
             { "refY", "5" },
-            { "orient", "auto" },
+            { "orient", "auto-start-reverse" },
             { "markerUnits", "userSpaceOnUse" },
         }
     }));
@@ -635,25 +635,6 @@ void write_svg(state state, const std::filesystem::path& path) {
         "polygon",
         {
             { "points", "0 0, 12 5, 0 10" },
-        }
-    });
-    auto marker_edgestart = adobe::trailing_of(xml.insert(defs, xml_node{
-        "marker",
-        {
-            { "id", "edgestart" },
-            { "markerWidth", "12" },
-            { "markerHeight", "10" },
-            { "refY", "5" },
-            { "orient", "auto-start-reverse" },
-            { "markerUnits", "userSpaceOnUse" },
-        }
-    }));
-    xml.insert(marker_edgestart, xml_node{
-        "path",
-        {
-            { "d", "M 0 0 L 12 5 L 0 10 z" },
-            { "fill", "#f00" },
-            { "fill-opacity", "0.5" },
         }
     });
 
