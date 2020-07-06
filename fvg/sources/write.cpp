@@ -44,6 +44,7 @@ constexpr auto tier_height_k{50};
 constexpr auto margin_k{25};
 constexpr auto stroke_width_k{2};
 constexpr auto font_size_k{16};
+constexpr auto root_name_k{"&#x211C;"};
 
 /**************************************************************************************************/
 
@@ -269,6 +270,8 @@ struct point {
     inline constexpr auto operator/=(const double rhs) { x /= rhs; y /= rhs; return *this; }
 };
 
+inline constexpr auto operator==(const point& a, const point& b) { return a.x == b.x && a.y == b.y;}
+inline constexpr auto operator!=(const point& a, const point& b) { return !(a == b);}
 inline constexpr auto operator+(const point& a, const point& b) { point r{a}; r += b; return r; }
 inline constexpr auto operator-(const point& a, const point& b) { point r{a}; r -= b; return r; }
 inline constexpr auto operator*(const point& a, const point& b) { point r{a}; r *= b; return r; }
@@ -291,6 +294,25 @@ auto make_cubic_curve(const point& start, const point& control_1, const point& c
 /**************************************************************************************************/
 
 auto derive_edges(const adobe::forest<xml_node>& f) {
+    // The goal is to have the lines look as natural as possible. This should include the arrowhead
+    // at the end of the line. SVG allows you to attach an arrowhead at the end of the line via the
+    // marker attribute. The bad news is this arrowhead's base is at the end of the line, and the
+    // addition of the arrowhead causes the line+arrowhead combination to terminate within the
+    // bounds of the node. I tried using the refX and refY attributes of the marker to set the
+    // arrowhead back by its own width (so it would finish at the same point the line does) but the
+    // problem with that is the arrowhead's angle is set to match the end of the line, not the angle
+    // where it is inset to, causing the arrow to look wonky on longer/more extremely angled edges.
+    // The next fix is to stop the line an arrowhead's width before reaching the node, and allowing
+    // the arrowhead to complete the line correctly. The problem there is now one of symmetry: with
+    // the start of the bezier path being on a node boundary, and the end being prior to a node
+    // boundary, symmetrical control points do not yield a symmetrical bezier path. The current
+    // solution I have for that problem is to add a "stub line" to the start of the path that is the
+    // same length as an arrowhead. While this can look a bit strange for longer/more extremely
+    // angled lines, it does achieve the desired bezier symmetry, as well as helping to minimize
+    // edges colliding with other graph elements. No doubt I could solve the same problem by
+    // using non-symmetrical control points, except the bezier math gets crazy.
+
+    
     std::vector<xml_node> result;
 
     if (f.empty()) return result;
@@ -304,79 +326,102 @@ auto derive_edges(const adobe::forest<xml_node>& f) {
 
     ++first;
 
-    constexpr point scale_k{node_radius_k + 2.5, node_radius_k + 2.5}; // 2.5 is half line width
-    static const point se_k{point{std::cos(1*M_PI_4), std::sin(1*M_PI_4)} * scale_k};
-    static const point sw_k{point{std::cos(3*M_PI_4), std::sin(3*M_PI_4)} * scale_k};
-    static const point nw_k{point{std::cos(5*M_PI_4), std::sin(5*M_PI_4)} * scale_k};
-    static const point ne_k{point{std::cos(7*M_PI_4), std::sin(7*M_PI_4)} * scale_k};
+    constexpr point arrowhead_offset_k{12, 12};
+    constexpr point node_scale_k{node_radius_k, node_radius_k};
+    constexpr point out_scale_k{node_scale_k};
+    constexpr point out_stub_k{node_scale_k + arrowhead_offset_k};
+    constexpr point in_scale_k{arrowhead_offset_k + node_radius_k};
+    static const point se_in_k{point{std::cos(1*M_PI_4), std::sin(1*M_PI_4)} * in_scale_k};
+    static const point nw_in_k{point{std::cos(5*M_PI_4), std::sin(5*M_PI_4)} * in_scale_k};
 
     while (first != last) {
         bool  cur_leading{first.edge() == adobe::forest_leading_edge};
         bool  cur_rect{first->_tag == "rect"};
         point cur{first->_x, first->_y};
+        point stub_start;
         point s;
         point c1;
         point c2;
         point e;
 
         if (prev_leading) {
+            static const point sw_k{point{std::cos(3*M_PI_4), std::sin(3*M_PI_4)}};
+            static const point sw_out_k{sw_k * out_scale_k};
+            static const point sw_stub_out_k{sw_k * out_stub_k};
+
             if (cur_leading) {
                 // down to first child
-                const point c_scale_k{1.5, 1.5};
+                const point c_scale_k{1.25, 1.25};
                 if (!prev_rect) {
-                    s = prev + sw_k;
-                    c1 = prev + sw_k * c_scale_k;
-                    c2 = cur + nw_k * c_scale_k;
-                    e = cur + nw_k;
+                    stub_start = prev + sw_out_k;
+                    s = prev + sw_stub_out_k;
+                    c1 = prev + sw_stub_out_k * c_scale_k;
+                    c2 = cur + nw_in_k * c_scale_k;
+                    e = cur + nw_in_k;
                 } else {
                     s = prev;
                     s.y += node_size_k / 2;
-                    c1 = prev + sw_k * c_scale_k;
-                    c2 = cur + nw_k * c_scale_k;
-                    e = cur + nw_k;
+                    stub_start = s;
+                    s.x -= arrowhead_offset_k.x;
+                    c1 = prev + sw_out_k * c_scale_k;
+                    c2 = cur + nw_in_k * c_scale_k;
+                    e = cur + nw_in_k;
                 }
             } else {
                 // leaf node loop
-                const point c_scale_k{2.5, 3.5};
-                s = prev + sw_k;
-                c1 = prev + sw_k * c_scale_k;
-                c2 = cur + se_k * c_scale_k;
-                e = cur + se_k;
+                const point c_scale_k{2.5, 2.5};
+                s = prev + sw_stub_out_k;
+                c1 = prev + sw_stub_out_k * c_scale_k;
+                c2 = cur + se_in_k * c_scale_k;
+                e = cur + se_in_k;
             }
         } else {
+            static const point ne_k{point{std::cos(7*M_PI_4), std::sin(7*M_PI_4)}};
+            static const point ne_out_k{ne_k * out_scale_k};
+            static const point ne_stub_out_k{ne_k * out_stub_k};
+
             if (cur_leading) {
                 // next sibling
-#if 0
-                double scale_k{(cur.x - prev.x) / 100};
-                s = prev + ne_k;
-                c1 = prev + ne_k * scale_k;
-                c2 = cur + nw_k * scale_k;
-                e = cur + nw_k;
-#else
-                const point c_scale_k{1.5, 1.5};
-                s = prev + ne_k;
-                c1 = prev + ne_k * c_scale_k;
-                c2 = cur + nw_k * c_scale_k;
-                e = cur + nw_k;
-#endif
+                const point c_scale_k{1.25,1.25};
+                stub_start = prev + ne_out_k;
+                s = prev + ne_stub_out_k;
+                c1 = prev + ne_stub_out_k * c_scale_k;
+                c2 = cur + nw_in_k * c_scale_k;
+                e = cur + nw_in_k;
             } else {
                 // up to parent
-                const point c_scale_k{1.5, 1.5};
+                const point c_scale_k{1.25, 1.25};
                 if (!cur_rect) {
-                    s = prev + ne_k;
-                    c1 = prev + ne_k * c_scale_k;
-                    c2 = cur + se_k * c_scale_k;
-                    e = cur + se_k;
+                    stub_start = prev + ne_out_k;
+                    s = prev + ne_stub_out_k;
+                    c1 = prev + ne_stub_out_k * c_scale_k;
+                    c2 = cur + se_in_k * c_scale_k;
+                    e = cur + se_in_k;
                 } else {
-                    s = prev + ne_k;
-                    c1 = prev + ne_k * c_scale_k;
-                    //c2 = cur + se_k * c_scale_k;
+                    s = prev + ne_out_k;
+                    c1 = prev + ne_out_k * c_scale_k;
+                    //c2 = cur + se_in_k * c_scale_k;
                     e = cur;
-                    e.x += node_size_k;
+                    e.x += node_size_k + arrowhead_offset_k.x;
                     e.y += node_size_k / 2;
                     c2 = e + point{node_size_k / 2, 0};
                 }
             }
+        }
+
+        if (stub_start != point{}) {
+            result.push_back(xml_node{
+                "line",
+                {
+                    { "id", "edge_" + std::to_string(++edge_count) },
+                    { "x1", std::to_string(stub_start.x) },
+                    { "y1", std::to_string(stub_start.y) },
+                    { "x2", std::to_string(s.x) },
+                    { "y2", std::to_string(s.y) },
+                    { "fill", "transparent" },
+                    { "stroke", "black" },
+                    { "stroke-width", "2" },
+                }});
         }
 
         result.push_back(xml_node{
@@ -387,6 +432,7 @@ auto derive_edges(const adobe::forest<xml_node>& f) {
                 { "fill", "transparent" },
                 { "stroke", "black" },
                 { "stroke-width", std::to_string(stroke_width_k) },
+                { "marker-start", "url(#edgestart)" },
                 { "marker-end", "url(#arrowhead)" },
             }});
 
@@ -442,7 +488,7 @@ void write_svg(state state, const std::filesystem::path& path) {
     if (state._s._with_root) {
         auto first{adobe::child_begin(state._f.root())};
         auto last{adobe::child_end(state._f.root())};
-        state._f.insert_parent(first, last, "_root");
+        state._f.insert_parent(first, last, root_name_k);
     }
 
     auto counts = child_counts(state);
@@ -491,7 +537,7 @@ void write_svg(state state, const std::filesystem::path& path) {
             0, 0, node_radius_k*2, node_radius_k*2
         };
 
-        return n == "_root" ? square_k : circle_k;
+        return n == root_name_k ? square_k : circle_k;
     })};
 
     apply_forest(svg_nodes.begin(), svg_nodes.end(), x_offsets.begin(), [](auto& a, auto& b){
@@ -578,17 +624,36 @@ void write_svg(state state, const std::filesystem::path& path) {
         "marker",
         {
             { "id", "arrowhead" },
-            { "markerWidth", "6" },
-            { "markerHeight", "5" },
-            { "refX", "5" },
-            { "refY", "2.5" },
+            { "markerWidth", "12" },
+            { "markerHeight", "10" },
+            { "refY", "5" },
             { "orient", "auto" },
+            { "markerUnits", "userSpaceOnUse" },
         }
     }));
     xml.insert(marker_arrowhead, xml_node{
         "polygon",
         {
-            { "points", "0 0, 6 2.5, 0 5" },
+            { "points", "0 0, 12 5, 0 10" },
+        }
+    });
+    auto marker_edgestart = adobe::trailing_of(xml.insert(defs, xml_node{
+        "marker",
+        {
+            { "id", "edgestart" },
+            { "markerWidth", "12" },
+            { "markerHeight", "10" },
+            { "refY", "5" },
+            { "orient", "auto-start-reverse" },
+            { "markerUnits", "userSpaceOnUse" },
+        }
+    }));
+    xml.insert(marker_edgestart, xml_node{
+        "path",
+        {
+            { "d", "M 0 0 L 12 5 L 0 10 z" },
+            { "fill", "#f00" },
+            { "fill-opacity", "0.5" },
         }
     });
 
