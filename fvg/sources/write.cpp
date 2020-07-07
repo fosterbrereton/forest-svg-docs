@@ -259,6 +259,8 @@ struct point {
     double x{0};
     double y{0};
 
+    auto magnitude() const { return std::sqrt(x * x + y * y); }
+
     inline constexpr auto operator+=(const point& rhs) { x += rhs.x; y += rhs.y; return *this; }
     inline constexpr auto operator-=(const point& rhs) { x -= rhs.x; y -= rhs.y; return *this; }
     inline constexpr auto operator*=(const point& rhs) { x *= rhs.x; y *= rhs.y; return *this; }
@@ -281,6 +283,13 @@ inline constexpr auto operator-(const point& a, const double b) { point r{a}; r 
 inline constexpr auto operator*(const point& a, const double b) { point r{a}; r *= b; return r; }
 inline constexpr auto operator/(const point& a, const double b) { point r{a}; r /= b; return r; }
 inline constexpr auto operator-(const point& a) { return point{-a.x, -a.y}; }
+
+/**************************************************************************************************/
+
+template <typename T>
+auto lerp(const T& a, const T& b, double t) {
+    return a + (b - a) * t;
+}
 
 /**************************************************************************************************/
 
@@ -319,7 +328,6 @@ auto derive_edges(const adobe::forest<xml_node>& f) {
     // these cases, or have the control point scale between two values depending on the length
     // of the edge (some kind of linear interpolation.)
 
-    
     std::vector<xml_node> result;
 
     if (f.empty()) return result;
@@ -384,9 +392,22 @@ auto derive_edges(const adobe::forest<xml_node>& f) {
                 e = cur + se_in_k;
             }
         } else {
-            static const point ne_k{point{std::cos(7*M_PI_4), std::sin(7*M_PI_4)}};
-            static const point ne_out_k{ne_k * out_scale_k};
-            static const point ne_stub_out_k{ne_k * out_stub_k};
+#if 0
+            static const point ne_min_k{std::cos(7*M_PI_4), std::sin(7*M_PI_4)};
+            static const point ne_max_k{std::cos(6.5*M_PI_4), std::sin(6.5*M_PI_4)};
+            static const double min_mag_k{node_size_k + node_spacing_k};
+            static const double max_mag_k{min_mag_k * 2};
+
+            const auto delta{prev - cur};
+            const auto mag{delta.magnitude()};
+            const double t{std::clamp((mag - min_mag_k) / max_mag_k, 0., 1.)};
+
+            const point ne_k{lerp(ne_min_k, ne_max_k, t)};
+#else
+            const point ne_k{std::cos(7*M_PI_4), std::sin(7*M_PI_4)};
+#endif
+            const point ne_out_k{ne_k * out_scale_k};
+            const point ne_stub_out_k{ne_k * out_stub_k};
 
             if (cur_leading) {
                 // next sibling
@@ -518,14 +539,17 @@ void write_svg(state state, const std::filesystem::path& path) {
 
     // Construct the nodes.
 
-    auto svg_nodes{transcribe_forest(state._f, [](const auto& n){
-        static const xml_node circle_k{
+    auto svg_nodes{transcribe_forest(state._f, [&_map = state._n](const auto& n){
+        const auto& node_properties{_map[n]};
+
+        const xml_node circle_k{
             "circle",
             {
                 { "r", std::to_string(node_radius_k) },
                 { "fill", "white" },
-                { "stroke", "blue" },
+                { "stroke", node_properties._color },
                 { "stroke-width", std::to_string(stroke_width_k) },
+                { "stroke-dasharray", node_properties._stroke_dasharray },
             },
             "",
             0, 0, node_radius_k*2, node_radius_k*2

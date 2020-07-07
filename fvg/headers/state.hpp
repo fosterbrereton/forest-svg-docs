@@ -21,7 +21,8 @@ namespace fvg {
 /**************************************************************************************************/
 
 struct node_properties {
-    std::string _color;
+    std::string _color{"blue"};
+    std::string _stroke_dasharray{"0"};
 };
 
 struct graph_settings {

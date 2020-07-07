@@ -14,8 +14,9 @@
     ],
     "nodes": [
         {
-            "id": "A",
-            "color": "green"
+            "_id": "A",
+            "color": "green",
+            "stroke-dasharray": "4"
         }
     ],
     "settings": {

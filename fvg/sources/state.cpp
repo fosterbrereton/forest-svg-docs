@@ -61,10 +61,11 @@ auto make_state_nodes(const json_array& array) {
             throw std::runtime_error("dictionary expected for node property");
         }
 
-        const auto id{get<std::string>(n, "id")};
+        const auto id{get<std::string>(n, "_id")};
 
         result[std::move(id)] = node_properties {
-            get<std::string>(n, "color")
+            get<std::string>(n, "color"),
+            get<std::string>(n, "stroke-dasharray"),
         };
     }
 
