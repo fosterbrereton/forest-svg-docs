@@ -1,0 +1,94 @@
+<?xml version='1.0' encoding='utf-8'?>
+<svg version='1.1' xmlns='http://www.w3.org/2000/svg' xmlns:xlink='http://www.w3.org/1999/xlink' width='550' height='320'>
+    <defs>
+        <marker id='arrowhead' markerWidth='12' markerHeight='10' orient='auto-start-reverse' refY='5' markerUnits='userSpaceOnUse'>
+            <polygon points='0 0, 12 5, 0 10'/>
+        </marker>
+    </defs>
+    <circle cy='35.000000' cx='275.000000' fill='white' stroke-dasharray='0' stroke-width='2' stroke='blue' r='25'/>
+    <circle cy='110.000000' cx='275.000000' fill='white' stroke-dasharray='0' stroke-width='2' stroke='blue' r='25'/>
+    <circle cy='185.000000' cx='125.000000' fill='white' stroke-dasharray='0' stroke-width='2' stroke='blue' r='25'/>
+    <circle cy='260.000000' cx='50.000000' fill='white' stroke-dasharray='0' stroke-width='2' stroke='blue' r='25'/>
+    <circle cy='260.000000' cx='125.000000' fill='white' stroke-dasharray='0' stroke-width='2' stroke='blue' r='25'/>
+    <circle cy='260.000000' cx='200.000000' fill='white' stroke-dasharray='0' stroke-width='2' stroke='blue' r='25'/>
+    <circle cy='185.000000' cx='350.000000' fill='white' stroke-dasharray='0' stroke-width='2' stroke='blue' r='25'/>
+    <circle cy='260.000000' cx='275.000000' fill='white' stroke-dasharray='0' stroke-width='2' stroke='blue' r='25'/>
+    <circle cy='260.000000' cx='350.000000' fill='white' stroke-dasharray='0' stroke-width='2' stroke='blue' r='25'/>
+    <circle cy='260.000000' cx='425.000000' fill='white' stroke-dasharray='0' stroke-width='2' stroke='blue' r='25'/>
+    <circle cy='185.000000' cx='500.000000' fill='white' stroke-dasharray='0' stroke-width='2' stroke='blue' r='25'/>
+    <text font-size='16' y='35' x='275' text-anchor='middle' dominant-baseline='central'>
+A
+    </text>
+    <text font-size='16' y='110' x='275' text-anchor='middle' dominant-baseline='central'>
+B
+    </text>
+    <text font-size='16' y='185' x='125' text-anchor='middle' dominant-baseline='central'>
+C
+    </text>
+    <text font-size='16' y='260' x='50' text-anchor='middle' dominant-baseline='central'>
+F
+    </text>
+    <text font-size='16' y='260' x='125' text-anchor='middle' dominant-baseline='central'>
+G
+    </text>
+    <text font-size='16' y='260' x='200' text-anchor='middle' dominant-baseline='central'>
+H
+    </text>
+    <text font-size='16' y='185' x='350' text-anchor='middle' dominant-baseline='central'>
+D
+    </text>
+    <text font-size='16' y='260' x='275' text-anchor='middle' dominant-baseline='central'>
+I
+    </text>
+    <text font-size='16' y='260' x='350' text-anchor='middle' dominant-baseline='central'>
+J
+    </text>
+    <text font-size='16' y='260' x='425' text-anchor='middle' dominant-baseline='central'>
+K
+    </text>
+    <text font-size='16' y='185' x='500' text-anchor='middle' dominant-baseline='central'>
+E
+    </text>
+    <line id='edge_1' y1='52.677670' x1='257.322330' x2='248.837049' y2='61.162951' fill='transparent' stroke='black' stroke-width='2'/>
+    <path id='edge_2' d='M 248.837049 61.162951 C242.296311 67.703689 242.296311 77.296311 248.837049 83.837049' fill='transparent' stroke='black' stroke-width='2' marker-end='url(#arrowhead)'/>
+    <line id='edge_3' y1='127.677670' x1='257.322330' x2='248.837049' y2='136.162951' fill='transparent' stroke='black' stroke-width='2'/>
+    <path id='edge_4' d='M 248.837049 136.162951 C242.296311 142.703689 92.296311 152.296311 98.837049 158.837049' fill='transparent' stroke='black' stroke-width='2' marker-end='url(#arrowhead)'/>
+    <line id='edge_5' y1='202.677670' x1='107.322330' x2='98.837049' y2='211.162951' fill='transparent' stroke='black' stroke-width='2'/>
+    <path id='edge_6' d='M 98.837049 211.162951 C92.296311 217.703689 17.296311 227.296311 23.837049 233.837049' fill='transparent' stroke='black' stroke-width='2' marker-end='url(#arrowhead)'/>
+    <line id='edge_7' y1='277.677670' x1='32.322330' x2='23.837049' y2='286.162951' fill='transparent' stroke='black' stroke-width='2'/>
+    <path id='edge_8' d='M 23.837049 286.162951 C-15.407377 325.407377 115.407377 325.407377 76.162951 286.162951' fill='transparent' stroke='black' stroke-width='2' marker-end='url(#arrowhead)'/>
+    <line id='edge_9' y1='242.322330' x1='67.677670' x2='76.162951' y2='233.837049' fill='transparent' stroke='black' stroke-width='2'/>
+    <path id='edge_10' d='M 76.162951 233.837049 C82.703689 227.296311 92.296311 227.296311 98.837049 233.837049' fill='transparent' stroke='black' stroke-width='2' marker-end='url(#arrowhead)'/>
+    <line id='edge_11' y1='277.677670' x1='107.322330' x2='98.837049' y2='286.162951' fill='transparent' stroke='black' stroke-width='2'/>
+    <path id='edge_12' d='M 98.837049 286.162951 C59.592623 325.407377 190.407377 325.407377 151.162951 286.162951' fill='transparent' stroke='black' stroke-width='2' marker-end='url(#arrowhead)'/>
+    <line id='edge_13' y1='242.322330' x1='142.677670' x2='151.162951' y2='233.837049' fill='transparent' stroke='black' stroke-width='2'/>
+    <path id='edge_14' d='M 151.162951 233.837049 C157.703689 227.296311 167.296311 227.296311 173.837049 233.837049' fill='transparent' stroke='black' stroke-width='2' marker-end='url(#arrowhead)'/>
+    <line id='edge_15' y1='277.677670' x1='182.322330' x2='173.837049' y2='286.162951' fill='transparent' stroke='black' stroke-width='2'/>
+    <path id='edge_16' d='M 173.837049 286.162951 C134.592623 325.407377 265.407377 325.407377 226.162951 286.162951' fill='transparent' stroke='black' stroke-width='2' marker-end='url(#arrowhead)'/>
+    <line id='edge_17' y1='242.322330' x1='217.677670' x2='226.162951' y2='233.837049' fill='transparent' stroke='black' stroke-width='2'/>
+    <path id='edge_18' d='M 226.162951 233.837049 C232.703689 227.296311 157.703689 217.703689 151.162951 211.162951' fill='transparent' stroke='black' stroke-width='2' marker-end='url(#arrowhead)'/>
+    <line id='edge_19' y1='167.322330' x1='142.677670' x2='151.162951' y2='158.837049' fill='transparent' stroke='black' stroke-width='2'/>
+    <path id='edge_20' d='M 151.162951 158.837049 C157.703689 152.296311 317.296311 152.296311 323.837049 158.837049' fill='transparent' stroke='black' stroke-width='2' marker-end='url(#arrowhead)'/>
+    <line id='edge_21' y1='202.677670' x1='332.322330' x2='323.837049' y2='211.162951' fill='transparent' stroke='black' stroke-width='2'/>
+    <path id='edge_22' d='M 323.837049 211.162951 C317.296311 217.703689 242.296311 227.296311 248.837049 233.837049' fill='transparent' stroke='black' stroke-width='2' marker-end='url(#arrowhead)'/>
+    <line id='edge_23' y1='277.677670' x1='257.322330' x2='248.837049' y2='286.162951' fill='transparent' stroke='black' stroke-width='2'/>
+    <path id='edge_24' d='M 248.837049 286.162951 C209.592623 325.407377 340.407377 325.407377 301.162951 286.162951' fill='transparent' stroke='black' stroke-width='2' marker-end='url(#arrowhead)'/>
+    <line id='edge_25' y1='242.322330' x1='292.677670' x2='301.162951' y2='233.837049' fill='transparent' stroke='black' stroke-width='2'/>
+    <path id='edge_26' d='M 301.162951 233.837049 C307.703689 227.296311 317.296311 227.296311 323.837049 233.837049' fill='transparent' stroke='black' stroke-width='2' marker-end='url(#arrowhead)'/>
+    <line id='edge_27' y1='277.677670' x1='332.322330' x2='323.837049' y2='286.162951' fill='transparent' stroke='black' stroke-width='2'/>
+    <path id='edge_28' d='M 323.837049 286.162951 C284.592623 325.407377 415.407377 325.407377 376.162951 286.162951' fill='transparent' stroke='black' stroke-width='2' marker-end='url(#arrowhead)'/>
+    <line id='edge_29' y1='242.322330' x1='367.677670' x2='376.162951' y2='233.837049' fill='transparent' stroke='black' stroke-width='2'/>
+    <path id='edge_30' d='M 376.162951 233.837049 C382.703689 227.296311 392.296311 227.296311 398.837049 233.837049' fill='transparent' stroke='black' stroke-width='2' marker-end='url(#arrowhead)'/>
+    <line id='edge_31' y1='277.677670' x1='407.322330' x2='398.837049' y2='286.162951' fill='transparent' stroke='black' stroke-width='2'/>
+    <path id='edge_32' d='M 398.837049 286.162951 C359.592623 325.407377 490.407377 325.407377 451.162951 286.162951' fill='transparent' stroke='black' stroke-width='2' marker-end='url(#arrowhead)'/>
+    <line id='edge_33' y1='242.322330' x1='442.677670' x2='451.162951' y2='233.837049' fill='transparent' stroke='black' stroke-width='2'/>
+    <path id='edge_34' d='M 451.162951 233.837049 C457.703689 227.296311 382.703689 217.703689 376.162951 211.162951' fill='transparent' stroke='black' stroke-width='2' marker-end='url(#arrowhead)'/>
+    <line id='edge_35' y1='167.322330' x1='367.677670' x2='376.162951' y2='158.837049' fill='transparent' stroke='black' stroke-width='2'/>
+    <path id='edge_36' d='M 376.162951 158.837049 C382.703689 152.296311 467.296311 152.296311 473.837049 158.837049' fill='transparent' stroke='black' stroke-width='2' marker-end='url(#arrowhead)'/>
+    <line id='edge_37' y1='202.677670' x1='482.322330' x2='473.837049' y2='211.162951' fill='transparent' stroke='black' stroke-width='2'/>
+    <path id='edge_38' d='M 473.837049 211.162951 C434.592623 250.407377 565.407377 250.407377 526.162951 211.162951' fill='transparent' stroke='black' stroke-width='2' marker-end='url(#arrowhead)'/>
+    <line id='edge_39' y1='167.322330' x1='517.677670' x2='526.162951' y2='158.837049' fill='transparent' stroke='black' stroke-width='2'/>
+    <path id='edge_40' d='M 526.162951 158.837049 C532.703689 152.296311 307.703689 142.703689 301.162951 136.162951' fill='transparent' stroke='black' stroke-width='2' marker-end='url(#arrowhead)'/>
+    <line id='edge_41' y1='92.322330' x1='292.677670' x2='301.162951' y2='83.837049' fill='transparent' stroke='black' stroke-width='2'/>
+    <path id='edge_42' d='M 301.162951 83.837049 C307.703689 77.296311 307.703689 67.703689 301.162951 61.162951' fill='transparent' stroke='black' stroke-width='2' marker-end='url(#arrowhead)'/>
+</svg>

@@ -1,0 +1,29 @@
+<?xml version='1.0' encoding='utf-8'?>
+<svg version='1.1' xmlns='http://www.w3.org/2000/svg' xmlns:xlink='http://www.w3.org/1999/xlink' width='175' height='170'>
+    <defs>
+        <marker id='arrowhead' markerWidth='12' markerHeight='10' orient='auto-start-reverse' refY='5' markerUnits='userSpaceOnUse'>
+            <polygon points='0 0, 12 5, 0 10'/>
+        </marker>
+    </defs>
+    <rect y='10.000000' x='62.000000' stroke='darkred' stroke-width='2' fill='white' height='50' width='50'/>
+    <circle cy='110.000000' cx='50.000000' fill='white' stroke-dasharray='0' stroke-width='2' stroke='blue' r='25'/>
+    <circle cy='110.000000' cx='125.000000' fill='white' stroke-dasharray='0' stroke-width='2' stroke='blue' r='25'/>
+    <text font-size='16' y='35' x='87' text-anchor='middle' dominant-baseline='central'>
+&#x211C;
+    </text>
+    <text font-size='16' y='110' x='50' text-anchor='middle' dominant-baseline='central'>
+A
+    </text>
+    <text font-size='16' y='110' x='125' text-anchor='middle' dominant-baseline='central'>
+B
+    </text>
+    <line id='edge_1' y1='35.000000' x1='62.000000' x2='50.000000' y2='35.000000' fill='transparent' stroke='black' stroke-width='2'/>
+    <path id='edge_2' d='M 50.000000 35.000000 C39.902913 32.097087 17.296311 77.296311 23.837049 83.837049' fill='transparent' stroke='black' stroke-width='2' marker-end='url(#arrowhead)'/>
+    <line id='edge_3' y1='127.677670' x1='32.322330' x2='23.837049' y2='136.162951' fill='transparent' stroke='black' stroke-width='2'/>
+    <path id='edge_4' d='M 23.837049 136.162951 C-15.407377 175.407377 115.407377 175.407377 76.162951 136.162951' fill='transparent' stroke='black' stroke-width='2' marker-end='url(#arrowhead)'/>
+    <line id='edge_5' y1='92.322330' x1='67.677670' x2='76.162951' y2='83.837049' fill='transparent' stroke='black' stroke-width='2'/>
+    <path id='edge_6' d='M 76.162951 83.837049 C82.703689 77.296311 92.296311 77.296311 98.837049 83.837049' fill='transparent' stroke='black' stroke-width='2' marker-end='url(#arrowhead)'/>
+    <line id='edge_7' y1='127.677670' x1='107.322330' x2='98.837049' y2='136.162951' fill='transparent' stroke='black' stroke-width='2'/>
+    <path id='edge_8' d='M 98.837049 136.162951 C59.592623 175.407377 190.407377 175.407377 151.162951 136.162951' fill='transparent' stroke='black' stroke-width='2' marker-end='url(#arrowhead)'/>
+    <path id='edge_9' d='M 142.677670 92.322330 C147.097087 87.902913 149.000000 35.000000 124.000000 35.000000' fill='transparent' stroke='black' stroke-width='2' marker-end='url(#arrowhead)'/>
+</svg>

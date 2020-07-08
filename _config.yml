@@ -18,5 +18,6 @@ plugins:
   - jekyll-remote-theme
 
 exclude:
+  - fvg
   - Gemfile
   - Gemfile.lock

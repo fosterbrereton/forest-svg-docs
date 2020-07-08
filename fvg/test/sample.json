@@ -11,15 +11,5 @@
                 "E"
             ]
         ]
-    ],
-    "nodes": [
-        {
-            "_id": "A",
-            "color": "green",
-            "stroke-dasharray": "4"
-        }
-    ],
-    "settings": {
-        "with_root": true
-    }
+    ]
 }

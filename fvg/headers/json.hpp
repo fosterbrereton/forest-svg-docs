@@ -148,24 +148,6 @@ inline const T& get(const json_t& json, const Key& key, Args&&... args) {
     return get<T>(json[key], std::forward<Args>(args)...);
 }
 
-inline const std::string& get_user_id(const json_t& json) {
-    auto found = json.find("user");
-
-    if (found == json.end()) {
-        return get_no_value<std::string>();
-    }
-
-    const auto& user{*found};
-
-    if (user.is_string()) {
-        return as<std::string>(user);
-    } else if (user.is_object()) {
-        return get<std::string>(user, "id");
-    }
-
-    return get_no_value<std::string>();
-}
-
 /**************************************************************************************************/
 
 std::vector<std::pair<std::string, std::string>> parameterize(const json_object& parameters);

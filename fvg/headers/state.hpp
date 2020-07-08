@@ -27,6 +27,7 @@ struct node_properties {
 
 struct graph_settings {
     bool _with_root{false};
+    bool _with_leaf_edges{true};
 };
 
 using node_forest = adobe::forest<std::string>;

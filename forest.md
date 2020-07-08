@@ -8,7 +8,12 @@ tab: Forest
 
 <style>
     svg {
-        border: 1px solid lightgrey;
+        display: block;
+        margin-left: auto;
+        margin-right: auto;
+       }
+
+    .svg-img {
         display: block;
         margin-left: auto;
         margin-right: auto;
@@ -113,17 +118,13 @@ $I$: A forest (fullorder) iterator
 
 Forest's fundamental element type is the node. They are heap-allocated by the forest as necessary for storing a value. Each node has exactly one parent and zero or more children. In this document we will draw nodes as circles:
 
-<svg width='75' height='75' viewBox='0 0 150 150'>
-    <use xlink:href='#node' x='75' y='75'/>
-</svg>
+<img class='svg-img' src='{{site.baseurl}}/svg/node.svg'/>
 
 ## The Root Node
 
 Every forest has a root node, which is not a node used to store values in the forest. Rather, its primary purpose is as the anchor to which all top-level nodes in the forest are attached. In this document we will draw the root node as a rectangle:
 
-<svg width='75' height='75' viewBox='0 0 150 150'>
-    <use xlink:href='#root' x='75' y='75'/>
-</svg>
+<img class='svg-img' src='{{site.baseurl}}/svg/root.svg'/>
 
 ## Edges
 
@@ -250,35 +251,21 @@ With the fundamental building blocks in place, here is how they combine to form 
 
 ### Empty
 
-<svg width='75' height='112.5' viewBox='0 0 150 225'>
-    <use xlink:href='#root' x='75' y='75'/>
-    <use xlink:href='#edge_lo_ti' x='75' y = '75'/>
-</svg>
+<img class='svg-img' src='{{site.baseurl}}/svg/empty.svg'/>
 
 Given a forest that contains only the root node, `forest<T>::empty()` will return `true`. Otherwise, it will return `false`.
 
 ### One Node
 
-<svg width='75' height='215' viewBox='0 0 150 430'>
-    <use xlink:href='#root' x='75' y='75'/>
-    <use xlink:href='#edge_lo_li' x='50' y = '75'/>
-    <use xlink:href='#edge_to_ti' x='50' y = '75'/>
-    <use xlink:href='#node' x='75' y='275'/>
-    <use xlink:href='#edge_lo_ti' x='75' y = '275'/>
-</svg>
+<img class='svg-img' src='{{site.baseurl}}/svg/one_node.svg'/>
 
 ### Two Sibling Nodes
 
-<svg width='175' height='215' viewBox='0 0 350 430'>
-    <use xlink:href='#root' x='175' y='75'/>
-    <use xlink:href='#edge_lo_li_2' x='50' y = '75'/>
-    <use xlink:href='#node' x='75' y='275'/>
-    <use xlink:href='#edge_lo_ti' x='75' y = '275'/>
-    <use xlink:href='#edge_to_li' x='75' y = '250'/>
-    <use xlink:href='#node' x='275' y='275'/>
-    <use xlink:href='#edge_lo_ti' x='275' y = '275'/>
-    <use xlink:href='#edge_to_ti_2' x='250' y = '75'/>
-</svg>
+<img class='svg-img' src='{{site.baseurl}}/svg/two_nodes.svg'/>
+
+### Many Nodes and Levels
+
+<img class='svg-img' src='{{site.baseurl}}/svg/sample.svg'/>
 
 ## Iterators
 

@@ -77,6 +77,7 @@ auto make_state_nodes(const json_array& array) {
 auto make_state_graph_settings(const json_object& object) {
     graph_settings result{
         get<bool>(object, "with_root"),
+        !get<bool>(object, "no_leaf_edges"),
     };
 
     return result;

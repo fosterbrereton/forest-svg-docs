@@ -41,7 +41,8 @@ constexpr auto node_size_k{50};
 constexpr auto node_radius_k{node_size_k / 2};
 constexpr auto node_spacing_k{25};
 constexpr auto tier_height_k{50};
-constexpr auto margin_k{25};
+constexpr auto margin_width_k{25};
+constexpr auto margin_height_k{10};
 constexpr auto stroke_width_k{2};
 constexpr auto font_size_k{16};
 constexpr auto root_name_k{"&#x211C;"};
@@ -82,7 +83,7 @@ auto derive_widths(const adobe::forest<std::size_t>& counts) {
 
 /**************************************************************************************************/
 
-auto derive_height(const adobe::forest<std::size_t>& counts) {
+auto derive_height(const adobe::forest<std::size_t>& counts, bool leaf_edges) {
     adobe::depth_fullorder_iterator first{counts.begin()};
     adobe::depth_fullorder_iterator last{counts.end()};
     using depth_type = decltype(first.depth());
@@ -100,7 +101,12 @@ auto derive_height(const adobe::forest<std::size_t>& counts) {
     // Keep the extra node spacing for the leaf node edges on the bottom of the graph.
     auto height{(tier_height_k + node_spacing_k) * max_depth};
 
-    return height + margin_k * 2;
+    // Unless, of course, there are no leaf edges.
+    if (!leaf_edges) {
+        height -= node_spacing_k;
+    }
+
+    return height + margin_height_k * 2;
 }
 
 /**************************************************************************************************/
@@ -123,7 +129,7 @@ auto derive_width(const adobe::forest<std::size_t>& widths) {
         result -= node_spacing_k;
     }
 
-    return result + margin_k * 2;
+    return result + margin_width_k * 2;
 }
 
 /**************************************************************************************************/
@@ -158,7 +164,7 @@ void derive_x_offsets(adobe::forest<std::size_t>::const_iterator src,
 
 auto derive_x_offsets(const adobe::forest<std::size_t>& widths) {
     adobe::forest<std::size_t> result{widths};
-    detail::derive_x_offsets(widths.root(), result.root(), margin_k);
+    detail::derive_x_offsets(widths.root(), result.root(), margin_width_k);
     return result;
 }
 
@@ -173,7 +179,7 @@ auto derive_y_offsets(const state& state) {
     while (first != last) {
         ++pos;
         if (first.edge() == adobe::forest_leading_edge) {
-            pos = result.insert(pos, margin_k + (tier_height_k + node_spacing_k) * first.depth());
+            pos = result.insert(pos, margin_height_k + (tier_height_k + node_spacing_k) * first.depth());
         }
         ++first;
     }
@@ -302,7 +308,7 @@ auto make_cubic_curve(const point& start, const point& control_1, const point& c
 
 /**************************************************************************************************/
 
-auto derive_edges(const adobe::forest<xml_node>& f) {
+auto derive_edges(const adobe::forest<xml_node>& f, bool leaf_edges) {
     // The goal is to have the lines look as natural as possible. This should include the arrowhead
     // at the end of the line. SVG allows you to attach an arrowhead at the end of the line via the
     // marker attribute. The bad news is this arrowhead's base is at the end of the line, and the
@@ -382,14 +388,22 @@ auto derive_edges(const adobe::forest<xml_node>& f) {
                     c2 = cur + nw_in_k * c_scale_k;
                     e = cur + nw_in_k;
                 }
-            } else {
+            } else if (leaf_edges) {
                 // leaf node loop
-                const point c_scale_k{2.5, 2.5};
-                stub_start = prev + sw_out_k;
-                s = prev + sw_stub_out_k;
-                c1 = prev + sw_stub_out_k * c_scale_k;
-                c2 = cur + se_in_k * c_scale_k;
-                e = cur + se_in_k;
+                if (!prev_rect) {
+                    const point c_scale_k{2.5, 2.5};
+                    stub_start = prev + sw_out_k;
+                    s = prev + sw_stub_out_k;
+                    c1 = prev + sw_stub_out_k * c_scale_k;
+                    c2 = cur + se_in_k * c_scale_k;
+                    e = cur + se_in_k;
+                } else {
+                    s = prev;
+                    s.y += node_size_k / 2;
+                    c1 = s + point{-margin_width_k, node_size_k};
+                    e = s + point{node_size_k, 0};
+                    c2 = e + point{margin_width_k, node_size_k};
+                }
             }
         } else {
 #if 0
@@ -453,16 +467,18 @@ auto derive_edges(const adobe::forest<xml_node>& f) {
                 }});
         }
 
-        result.push_back(xml_node{
-            "path",
-            {
-                { "id", "edge_" + std::to_string(++edge_count) },
-                { "d", make_cubic_curve(s, c1, c2, e) },
-                { "fill", "transparent" },
-                { "stroke", "black" },
-                { "stroke-width", std::to_string(stroke_width_k) },
-                { "marker-end", "url(#arrowhead)" },
-            }});
+        if (s != point{}) {
+            result.push_back(xml_node{
+                "path",
+                {
+                    { "id", "edge_" + std::to_string(++edge_count) },
+                    { "d", make_cubic_curve(s, c1, c2, e) },
+                    { "fill", "transparent" },
+                    { "stroke", "black" },
+                    { "stroke-width", std::to_string(stroke_width_k) },
+                    { "marker-end", "url(#arrowhead)" },
+                }});
+        }
 
 #if 0
         // Print the control points of the curve. Save these for debugging.
@@ -521,7 +537,7 @@ void write_svg(state state, const std::filesystem::path& path) {
 
     auto counts = child_counts(state);
     auto widths = derive_widths(counts);
-    auto height = derive_height(counts);
+    auto height = derive_height(counts, state._s._with_leaf_edges);
     auto width = derive_width(widths);
     auto x_offsets = derive_x_offsets(widths);
     auto y_offsets = derive_y_offsets(state);
@@ -561,7 +577,7 @@ void write_svg(state state, const std::filesystem::path& path) {
                 { "width", std::to_string(node_size_k) },
                 { "height", std::to_string(node_size_k) },
                 { "fill", "white" },
-                { "stroke", "red" },
+                { "stroke", "darkred" },
                 { "stroke-width", std::to_string(stroke_width_k) },
             },
             "",
@@ -597,7 +613,7 @@ void write_svg(state state, const std::filesystem::path& path) {
 
     // Derive the edges.
 
-    auto svg_edges{derive_edges(svg_nodes)};
+    auto svg_edges{derive_edges(svg_nodes, state._s._with_leaf_edges)};
 
     // Construct the node labels.
 
@@ -639,6 +655,7 @@ void write_svg(state state, const std::filesystem::path& path) {
         }
     }));
 
+#if 0
     xml.insert(p, xml_node{
         "style",
         {},
@@ -649,6 +666,7 @@ void write_svg(state state, const std::filesystem::path& path) {
             margin-right: auto;
         })XMLCSS"
     });
+#endif
 
     auto defs = adobe::trailing_of(xml.insert(p, xml_node{ "defs" }));
     auto marker_arrowhead = adobe::trailing_of(xml.insert(defs, xml_node{
