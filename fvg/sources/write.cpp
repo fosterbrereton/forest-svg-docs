@@ -2,6 +2,7 @@
 
 // stdc++
 #include <fstream>
+#include <tuple>
 
 // identity
 #include "write.hpp"
@@ -278,7 +279,7 @@ struct point {
     inline constexpr auto operator/=(const double rhs) { x /= rhs; y /= rhs; return *this; }
 };
 
-inline constexpr auto operator==(const point& a, const point& b) { return a.x == b.x && a.y == b.y;}
+inline constexpr auto operator==(const point& a, const point& b) { return a.x == b.x && a.y == b.y; }
 inline constexpr auto operator!=(const point& a, const point& b) { return !(a == b);}
 inline constexpr auto operator+(const point& a, const point& b) { point r{a}; r += b; return r; }
 inline constexpr auto operator-(const point& a, const point& b) { point r{a}; r -= b; return r; }
@@ -292,18 +293,176 @@ inline constexpr auto operator-(const point& a) { return point{-a.x, -a.y}; }
 
 /**************************************************************************************************/
 
+struct cubic_bezier {
+    point _s;
+    point _c1;
+    point _c2;
+    point _e;
+};
+
+inline constexpr auto operator==(const cubic_bezier& a, const cubic_bezier& b) {
+    return a._s == b._s &&
+           a._c1 == b._c1 &&
+           a._c2 == b._c2 &&
+           a._e == b._e;
+}
+inline constexpr auto operator!=(const cubic_bezier& a, const cubic_bezier& b) { return !(a == b); }
+
+/**************************************************************************************************/
+
 template <typename T>
 auto lerp(const T& a, const T& b, double t) {
     return a + (b - a) * t;
 }
 
+template <typename T>
+double delerp(const T& val, const T& lo, const T& hi) {
+    return std::clamp((val - lo) / hi, 0., 1.);
+}
+
 /**************************************************************************************************/
 
-auto make_cubic_curve(const point& start, const point& control_1, const point& control_2, const point& end) {
-    return "M " + std::to_string(start.x) + " " + std::to_string(start.y) +
-           " C" + std::to_string(control_1.x) + " " + std::to_string(control_1.y) +
-           " "  + std::to_string(control_2.x) + " " + std::to_string(control_2.y) +
-           " "  + std::to_string(end.x) + " " + std::to_string(end.y);
+auto svg_bezier(const cubic_bezier& b) {
+    return "M " + std::to_string(b._s.x) + " " + std::to_string(b._s.y) +
+           " C" + std::to_string(b._c1.x) + " " + std::to_string(b._c1.y) +
+           " "  + std::to_string(b._c2.x) + " " + std::to_string(b._c2.y) +
+           " "  + std::to_string(b._e.x) + " " + std::to_string(b._e.y);
+}
+
+/**************************************************************************************************/
+
+//static const point n_k{std::cos(6*M_PI_4), std::sin(6*M_PI_4)};
+static const point nne_k{std::cos(6.5*M_PI_4), std::sin(6.5*M_PI_4)};
+static const point ne_k{std::cos(7*M_PI_4), std::sin(7*M_PI_4)};
+static const point ene_k{std::cos(7.5*M_PI_4), std::sin(7.5*M_PI_4)};
+//static const point e_k{std::cos(M_PI_4), std::sin(M_PI_4)};
+static const point ese_k{std::cos(0.5*M_PI_4), std::sin(0.5*M_PI_4)};
+static const point se_k{std::cos(1*M_PI_4), std::sin(1*M_PI_4)};
+static const point sse_k{std::cos(1.5*M_PI_4), std::sin(1.5*M_PI_4)};
+//static const point s_k{std::cos(2*M_PI_4), std::sin(2*M_PI_4)};
+static const point ssw_k{std::cos(2.5*M_PI_4), std::sin(2.5*M_PI_4)};
+static const point sw_k{std::cos(3*M_PI_4), std::sin(3*M_PI_4)};
+static const point wsw_k{std::cos(3.5*M_PI_4), std::sin(3.5*M_PI_4)};
+//static const point w_k{std::cos(4*M_PI_4), std::sin(4*M_PI_4)};
+static const point wnw_k{std::cos(4.5*M_PI_4), std::sin(4.5*M_PI_4)};
+static const point nw_k{std::cos(5*M_PI_4), std::sin(5*M_PI_4)};
+static const point nnw_k{std::cos(5.5*M_PI_4), std::sin(5.5*M_PI_4)};
+
+/**************************************************************************************************/
+
+auto edge_to_parent(const point& from, const point& to, double t, bool to_rect) {
+    constexpr point node_scale_k{node_radius_k, node_radius_k};
+    constexpr double min_scale_k{1.5};
+    constexpr double max_scale_k{2.5};
+
+    const auto out_unit{lerp(ne_k, nne_k, t)};
+    const auto in_unit{lerp(se_k, ese_k, t)};
+    const auto scale{lerp(min_scale_k, max_scale_k, t)};
+
+    point s;
+    point c1;
+    point c2;
+    point e;
+
+    if (to_rect) {
+        s = from + node_scale_k * out_unit;
+        c1 = from + node_scale_k * out_unit * scale;
+        e = to + point{node_size_k * .75, node_size_k} + point{0, 9};
+        c2 = e + point{margin_width_k, margin_width_k};
+    } else {
+        s = from + out_unit * node_scale_k;
+        c1 = from + out_unit * node_scale_k * scale;
+        const auto dst{to + point{9, 9}};
+        c2 = dst + in_unit * node_scale_k * scale;
+        e = dst + in_unit * node_scale_k;
+    }
+
+    return cubic_bezier{s, c1, c2, e};
+}
+
+/**************************************************************************************************/
+
+auto edge_to_child(const point& from, const point& to, double t, bool from_rect) {
+    constexpr point node_scale_k{node_radius_k, node_radius_k};
+    constexpr double min_scale_k{1.5};
+    constexpr double max_scale_k{2.5};
+
+    const auto out_unit{lerp(sw_k, wsw_k, t)};
+    const auto in_unit{lerp(nw_k, nnw_k, t)};
+    const auto scale{lerp(min_scale_k, max_scale_k, t)};
+
+    point s;
+    point c1;
+    point c2;
+    point e;
+
+    if (from_rect) {
+        s = from;
+        s.x += node_size_k / 4;
+        s.y += node_size_k;
+        c1 = s + point{-margin_width_k, margin_width_k};
+        const auto dst{to + point{-9, -9}};
+        c2 = dst + in_unit * node_scale_k * scale;
+        e = dst + in_unit * node_scale_k;
+    } else {
+        s = from + out_unit * node_scale_k;
+        c1 = from + out_unit * node_scale_k * scale;
+        const auto dst{to + point{-9, -9}};
+        c2 = dst + in_unit * node_scale_k * scale;
+        e = dst + in_unit * node_scale_k;
+    }
+
+    return cubic_bezier{s, c1, c2, e};
+}
+
+/**************************************************************************************************/
+
+auto edge_to_sibling(const point& from, const point& to, double t) {
+    constexpr point node_scale_k{node_radius_k, node_radius_k};
+    constexpr double min_scale_k{1.5};
+    constexpr double max_scale_k{2.5};
+
+    const auto out_unit{lerp(ne_k, ene_k, t)};
+    const auto in_unit{lerp(nw_k, wnw_k, t)};
+    const auto scale{lerp(min_scale_k, max_scale_k, t)};
+
+    point s = from + out_unit * node_scale_k;
+    point c1 = from + out_unit * node_scale_k * scale;
+    const auto dst{to + point{-9, -9}};
+    point c2 = dst + in_unit * node_scale_k * scale;
+    point e = dst + in_unit * node_scale_k;
+
+    return cubic_bezier{s, c1, c2, e};
+}
+
+/**************************************************************************************************/
+
+auto edge_to_self(const point& from, const point& to, bool rect) {
+    constexpr point node_scale_k{node_radius_k, node_radius_k};
+    const auto out_unit{ssw_k};
+    const auto in_unit{sse_k};
+
+    point s;
+    point c1;
+    point c2;
+    point e;
+
+    if (rect) {
+        s = from;
+        s.x += node_size_k / 4;
+        s.y += node_size_k;
+        c1 = s + point{-margin_width_k, margin_width_k};
+        e = s + point{node_size_k / 2, 0} + point{0, 9};
+        c2 = e + point{margin_width_k, margin_width_k};
+    } else {
+        s = from + out_unit * node_scale_k;
+        c1 = from + out_unit * node_scale_k * 2.3;
+        const auto dst{to + point{9, 9}};
+        c2 = dst + in_unit * node_scale_k * 1.5;
+        e = dst + in_unit * node_scale_k;
+    }
+
+    return cubic_bezier{s, c1, c2, e};
 }
 
 /**************************************************************************************************/
@@ -333,6 +492,9 @@ auto derive_edges(const adobe::forest<xml_node>& f, bool leaf_edges) {
     // funny. Another alternative solution here is have a larger scale for the control points in
     // these cases, or have the control point scale between two values depending on the length
     // of the edge (some kind of linear interpolation.)
+    //
+    // In the end, symmetry isn't worth it. The code is much cleaner if there's a single
+    // cubic path for each edge in the graph. So that's where we'll go.
 
     std::vector<xml_node> result;
 
@@ -347,132 +509,40 @@ auto derive_edges(const adobe::forest<xml_node>& f, bool leaf_edges) {
 
     ++first;
 
-    constexpr point arrowhead_offset_k{12, 12};
-    constexpr point node_scale_k{node_radius_k, node_radius_k};
-    constexpr point out_scale_k{node_scale_k};
-    constexpr point out_stub_k{node_scale_k + arrowhead_offset_k};
-    constexpr point in_scale_k{arrowhead_offset_k + node_radius_k};
-    static const point se_in_k{point{std::cos(1*M_PI_4), std::sin(1*M_PI_4)} * in_scale_k};
-    static const point nw_in_k{point{std::cos(5*M_PI_4), std::sin(5*M_PI_4)} * in_scale_k};
+    // min/max edge length delerp values
+    constexpr double min_mag_k{node_size_k + node_spacing_k};
+    constexpr double max_mag_k{min_mag_k * 2};
 
     while (first != last) {
         bool  cur_leading{first.edge() == adobe::forest_leading_edge};
         bool  cur_rect{first->_tag == "rect"};
         point cur{first->_x, first->_y};
-        point stub_start;
-        point s;
-        point c1;
-        point c2;
-        point e;
+        const auto t{delerp<double>((prev - cur).magnitude(), min_mag_k, max_mag_k)};
+        cubic_bezier bezier;
 
         if (prev_leading) {
-            static const point sw_k{point{std::cos(3*M_PI_4), std::sin(3*M_PI_4)}};
-            static const point sw_out_k{sw_k * out_scale_k};
-            static const point sw_stub_out_k{sw_k * out_stub_k};
-
             if (cur_leading) {
                 // down to first child
-                const point c_scale_k{1.25, 1.25};
-                if (!prev_rect) {
-                    stub_start = prev + sw_out_k;
-                    s = prev + sw_stub_out_k;
-                    c1 = prev + sw_stub_out_k * c_scale_k;
-                    c2 = cur + nw_in_k * c_scale_k;
-                    e = cur + nw_in_k;
-                } else {
-                    s = prev;
-                    s.y += node_size_k / 2;
-                    stub_start = s;
-                    s.x -= arrowhead_offset_k.x;
-                    c1 = prev + sw_out_k * c_scale_k;
-                    c2 = cur + nw_in_k * c_scale_k;
-                    e = cur + nw_in_k;
-                }
+                bezier = edge_to_child(prev, cur, t, prev_rect);
             } else if (leaf_edges) {
                 // leaf node loop
-                if (!prev_rect) {
-                    const point c_scale_k{2.5, 2.5};
-                    stub_start = prev + sw_out_k;
-                    s = prev + sw_stub_out_k;
-                    c1 = prev + sw_stub_out_k * c_scale_k;
-                    c2 = cur + se_in_k * c_scale_k;
-                    e = cur + se_in_k;
-                } else {
-                    s = prev;
-                    s.y += node_size_k / 2;
-                    c1 = s + point{-margin_width_k, node_size_k};
-                    e = s + point{node_size_k, 0};
-                    c2 = e + point{margin_width_k, node_size_k};
-                }
+                bezier = edge_to_self(prev, cur, prev_rect);
             }
         } else {
-#if 0
-            static const point ne_min_k{std::cos(7*M_PI_4), std::sin(7*M_PI_4)};
-            static const point ne_max_k{std::cos(6.5*M_PI_4), std::sin(6.5*M_PI_4)};
-            static const double min_mag_k{node_size_k + node_spacing_k};
-            static const double max_mag_k{min_mag_k * 2};
-
-            const auto delta{prev - cur};
-            const auto mag{delta.magnitude()};
-            const double t{std::clamp((mag - min_mag_k) / max_mag_k, 0., 1.)};
-
-            const point ne_k{lerp(ne_min_k, ne_max_k, t)};
-#else
-            const point ne_k{std::cos(7*M_PI_4), std::sin(7*M_PI_4)};
-#endif
-            const point ne_out_k{ne_k * out_scale_k};
-            const point ne_stub_out_k{ne_k * out_stub_k};
-
             if (cur_leading) {
-                // next sibling
-                const point c_scale_k{1.25,1.25};
-                stub_start = prev + ne_out_k;
-                s = prev + ne_stub_out_k;
-                c1 = prev + ne_stub_out_k * c_scale_k;
-                c2 = cur + nw_in_k * c_scale_k;
-                e = cur + nw_in_k;
+                bezier = edge_to_sibling(prev, cur, t);
             } else {
                 // up to parent
-                const point c_scale_k{1.25, 1.25};
-                if (!cur_rect) {
-                    stub_start = prev + ne_out_k;
-                    s = prev + ne_stub_out_k;
-                    c1 = prev + ne_stub_out_k * c_scale_k;
-                    c2 = cur + se_in_k * c_scale_k;
-                    e = cur + se_in_k;
-                } else {
-                    s = prev + ne_out_k;
-                    c1 = prev + ne_out_k * c_scale_k;
-                    //c2 = cur + se_in_k * c_scale_k;
-                    e = cur;
-                    e.x += node_size_k + arrowhead_offset_k.x;
-                    e.y += node_size_k / 2;
-                    c2 = e + point{node_size_k / 2, 0};
-                }
+                bezier = edge_to_parent(prev, cur, t, cur_rect);
             }
         }
 
-        if (stub_start != point{}) {
-            result.push_back(xml_node{
-                "line",
-                {
-                    { "id", "edge_" + std::to_string(++edge_count) },
-                    { "x1", std::to_string(stub_start.x) },
-                    { "y1", std::to_string(stub_start.y) },
-                    { "x2", std::to_string(s.x) },
-                    { "y2", std::to_string(s.y) },
-                    { "fill", "transparent" },
-                    { "stroke", "black" },
-                    { "stroke-width", "2" },
-                }});
-        }
-
-        if (s != point{}) {
+        if (bezier != cubic_bezier{}) {
             result.push_back(xml_node{
                 "path",
                 {
                     { "id", "edge_" + std::to_string(++edge_count) },
-                    { "d", make_cubic_curve(s, c1, c2, e) },
+                    { "d", svg_bezier(bezier) },
                     { "fill", "transparent" },
                     { "stroke", "black" },
                     { "stroke-width", std::to_string(stroke_width_k) },
@@ -486,10 +556,10 @@ auto derive_edges(const adobe::forest<xml_node>& f, bool leaf_edges) {
             "line",
             {
                 { "id", "edge_" + std::to_string(++edge_count) },
-                { "x1", std::to_string(s.x) },
-                { "y1", std::to_string(s.y) },
-                { "x2", std::to_string(c1.x) },
-                { "y2", std::to_string(c1.y) },
+                { "x1", std::to_string(bezier._s.x) },
+                { "y1", std::to_string(bezier._s.y) },
+                { "x2", std::to_string(bezier._c1.x) },
+                { "y2", std::to_string(bezier._c1.y) },
                 { "fill", "transparent" },
                 { "stroke", "green" },
                 { "stroke-width", "2" },
@@ -499,10 +569,10 @@ auto derive_edges(const adobe::forest<xml_node>& f, bool leaf_edges) {
             "line",
             {
                 { "id", "edge_" + std::to_string(++edge_count) },
-                { "x1", std::to_string(e.x) },
-                { "y1", std::to_string(e.y) },
-                { "x2", std::to_string(c2.x) },
-                { "y2", std::to_string(c2.y) },
+                { "x1", std::to_string(bezier._e.x) },
+                { "y1", std::to_string(bezier._e.y) },
+                { "x2", std::to_string(bezier._c2.x) },
+                { "y2", std::to_string(bezier._c2.y) },
                 { "fill", "transparent" },
                 { "stroke", "green" },
                 { "stroke-width", "2" },
