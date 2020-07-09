@@ -13,9 +13,7 @@
     <text font-size='16' y='110' x='50' text-anchor='middle' dominant-baseline='central'>
 A
     </text>
-    <line id='edge_1' y1='35.000000' x1='25.000000' x2='13.000000' y2='35.000000' fill='transparent' stroke='black' stroke-width='2'/>
-    <path id='edge_2' d='M 13.000000 35.000000 C2.902913 32.097087 17.296311 77.296311 23.837049 83.837049' fill='transparent' stroke='black' stroke-width='2' marker-end='url(#arrowhead)'/>
-    <line id='edge_3' y1='127.677670' x1='32.322330' x2='23.837049' y2='136.162951' fill='transparent' stroke='black' stroke-width='2'/>
-    <path id='edge_4' d='M 23.837049 136.162951 C-15.407377 175.407377 115.407377 175.407377 76.162951 136.162951' fill='transparent' stroke='black' stroke-width='2' marker-end='url(#arrowhead)'/>
-    <path id='edge_5' d='M 67.677670 92.322330 C72.097087 87.902913 112.000000 35.000000 87.000000 35.000000' fill='transparent' stroke='black' stroke-width='2' marker-end='url(#arrowhead)'/>
+    <path id='edge_1' d='M 37.000000 60.000000 C12.000000 85.000000 13.735953 69.463015 24.840504 82.307919' fill='transparent' stroke='black' stroke-width='2' marker-end='url(#arrowhead)'/>
+    <path id='edge_2' d='M 40.432914 133.096988 C27.995703 163.123073 73.350629 153.645482 68.567086 142.096988' fill='transparent' stroke='black' stroke-width='2' marker-end='url(#arrowhead)'/>
+    <path id='edge_3' d='M 66.159496 91.307919 C77.264047 78.463015 87.500000 94.000000 62.500000 69.000000' fill='transparent' stroke='black' stroke-width='2' marker-end='url(#arrowhead)'/>
 </svg>

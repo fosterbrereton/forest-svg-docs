@@ -25,6 +25,10 @@ struct node_properties {
     std::string _stroke_dasharray{"0"};
 };
 
+struct edge_properties {
+    bool _hide{false};
+};
+
 struct graph_settings {
     bool _with_root{false};
     bool _with_leaf_edges{true};
@@ -33,10 +37,12 @@ struct graph_settings {
 using node_forest = adobe::forest<std::string>;
 using node_iterator = node_forest::iterator;
 using node_map = std::unordered_map<std::string, node_properties>;
+using edge_map = std::unordered_map<std::string, edge_properties>;
 
 struct state {
     adobe::forest<std::string> _f;
     node_map _n;
+    edge_map _e;
     graph_settings _s;
 };
 

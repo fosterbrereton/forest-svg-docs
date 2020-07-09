@@ -1,0 +1,20 @@
+{
+    "forest": [
+        "P", [
+            "N"
+        ]
+    ],
+    "nodes": {
+        "P": {
+            "color": "lightgrey"
+        }
+    },
+    "edges": {
+        "_trailing": {
+            "_hide": true
+        }
+    },
+    "settings": {
+        "no_leaf_edges": true
+    }
+}

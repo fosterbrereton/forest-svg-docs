@@ -1,0 +1,18 @@
+{
+    "forest": [
+        "Sprior", "N"
+    ],
+    "nodes": {
+        "Sprior": {
+            "color": "lightgrey"
+        }
+    },
+    "edges": {
+        "_trailing": {
+            "_hide": true
+        }
+    },
+    "settings": {
+        "no_leaf_edges": true
+    }
+}

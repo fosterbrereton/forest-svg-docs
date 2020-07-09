@@ -331,6 +331,8 @@ auto svg_bezier(const cubic_bezier& b) {
 
 /**************************************************************************************************/
 
+static const point arrowhead_offset_k{9, 9};
+
 //static const point n_k{std::cos(6*M_PI_4), std::sin(6*M_PI_4)};
 static const point nne_k{std::cos(6.5*M_PI_4), std::sin(6.5*M_PI_4)};
 static const point ne_k{std::cos(7*M_PI_4), std::sin(7*M_PI_4)};
@@ -367,10 +369,10 @@ auto edge_to_parent(const point& from, const point& to, double t, bool to_rect) 
     if (to_rect) {
         s = from + node_scale_k * out_unit;
         c1 = from + node_scale_k * out_unit * scale;
-        e = to + point{node_size_k * .75, node_size_k} + point{0, 9};
+        e = to + point{node_size_k, node_size_k * .75} + arrowhead_offset_k;
         c2 = e + point{margin_width_k, margin_width_k};
     } else {
-        const auto dst{to + point{9, 9}};
+        const auto dst{to + arrowhead_offset_k};
         s = from + out_unit * node_scale_k;
         c1 = from + out_unit * node_scale_k * scale;
         c2 = dst + in_unit * node_scale_k * scale;
@@ -390,7 +392,7 @@ auto edge_to_child(const point& from, const point& to, double t, bool from_rect)
     const auto out_unit{lerp(sw_k, wsw_k, t)};
     const auto in_unit{lerp(nw_k, nnw_k, t)};
     const auto scale{lerp(min_scale_k, max_scale_k, t)};
-    const auto dst{to + point{-9, -9}};
+    const auto dst{to - arrowhead_offset_k};
 
     point s;
     point c1;
@@ -398,7 +400,7 @@ auto edge_to_child(const point& from, const point& to, double t, bool from_rect)
     point e;
 
     if (from_rect) {
-        s = from + point{node_size_k / 4, node_size_k};
+        s = from + point{0, node_size_k * 0.75};
         c1 = s + point{-margin_width_k, margin_width_k};
         c2 = dst + in_unit * node_scale_k * scale;
         e = dst + in_unit * node_scale_k;
@@ -422,7 +424,7 @@ auto edge_to_sibling(const point& from, const point& to, double t) {
     const auto out_unit{lerp(ne_k, ene_k, t)};
     const auto in_unit{lerp(nw_k, wnw_k, t)};
     const auto scale{lerp(min_scale_k, max_scale_k, t)};
-    const auto dst{to + point{-9, -9}};
+    const auto dst{to - arrowhead_offset_k};
 
     point s = from + out_unit * node_scale_k;
     point c1 = from + out_unit * node_scale_k * scale;
@@ -450,7 +452,7 @@ auto edge_to_self(const point& from, const point& to, bool rect) {
         e = s + point{node_size_k / 2, 0} + point{0, 9};
         c2 = e + point{margin_width_k, margin_width_k};
     } else {
-        const auto dst{to + point{9, 9}};
+        const auto dst{to + arrowhead_offset_k};
         s = from + out_unit * node_scale_k;
         c1 = from + out_unit * node_scale_k * 2.3;
         c2 = dst + in_unit * node_scale_k * 1.5;
@@ -462,7 +464,10 @@ auto edge_to_self(const point& from, const point& to, bool rect) {
 
 /**************************************************************************************************/
 
-auto derive_edges(const adobe::forest<xml_node>& f, bool leaf_edges) {
+auto derive_edges(const adobe::forest<xml_node>& f,
+                  bool leaf_edges,
+                  bool leading_edges,
+                  bool trailing_edges) {
     // The goal is to have the lines look as natural as possible. This should include the arrowhead
     // at the end of the line. SVG allows you to attach an arrowhead at the end of the line via the
     // marker attribute. The bad news is this arrowhead's base is at the end of the line, and the
@@ -517,15 +522,15 @@ auto derive_edges(const adobe::forest<xml_node>& f, bool leaf_edges) {
         cubic_bezier bezier;
 
         if (prev_leading) {
-            if (cur_leading) {
+            if (cur_leading && leading_edges) {
                 bezier = edge_to_child(prev, cur, t, prev_rect);
             } else if (leaf_edges) {
                 bezier = edge_to_self(prev, cur, prev_rect);
             }
         } else {
-            if (cur_leading) {
+            if (cur_leading && leading_edges) {
                 bezier = edge_to_sibling(prev, cur, t);
-            } else {
+            } else if (trailing_edges){
                 bezier = edge_to_parent(prev, cur, t, cur_rect);
             }
         }
@@ -676,11 +681,21 @@ void write_svg(state state, const std::filesystem::path& path) {
 
     // Derive the edges.
 
-    auto svg_edges{derive_edges(svg_nodes, state._s._with_leaf_edges)};
+    auto svg_edges{derive_edges(svg_nodes,
+                                state._s._with_leaf_edges,
+                                !state._e["_leading"]._hide,
+                                !state._e["_trailing"]._hide)};
 
     // Construct the node labels.
 
     auto svg_labels{transcribe_forest(state._f, [](const auto& n){
+        auto subscript_pos{n.find("_")};
+        bool has_subscript{subscript_pos != std::string::npos};
+        std::string subn;
+
+        if (has_subscript) {
+        }
+
         return xml_node{
             "text",
             {
@@ -688,7 +703,7 @@ void write_svg(state state, const std::filesystem::path& path) {
                 { "text-anchor", "middle" },
                 { "dominant-baseline", "central" },
             },
-            n
+            has_subscript ? subn : n
         };
     })};
 
@@ -717,19 +732,6 @@ void write_svg(state state, const std::filesystem::path& path) {
             { "height", std::to_string(height) },
         }
     }));
-
-#if 0
-    xml.insert(p, xml_node{
-        "style",
-        {},
-        R"XMLCSS(        svg {
-            border: 1px solid lightgrey;
-            display: block;
-            margin-left: auto;
-            margin-right: auto;
-        })XMLCSS"
-    });
-#endif
 
     auto defs = adobe::trailing_of(xml.insert(p, xml_node{ "defs" }));
     auto marker_arrowhead = adobe::trailing_of(xml.insert(defs, xml_node{

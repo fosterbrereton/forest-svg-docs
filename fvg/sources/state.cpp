@@ -53,19 +53,39 @@ auto make_state_forest(const json_array& array) {
 
 /**************************************************************************************************/
 
-auto make_state_nodes(const json_array& array) {
+auto make_state_nodes(const json_object& object) {
     node_map result;
 
-    for (const auto& n : array) {
-        if (!n.is_object()) {
+    for (const auto& entry : object) {
+        const auto& mapped{entry.second};
+
+        if (!mapped.is_object()) {
             throw std::runtime_error("dictionary expected for node property");
         }
 
-        const auto id{get<std::string>(n, "_id")};
+        result[entry.first] = node_properties {
+            get<std::string>(mapped, "color"),
+            get<std::string>(mapped, "stroke-dasharray"),
+        };
+    }
 
-        result[std::move(id)] = node_properties {
-            get<std::string>(n, "color"),
-            get<std::string>(n, "stroke-dasharray"),
+    return result;
+}
+
+/**************************************************************************************************/
+
+auto make_state_edges(const json_object& object) {
+    edge_map result;
+
+    for (const auto& entry : object) {
+        const auto& mapped{entry.second};
+
+        if (!mapped.is_object()) {
+            throw std::runtime_error("dictionary expected for node property");
+        }
+
+        result[entry.first] = edge_properties {
+            get<bool>(mapped, "_hide")
         };
     }
 
@@ -88,7 +108,8 @@ auto make_state_graph_settings(const json_object& object) {
 state make_state(const json_t& j) {
     return {
         make_state_forest(get<json_array>(j, "forest")),
-        make_state_nodes(get<json_array>(j, "nodes")),
+        make_state_nodes(get<json_object>(j, "nodes")),
+        make_state_edges(get<json_object>(j, "edges")),
         make_state_graph_settings(get<json_object>(j, "settings")),
     };
 }

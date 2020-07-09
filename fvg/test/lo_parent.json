@@ -1,0 +1,20 @@
+{
+    "forest": [
+        "N", [
+            "C_first"
+        ]
+    ],
+    "nodes": {
+        "C_first": {
+            "color": "lightgrey"
+        }
+    },
+    "edges": {
+        "_trailing": {
+            "_hide": true
+        }
+    },
+    "settings": {
+        "no_leaf_edges": true
+    }
+}

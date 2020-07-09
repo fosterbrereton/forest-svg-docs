@@ -9,5 +9,5 @@
     <text font-size='16' y='35' x='50' text-anchor='middle' dominant-baseline='central'>
 &#x211C;
     </text>
-    <path id='edge_1' d='M 25.000000 35.000000 C0.000000 85.000000 100.000000 85.000000 75.000000 35.000000' fill='transparent' stroke='black' stroke-width='2' marker-end='url(#arrowhead)'/>
+    <path id='edge_1' d='M 37.000000 60.000000 C12.000000 85.000000 87.000000 94.000000 62.000000 69.000000' fill='transparent' stroke='black' stroke-width='2' marker-end='url(#arrowhead)'/>
 </svg>
