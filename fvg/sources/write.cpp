@@ -370,9 +370,9 @@ auto edge_to_parent(const point& from, const point& to, double t, bool to_rect) 
         e = to + point{node_size_k * .75, node_size_k} + point{0, 9};
         c2 = e + point{margin_width_k, margin_width_k};
     } else {
+        const auto dst{to + point{9, 9}};
         s = from + out_unit * node_scale_k;
         c1 = from + out_unit * node_scale_k * scale;
-        const auto dst{to + point{9, 9}};
         c2 = dst + in_unit * node_scale_k * scale;
         e = dst + in_unit * node_scale_k;
     }
@@ -390,6 +390,7 @@ auto edge_to_child(const point& from, const point& to, double t, bool from_rect)
     const auto out_unit{lerp(sw_k, wsw_k, t)};
     const auto in_unit{lerp(nw_k, nnw_k, t)};
     const auto scale{lerp(min_scale_k, max_scale_k, t)};
+    const auto dst{to + point{-9, -9}};
 
     point s;
     point c1;
@@ -397,17 +398,13 @@ auto edge_to_child(const point& from, const point& to, double t, bool from_rect)
     point e;
 
     if (from_rect) {
-        s = from;
-        s.x += node_size_k / 4;
-        s.y += node_size_k;
+        s = from + point{node_size_k / 4, node_size_k};
         c1 = s + point{-margin_width_k, margin_width_k};
-        const auto dst{to + point{-9, -9}};
         c2 = dst + in_unit * node_scale_k * scale;
         e = dst + in_unit * node_scale_k;
     } else {
         s = from + out_unit * node_scale_k;
         c1 = from + out_unit * node_scale_k * scale;
-        const auto dst{to + point{-9, -9}};
         c2 = dst + in_unit * node_scale_k * scale;
         e = dst + in_unit * node_scale_k;
     }
@@ -425,10 +422,10 @@ auto edge_to_sibling(const point& from, const point& to, double t) {
     const auto out_unit{lerp(ne_k, ene_k, t)};
     const auto in_unit{lerp(nw_k, wnw_k, t)};
     const auto scale{lerp(min_scale_k, max_scale_k, t)};
+    const auto dst{to + point{-9, -9}};
 
     point s = from + out_unit * node_scale_k;
     point c1 = from + out_unit * node_scale_k * scale;
-    const auto dst{to + point{-9, -9}};
     point c2 = dst + in_unit * node_scale_k * scale;
     point e = dst + in_unit * node_scale_k;
 
@@ -448,16 +445,14 @@ auto edge_to_self(const point& from, const point& to, bool rect) {
     point e;
 
     if (rect) {
-        s = from;
-        s.x += node_size_k / 4;
-        s.y += node_size_k;
+        s = from + point{node_size_k / 4, node_size_k};
         c1 = s + point{-margin_width_k, margin_width_k};
         e = s + point{node_size_k / 2, 0} + point{0, 9};
         c2 = e + point{margin_width_k, margin_width_k};
     } else {
+        const auto dst{to + point{9, 9}};
         s = from + out_unit * node_scale_k;
         c1 = from + out_unit * node_scale_k * 2.3;
-        const auto dst{to + point{9, 9}};
         c2 = dst + in_unit * node_scale_k * 1.5;
         e = dst + in_unit * node_scale_k;
     }
@@ -494,7 +489,8 @@ auto derive_edges(const adobe::forest<xml_node>& f, bool leaf_edges) {
     // of the edge (some kind of linear interpolation.)
     //
     // In the end, symmetry isn't worth it. The code is much cleaner if there's a single
-    // cubic path for each edge in the graph. So that's where we'll go.
+    // cubic path for each edge in the graph. So that's where we'll go. I did implement the
+    // extreme/long edge angle backoff- that seems to have helped a bit.
 
     std::vector<xml_node> result;
 
@@ -522,17 +518,14 @@ auto derive_edges(const adobe::forest<xml_node>& f, bool leaf_edges) {
 
         if (prev_leading) {
             if (cur_leading) {
-                // down to first child
                 bezier = edge_to_child(prev, cur, t, prev_rect);
             } else if (leaf_edges) {
-                // leaf node loop
                 bezier = edge_to_self(prev, cur, prev_rect);
             }
         } else {
             if (cur_leading) {
                 bezier = edge_to_sibling(prev, cur, t);
             } else {
-                // up to parent
                 bezier = edge_to_parent(prev, cur, t, cur_rect);
             }
         }
@@ -548,36 +541,36 @@ auto derive_edges(const adobe::forest<xml_node>& f, bool leaf_edges) {
                     { "stroke-width", std::to_string(stroke_width_k) },
                     { "marker-end", "url(#arrowhead)" },
                 }});
-        }
 
 #if 0
-        // Print the control points of the curve. Save these for debugging.
-        result.push_back(xml_node{
-            "line",
-            {
-                { "id", "edge_" + std::to_string(++edge_count) },
-                { "x1", std::to_string(bezier._s.x) },
-                { "y1", std::to_string(bezier._s.y) },
-                { "x2", std::to_string(bezier._c1.x) },
-                { "y2", std::to_string(bezier._c1.y) },
-                { "fill", "transparent" },
-                { "stroke", "green" },
-                { "stroke-width", "2" },
-            }});
+            // Print the control points of the curve. Save these for debugging.
+            result.push_back(xml_node{
+                "line",
+                {
+                    { "id", "edge_" + std::to_string(++edge_count) },
+                    { "x1", std::to_string(bezier._s.x) },
+                    { "y1", std::to_string(bezier._s.y) },
+                    { "x2", std::to_string(bezier._c1.x) },
+                    { "y2", std::to_string(bezier._c1.y) },
+                    { "fill", "transparent" },
+                    { "stroke", "green" },
+                    { "stroke-width", "2" },
+                }});
 
-        result.push_back(xml_node{
-            "line",
-            {
-                { "id", "edge_" + std::to_string(++edge_count) },
-                { "x1", std::to_string(bezier._e.x) },
-                { "y1", std::to_string(bezier._e.y) },
-                { "x2", std::to_string(bezier._c2.x) },
-                { "y2", std::to_string(bezier._c2.y) },
-                { "fill", "transparent" },
-                { "stroke", "green" },
-                { "stroke-width", "2" },
-            }});
+            result.push_back(xml_node{
+                "line",
+                {
+                    { "id", "edge_" + std::to_string(++edge_count) },
+                    { "x1", std::to_string(bezier._e.x) },
+                    { "y1", std::to_string(bezier._e.y) },
+                    { "x2", std::to_string(bezier._c2.x) },
+                    { "y2", std::to_string(bezier._c2.y) },
+                    { "fill", "transparent" },
+                    { "stroke", "green" },
+                    { "stroke-width", "2" },
+                }});
 #endif
+        }
 
         prev_rect = cur_rect;
         prev_leading = cur_leading;
