@@ -694,6 +694,10 @@ void write_svg(state state, const std::filesystem::path& path) {
         std::string subn;
 
         if (has_subscript) {
+            std::string pre{n.substr(0, subscript_pos)};
+            std::string sub{n.substr(subscript_pos + 1)};
+            static const auto drop = std::to_string(font_size_k / 2);
+            subn = pre + "<tspan dy=\'" + drop + "\' font-size=\'.7em\'>" + sub + "</tspan>";
         }
 
         return xml_node{

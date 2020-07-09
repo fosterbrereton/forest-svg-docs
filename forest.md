@@ -173,19 +173,11 @@ Visually, the northwest edge is the **leading in edge**. It originates (is an ou
 
 - If $N$ is the first child of its parent node $P$, this edge is the leading out edge of $P$:
 
-<svg width='100' height='175' viewBox='0 0 200 350'>
-    <use xlink:href='#parent' x='100' y='75'/>
-    <use xlink:href='#edge_lo_li' x='75' y = '75'/>
-    <use xlink:href='#node' x='100' y='275'/>
-</svg>
+<img class='svg-img' src='{{site.baseurl}}/svg/li_child.svg'/>
 
 - Otherwise, this edge is the trailing edge of $N$'s prior sibling $S_{prior}$:
 
-<svg width='175' height='100' viewBox='0 0 350 200'>
-    <use xlink:href='#sib_prior' x='75' y='100'/>
-    <use xlink:href='#edge_to_li' x='75' y = '75'/>
-    <use xlink:href='#node' x='275' y='100'/>
-</svg>
+<img class='svg-img' src='{{site.baseurl}}/svg/li_sibling.svg'/>
 
 ### Leading Out Edge
 
@@ -193,18 +185,11 @@ The southwest edge is the leading out edge. It terminates (is an in edge) at one
 
 - If $N$ is a parent, this edge is the leading edge of the first child of $N$, $C_{first}$:
 
-<svg width='100' height='175' viewBox='0 0 200 350'>
-    <use xlink:href='#node' x='100' y='75'/>
-    <use xlink:href='#edge_lo_li' x='75' y = '75'/>
-    <use xlink:href='#child_first' x='100' y='275'/>
-</svg>
+<img class='svg-img' src='{{site.baseurl}}/svg/lo_parent.svg'/>
 
 - Otherwise, this edge is the trailing edge of $N$ itself:
 
-<svg width='75' height='112.5' viewBox='0 0 150 225'>
-    <use xlink:href='#node' x='75' y='75'/>
-    <use xlink:href='#edge_lo_ti' x='75' y = '75'/>
-</svg>
+<img class='svg-img' src='{{site.baseurl}}/svg/lo_self.svg'/>
 
 ### Trailing In Edge
 
@@ -212,18 +197,11 @@ The southeast edge is the trailing in edge. It terminates (is an in edge) at one
 
 - If $N$ is a parent, it comes from the trailing edge of $N$'s last child, $C_{last}$:
 
-<svg width='100' height='175' viewBox='0 0 200 350'>
-    <use xlink:href='#node' x='100' y='75'/>
-    <use xlink:href='#edge_to_ti' x='75' y = '75'/>
-    <use xlink:href='#child_last' x='100' y='275'/>
-</svg>
+<img class='svg-img' src='{{site.baseurl}}/svg/ti_parent.svg'/>
 
 - Otherwise, it comes from the leading edge of $N$ itself:
 
-<svg width='75' height='112.5' viewBox='0 0 150 225'>
-    <use xlink:href='#node' x='75' y='75'/>
-    <use xlink:href='#edge_lo_ti' x='75' y = '75'/>
-</svg>
+<img class='svg-img' src='{{site.baseurl}}/svg/ti_self.svg'/>
 
 ### Trailing Out Edge
 
@@ -231,19 +209,11 @@ The northeast edge is the trailing out edge. It points to one of two related nod
 
 - If $N$ is the last child of $P$, this edge points to the trailing edge of $P$:
 
-<svg width='100' height='175' viewBox='0 0 200 350'>
-    <use xlink:href='#parent' x='100' y='75'/>
-    <use xlink:href='#edge_to_ti' x='75' y = '75'/>
-    <use xlink:href='#node' x='100' y='275'/>
-</svg>
+<img class='svg-img' src='{{site.baseurl}}/svg/to_child.svg'/>
 
 - Otherwise, this edge points to the leading edge of $N$'s next sibling:
 
-<svg width='175' height='100' viewBox='0 0 350 200'>
-    <use xlink:href='#node' x='75' y='100'/>
-    <use xlink:href='#edge_to_li' x='75' y = '75'/>
-    <use xlink:href='#sib_next' x='275' y='100'/>
-</svg>
+<img class='svg-img' src='{{site.baseurl}}/svg/to_sibling.svg'/>
 
 ## Example Forests
 

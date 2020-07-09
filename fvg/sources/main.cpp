@@ -21,7 +21,7 @@ int main(int argc, const char * argv[]) try {
     }
 
     bool src_dir{is_directory(srcpath)};
-    bool dst_dir{!is_directory(dstpath)};
+    bool dst_dir{is_directory(dstpath)};
 
     if (!src_dir) {
         if (dst_dir) {

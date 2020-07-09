@@ -1,9 +1,9 @@
 {
     "forest": [
-        "S_prior", "N"
+        "N", "S_next"
     ],
     "nodes": {
-        "S_prior": {
+        "S_next": {
             "color": "lightgrey"
         }
     },

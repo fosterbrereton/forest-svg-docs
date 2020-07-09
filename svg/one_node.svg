@@ -13,7 +13,7 @@
     <text font-size='16' y='110' x='50' text-anchor='middle' dominant-baseline='central'>
 A
     </text>
-    <path id='edge_1' d='M 37.000000 60.000000 C12.000000 85.000000 13.735953 69.463015 24.840504 82.307919' fill='transparent' stroke='black' stroke-width='2' marker-end='url(#arrowhead)'/>
+    <path id='edge_1' d='M 25.000000 47.500000 C0.000000 72.500000 13.735953 69.463015 24.840504 82.307919' fill='transparent' stroke='black' stroke-width='2' marker-end='url(#arrowhead)'/>
     <path id='edge_2' d='M 40.432914 133.096988 C27.995703 163.123073 73.350629 153.645482 68.567086 142.096988' fill='transparent' stroke='black' stroke-width='2' marker-end='url(#arrowhead)'/>
-    <path id='edge_3' d='M 66.159496 91.307919 C77.264047 78.463015 87.500000 94.000000 62.500000 69.000000' fill='transparent' stroke='black' stroke-width='2' marker-end='url(#arrowhead)'/>
+    <path id='edge_3' d='M 66.159496 91.307919 C77.264047 78.463015 109.000000 81.500000 84.000000 56.500000' fill='transparent' stroke='black' stroke-width='2' marker-end='url(#arrowhead)'/>
 </svg>

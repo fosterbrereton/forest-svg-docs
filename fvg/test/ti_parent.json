@@ -1,14 +1,16 @@
 {
     "forest": [
-        "S_prior", "N"
+        "N", [
+            "C_last"
+        ]
     ],
     "nodes": {
-        "S_prior": {
+        "C_last": {
             "color": "lightgrey"
         }
     },
     "edges": {
-        "_trailing": {
+        "_leading": {
             "_hide": true
         }
     },

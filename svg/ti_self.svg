@@ -1,0 +1,13 @@
+<?xml version='1.0' encoding='utf-8'?>
+<svg version='1.1' xmlns='http://www.w3.org/2000/svg' xmlns:xlink='http://www.w3.org/1999/xlink' width='100' height='95'>
+    <defs>
+        <marker id='arrowhead' markerWidth='12' markerHeight='10' orient='auto-start-reverse' refY='5' markerUnits='userSpaceOnUse'>
+            <polygon points='0 0, 12 5, 0 10'/>
+        </marker>
+    </defs>
+    <circle cy='35.000000' cx='50.000000' fill='white' stroke-dasharray='0' stroke-width='2' stroke='blue' r='25'/>
+    <text font-size='16' y='35' x='50' text-anchor='middle' dominant-baseline='central'>
+N
+    </text>
+    <path id='edge_1' d='M 40.432914 58.096988 C27.995703 88.123073 73.350629 78.645482 68.567086 67.096988' fill='transparent' stroke='black' stroke-width='2' marker-end='url(#arrowhead)'/>
+</svg>

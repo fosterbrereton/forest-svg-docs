@@ -1,0 +1,17 @@
+<?xml version='1.0' encoding='utf-8'?>
+<svg version='1.1' xmlns='http://www.w3.org/2000/svg' xmlns:xlink='http://www.w3.org/1999/xlink' width='100' height='145'>
+    <defs>
+        <marker id='arrowhead' markerWidth='12' markerHeight='10' orient='auto-start-reverse' refY='5' markerUnits='userSpaceOnUse'>
+            <polygon points='0 0, 12 5, 0 10'/>
+        </marker>
+    </defs>
+    <circle cy='35.000000' cx='50.000000' fill='white' stroke-dasharray='' stroke-width='2' stroke='lightgrey' r='25'/>
+    <circle cy='110.000000' cx='50.000000' fill='white' stroke-dasharray='0' stroke-width='2' stroke='blue' r='25'/>
+    <text font-size='16' y='35' x='50' text-anchor='middle' dominant-baseline='central'>
+P
+    </text>
+    <text font-size='16' y='110' x='50' text-anchor='middle' dominant-baseline='central'>
+N
+    </text>
+    <path id='edge_1' d='M 67.677670 92.322330 C76.516504 83.483496 85.516504 70.516504 76.677670 61.677670' fill='transparent' stroke='black' stroke-width='2' marker-end='url(#arrowhead)'/>
+</svg>
