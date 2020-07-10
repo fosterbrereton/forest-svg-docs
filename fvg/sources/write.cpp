@@ -190,16 +190,96 @@ auto derive_y_offsets(const state& state) {
 
 /**************************************************************************************************/
 
+struct point {
+    double x{0};
+    double y{0};
+
+    auto magnitude() const { return std::sqrt(x * x + y * y); }
+
+    inline constexpr auto operator+=(const point& rhs) { x += rhs.x; y += rhs.y; return *this; }
+    inline constexpr auto operator-=(const point& rhs) { x -= rhs.x; y -= rhs.y; return *this; }
+    inline constexpr auto operator*=(const point& rhs) { x *= rhs.x; y *= rhs.y; return *this; }
+    inline constexpr auto operator/=(const point& rhs) { x /= rhs.x; y /= rhs.y; return *this; }
+
+    inline constexpr auto operator+=(const double rhs) { x += rhs; y += rhs; return *this; }
+    inline constexpr auto operator-=(const double rhs) { x -= rhs; y -= rhs; return *this; }
+    inline constexpr auto operator*=(const double rhs) { x *= rhs; y *= rhs; return *this; }
+    inline constexpr auto operator/=(const double rhs) { x /= rhs; y /= rhs; return *this; }
+};
+
+inline constexpr auto operator==(const point& a, const point& b) { return a.x == b.x && a.y == b.y; }
+inline constexpr auto operator!=(const point& a, const point& b) { return !(a == b);}
+inline constexpr auto operator+(const point& a, const point& b) { point r{a}; r += b; return r; }
+inline constexpr auto operator-(const point& a, const point& b) { point r{a}; r -= b; return r; }
+inline constexpr auto operator*(const point& a, const point& b) { point r{a}; r *= b; return r; }
+inline constexpr auto operator/(const point& a, const point& b) { point r{a}; r /= b; return r; }
+inline constexpr auto operator+(const point& a, const double b) { point r{a}; r += b; return r; }
+inline constexpr auto operator-(const point& a, const double b) { point r{a}; r -= b; return r; }
+inline constexpr auto operator*(const point& a, const double b) { point r{a}; r *= b; return r; }
+inline constexpr auto operator/(const point& a, const double b) { point r{a}; r /= b; return r; }
+inline constexpr auto operator-(const point& a) { return point{-a.x, -a.y}; }
+
+/**************************************************************************************************/
+
+struct cubic_bezier {
+    auto operator()(double t) const;
+
+    auto derivative(double t) const;
+
+    point _s;
+    point _c1;
+    point _c2;
+    point _e;
+};
+
+inline constexpr auto operator==(const cubic_bezier& a, const cubic_bezier& b) {
+    return a._s == b._s &&
+           a._c1 == b._c1 &&
+           a._c2 == b._c2 &&
+           a._e == b._e;
+}
+inline constexpr auto operator!=(const cubic_bezier& a, const cubic_bezier& b) { return !(a == b); }
+
+/**************************************************************************************************/
+
+auto cubic_bezier::operator()(double t) const {
+    assert(t >= 0);
+    assert(t <= 1);
+
+    const auto u{1 - t};
+    auto p0_term{1 * std::pow(u, 3) * 1             };
+    auto p1_term{3 * std::pow(u, 2) * t             };
+    auto p2_term{3 * u              * std::pow(t, 2)};
+    auto p3_term{1 * 1              * std::pow(t, 3)};
+
+    return _s * p0_term + _c1 * p1_term + _c2 * p2_term + _e * p3_term;
+}
+
+/**************************************************************************************************/
+
+auto cubic_bezier::derivative(double t) const {
+    assert(t >= 0);
+    assert(t <= 1);
+
+    const auto u{1 - t};
+    auto p0_term{3 * std::pow(u, 2)};
+    auto p1_term{6 * u * t};
+    auto p2_term{3 * std::pow(t, 2)};
+
+    return (_c1 - _s) * p0_term + (_c2 - _c1) * p1_term + (_e - _c2) * p2_term;
+}
+
+/**************************************************************************************************/
+
 struct xml_node {
     std::string _tag;
     std::unordered_map<std::string, std::string> _attributes;
     std::string _content;
 
     // Not necessary for XML output, but handy to keep around.
-    double _x{0};
-    double _y{0};
-    double _w{0};
-    double _h{0};
+    point _pos;
+    point _sz;
+    cubic_bezier _c; // nonempty if this node is an edge
 };
 
 /**************************************************************************************************/
@@ -259,54 +339,6 @@ void apply_forest(ForestIterator1 dst_first,
         ++dst_first;
     }
 }
-
-/**************************************************************************************************/
-
-struct point {
-    double x{0};
-    double y{0};
-
-    auto magnitude() const { return std::sqrt(x * x + y * y); }
-
-    inline constexpr auto operator+=(const point& rhs) { x += rhs.x; y += rhs.y; return *this; }
-    inline constexpr auto operator-=(const point& rhs) { x -= rhs.x; y -= rhs.y; return *this; }
-    inline constexpr auto operator*=(const point& rhs) { x *= rhs.x; y *= rhs.y; return *this; }
-    inline constexpr auto operator/=(const point& rhs) { x /= rhs.x; y /= rhs.y; return *this; }
-
-    inline constexpr auto operator+=(const double rhs) { x += rhs; y += rhs; return *this; }
-    inline constexpr auto operator-=(const double rhs) { x -= rhs; y -= rhs; return *this; }
-    inline constexpr auto operator*=(const double rhs) { x *= rhs; y *= rhs; return *this; }
-    inline constexpr auto operator/=(const double rhs) { x /= rhs; y /= rhs; return *this; }
-};
-
-inline constexpr auto operator==(const point& a, const point& b) { return a.x == b.x && a.y == b.y; }
-inline constexpr auto operator!=(const point& a, const point& b) { return !(a == b);}
-inline constexpr auto operator+(const point& a, const point& b) { point r{a}; r += b; return r; }
-inline constexpr auto operator-(const point& a, const point& b) { point r{a}; r -= b; return r; }
-inline constexpr auto operator*(const point& a, const point& b) { point r{a}; r *= b; return r; }
-inline constexpr auto operator/(const point& a, const point& b) { point r{a}; r /= b; return r; }
-inline constexpr auto operator+(const point& a, const double b) { point r{a}; r += b; return r; }
-inline constexpr auto operator-(const point& a, const double b) { point r{a}; r -= b; return r; }
-inline constexpr auto operator*(const point& a, const double b) { point r{a}; r *= b; return r; }
-inline constexpr auto operator/(const point& a, const double b) { point r{a}; r /= b; return r; }
-inline constexpr auto operator-(const point& a) { return point{-a.x, -a.y}; }
-
-/**************************************************************************************************/
-
-struct cubic_bezier {
-    point _s;
-    point _c1;
-    point _c2;
-    point _e;
-};
-
-inline constexpr auto operator==(const cubic_bezier& a, const cubic_bezier& b) {
-    return a._s == b._s &&
-           a._c1 == b._c1 &&
-           a._c2 == b._c2 &&
-           a._e == b._e;
-}
-inline constexpr auto operator!=(const cubic_bezier& a, const cubic_bezier& b) { return !(a == b); }
 
 /**************************************************************************************************/
 
@@ -505,7 +537,7 @@ auto derive_edges(const adobe::forest<xml_node>& f,
     auto        last{f.end()};
     bool        prev_leading{first.edge() == adobe::forest_leading_edge};
     bool        prev_rect{first->_tag == "rect"};
-    point       prev{first->_x, first->_y};
+    point       prev{first->_pos.x, first->_pos.y};
     std::size_t edge_count{0};
 
     ++first;
@@ -517,7 +549,7 @@ auto derive_edges(const adobe::forest<xml_node>& f,
     while (first != last) {
         bool  cur_leading{first.edge() == adobe::forest_leading_edge};
         bool  cur_rect{first->_tag == "rect"};
-        point cur{first->_x, first->_y};
+        point cur{first->_pos.x, first->_pos.y};
         const auto t{delerp<double>((prev - cur).magnitude(), min_mag_k, max_mag_k)};
         cubic_bezier bezier;
 
@@ -545,8 +577,10 @@ auto derive_edges(const adobe::forest<xml_node>& f,
                     { "stroke", "black" },
                     { "stroke-width", std::to_string(stroke_width_k) },
                     { "marker-end", "url(#arrowhead)" },
-                }});
+                }
+            });
 
+            result.back()._c = std::move(bezier);
 #if 0
             // Print the control points of the curve. Save these for debugging.
             result.push_back(xml_node{
@@ -585,6 +619,20 @@ auto derive_edges(const adobe::forest<xml_node>& f,
     }
 
     return result;
+}
+
+/**************************************************************************************************/
+
+auto subscriptify(const std::string& s) {
+    auto subscript_pos{s.find("_")};
+
+    if (subscript_pos == std::string::npos) return s;
+
+    std::string pre{s.substr(0, subscript_pos)};
+    std::string sub{s.substr(subscript_pos + 1)};
+    static const auto drop = std::to_string(font_size_k / 2);
+
+    return pre + "<tspan dy=\'" + drop + "\' font-size=\'.7em\'>" + sub + "</tspan>";
 }
 
 /**************************************************************************************************/
@@ -636,7 +684,7 @@ void write_svg(state state, const std::filesystem::path& path) {
                 { "stroke-dasharray", node_properties._stroke_dasharray },
             },
             "",
-            0, 0, node_radius_k*2, node_radius_k*2
+            { 0, 0 }, { node_radius_k*2, node_radius_k*2 }
         };
 
         static const xml_node square_k{
@@ -649,7 +697,7 @@ void write_svg(state state, const std::filesystem::path& path) {
                 { "stroke-width", std::to_string(stroke_width_k) },
             },
             "",
-            0, 0, node_radius_k*2, node_radius_k*2
+            { 0, 0 }, { node_radius_k*2, node_radius_k*2 }
         };
 
         return n == root_name_k ? square_k : circle_k;
@@ -657,11 +705,11 @@ void write_svg(state state, const std::filesystem::path& path) {
 
     apply_forest(svg_nodes.begin(), svg_nodes.end(), x_offsets.begin(), [](auto& a, auto& b){
         if (a._tag == "circle") {
-            a._x = b + node_radius_k;
-            a._attributes["cx"] = std::to_string(a._x);
+            a._pos.x = b + node_radius_k;
+            a._attributes["cx"] = std::to_string(a._pos.x);
         } else if (a._tag == "rect") {
-            a._x = b;
-            a._attributes["x"] = std::to_string(a._x);
+            a._pos.x = b;
+            a._attributes["x"] = std::to_string(a._pos.x);
         } else {
             throw std::runtime_error("Uknown node shape");
         }
@@ -669,11 +717,11 @@ void write_svg(state state, const std::filesystem::path& path) {
 
     apply_forest(svg_nodes.begin(), svg_nodes.end(), y_offsets.begin(), [](auto& a, auto& b){
         if (a._tag == "circle") {
-            a._y = b + node_radius_k;
-            a._attributes["cy"] = std::to_string(a._y);
+            a._pos.y = b + node_radius_k;
+            a._attributes["cy"] = std::to_string(a._pos.y);
         } else if (a._tag == "rect") {
-            a._y = b;
-            a._attributes["y"] = std::to_string(a._y);
+            a._pos.y = b;
+            a._attributes["y"] = std::to_string(a._pos.y);
         } else {
             throw std::runtime_error("Uknown node shape");
         }
@@ -689,17 +737,6 @@ void write_svg(state state, const std::filesystem::path& path) {
     // Construct the node labels.
 
     auto svg_labels{transcribe_forest(state._f, [](const auto& n){
-        auto subscript_pos{n.find("_")};
-        bool has_subscript{subscript_pos != std::string::npos};
-        std::string subn;
-
-        if (has_subscript) {
-            std::string pre{n.substr(0, subscript_pos)};
-            std::string sub{n.substr(subscript_pos + 1)};
-            static const auto drop = std::to_string(font_size_k / 2);
-            subn = pre + "<tspan dy=\'" + drop + "\' font-size=\'.7em\'>" + sub + "</tspan>";
-        }
-
         return xml_node{
             "text",
             {
@@ -707,7 +744,7 @@ void write_svg(state state, const std::filesystem::path& path) {
                 { "text-anchor", "middle" },
                 { "dominant-baseline", "central" },
             },
-            has_subscript ? subn : n
+            subscriptify(n)
         };
     })};
 
@@ -718,6 +755,34 @@ void write_svg(state state, const std::filesystem::path& path) {
     apply_forest(svg_labels.begin(), svg_labels.end(), y_offsets.begin(), [](auto& a, auto& b){
         a._attributes["y"] = std::to_string(b + node_radius_k);
     });
+
+    // Construct edge labels
+    auto                  label_first{state._l.begin()};
+    auto                  label_last{state._l.end()};
+    std::vector<xml_node> edge_labels;
+
+    for (auto& edge : svg_edges) {
+        if (label_first == label_last) break;
+
+        const auto& curve{edge._c};
+        assert(curve != cubic_bezier{});
+        const point mid{curve(0.5)};
+        const point dmid{curve.derivative(0.5)};
+        const double slope{dmid.y / dmid.x};
+        const double orth{-1/slope}; // use this to get an offset for the label?
+
+        edge_labels.push_back(xml_node{
+            "text",
+            {
+                { "font-size", std::to_string(font_size_k) },
+                { "text-anchor", "middle" },
+                { "dominant-baseline", "central" },
+                { "x", std::to_string(mid.x) },
+                { "y", std::to_string(mid.y) },
+            },
+            *label_first++
+        });
+    }
 
     // Begin constructing the final XML.
 
@@ -770,8 +835,12 @@ void write_svg(state state, const std::filesystem::path& path) {
     copy_flat(xml, p, svg_nodes);
     copy_flat(xml, p, svg_labels);
 
-    for (auto& node : svg_edges) {
-        xml.insert(p, std::move(node));
+    for (auto& edge : svg_edges) {
+        xml.insert(p, std::move(edge));
+    }
+
+    for (auto& label : edge_labels) {
+        xml.insert(p, std::move(label));
     }
 
     print_xml(std::move(xml), out);

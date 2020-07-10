@@ -3,11 +3,6 @@
 // identity
 #include "state.hpp"
 
-// application
-// #include "json.hpp"
-// #include "state.hpp"
-// #include "forest_algorithms.hpp"
-
 /**************************************************************************************************/
 
 namespace fvg {
@@ -66,6 +61,8 @@ auto make_state_nodes(const json_object& object) {
         result[entry.first] = node_properties {
             get<std::string>(mapped, "color"),
             get<std::string>(mapped, "stroke-dasharray"),
+            get<std::string>(mapped, "_leading_label"),
+            get<std::string>(mapped, "_trailing_label"),
         };
     }
 
@@ -94,6 +91,22 @@ auto make_state_edges(const json_object& object) {
 
 /**************************************************************************************************/
 
+auto make_state_edge_labels(const json_array& array) {
+    edge_labels result;
+
+    for (const auto& l : array) {
+        if (!l.is_string()) {
+            throw std::runtime_error("string expected for edge label");
+        }
+
+        result.push_back(as<std::string>(l));
+    }
+
+    return result;
+}
+
+/**************************************************************************************************/
+
 auto make_state_graph_settings(const json_object& object) {
     graph_settings result{
         get<bool>(object, "with_root"),
@@ -110,6 +123,7 @@ state make_state(const json_t& j) {
         make_state_forest(get<json_array>(j, "forest")),
         make_state_nodes(get<json_object>(j, "nodes")),
         make_state_edges(get<json_object>(j, "edges")),
+        make_state_edge_labels(get<json_array>(j, "edge_labels")),
         make_state_graph_settings(get<json_object>(j, "settings")),
     };
 }
