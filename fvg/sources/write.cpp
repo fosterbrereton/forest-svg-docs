@@ -766,10 +766,40 @@ void write_svg(state state, const std::filesystem::path& path) {
 
         const auto& curve{edge._c};
         assert(curve != cubic_bezier{});
+
+        // The goal is to put the label along the edge. To do that we have to compute
+        // a point along the curve where we want to put the label, then an offset from
+        // that point where we want the label to go (lest the label be directly over
+        // the edge.) To get the offset, we take the derivative of the bezier at the
+        // same point, and compute its slope. Inverting that slope gives us a line
+        // that's perpendicular to the curve at the point we care about, and the label
+        // can "slide" up and down that line to figure out where we want it to go. For
+        // curves that are more or less flat at the point where we want the label (for
+        // some definition of "more or less flat").
+
         const point mid{curve(0.5)};
         const point dmid{curve.derivative(0.5)};
-        const double slope{dmid.y / dmid.x};
-        const double orth{-1/slope}; // use this to get an offset for the label?
+        const double slope{dmid.x ? dmid.y / dmid.x : 0};
+        const bool flat{std::abs(slope) < 0.01};
+        const double orth{flat ? 1 : -1 / slope};
+        const auto b{mid.y - orth * mid.x};
+        const auto bsx{mid.x + 7}; // baseline start x
+        const auto bex{mid.x - 7}; // baseline end x
+        // y = mx + b
+        const auto bsy{orth * bsx + b};
+        const auto bey{orth * bex + b};
+
+        edge_labels.push_back(xml_node{
+            "line",
+            {
+                { "x1", std::to_string(bsx) },
+                { "y1", std::to_string(bsy) },
+                { "x2", std::to_string(bex) },
+                { "y2", std::to_string(bey) },
+                { "fill", "transparent" },
+                { "stroke", "yellow" },
+                { "stroke-width", "2" },
+            }});
 
         edge_labels.push_back(xml_node{
             "text",
@@ -777,8 +807,8 @@ void write_svg(state state, const std::filesystem::path& path) {
                 { "font-size", std::to_string(font_size_k) },
                 { "text-anchor", "middle" },
                 { "dominant-baseline", "central" },
-                { "x", std::to_string(mid.x) },
-                { "y", std::to_string(mid.y) },
+                { "x", std::to_string(bsx) },
+                { "y", std::to_string(bsy) },
             },
             *label_first++
         });
@@ -832,9 +862,6 @@ void write_svg(state state, const std::filesystem::path& path) {
         }
     }};
 
-    copy_flat(xml, p, svg_nodes);
-    copy_flat(xml, p, svg_labels);
-
     for (auto& edge : svg_edges) {
         xml.insert(p, std::move(edge));
     }
@@ -842,6 +869,9 @@ void write_svg(state state, const std::filesystem::path& path) {
     for (auto& label : edge_labels) {
         xml.insert(p, std::move(label));
     }
+
+    copy_flat(xml, p, svg_nodes);
+    copy_flat(xml, p, svg_labels);
 
     print_xml(std::move(xml), out);
 }

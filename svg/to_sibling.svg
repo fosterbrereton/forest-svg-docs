@@ -5,6 +5,7 @@
             <polygon points='0 0, 12 5, 0 10'/>
         </marker>
     </defs>
+    <path id='edge_1' d='M 67.677670 17.322330 C76.516504 8.483496 89.483496 -0.516504 98.322330 8.322330' fill='transparent' stroke='black' stroke-width='2' marker-end='url(#arrowhead)'/>
     <circle cy='35.000000' cx='50.000000' fill='white' stroke-dasharray='0' stroke-width='2' stroke='blue' r='25'/>
     <circle cy='35.000000' cx='125.000000' fill='white' stroke-dasharray='' stroke-width='2' stroke='lightgrey' r='25'/>
     <text font-size='16' y='35' x='50' text-anchor='middle' dominant-baseline='central'>
@@ -13,5 +14,4 @@ N
     <text font-size='16' y='35' x='125' text-anchor='middle' dominant-baseline='central'>
 S<tspan dy='8' font-size='.7em'>next</tspan>
     </text>
-    <path id='edge_1' d='M 67.677670 17.322330 C76.516504 8.483496 89.483496 -0.516504 98.322330 8.322330' fill='transparent' stroke='black' stroke-width='2' marker-end='url(#arrowhead)'/>
 </svg>
