@@ -1,0 +1,17 @@
+{
+    "forest": [
+        "N_1", [ "N_3" ], "N_2"
+    ],
+    "edges" : {
+        "_leading" : {
+            "_color": "black"
+        },
+        "_trailing" : {
+            "_color": "lightgrey"
+        }
+    },
+    "edge_labels": ["1", "2", "3", "4", "5", "6", "7"],
+    "settings": {
+        "with_root": true
+    }
+}

@@ -412,7 +412,43 @@ auto edge_to_self(const point& from, const point& to, bool rect) {
 
 /**************************************************************************************************/
 
+auto merge(edge_properties a, const edge_properties& b) {
+    const edge_properties dfault;
+
+    // If b's value isn't a default value, it wins over whatever value was in a.
+
+    if (b._hide != dfault._hide) {
+        a._hide = b._hide;
+    }
+
+    if (b._color != dfault._color) {
+        a._color = b._color;
+    }
+
+    return a;
+}
+
+/**************************************************************************************************/
+
+auto derive_edge_properties(const std::string& edge_name, const edge_map& map, bool leading) {
+    const auto pfound{map.find(edge_name)};
+    edge_properties result{pfound != map.end() ? pfound->second : edge_properties()};
+
+    const auto& edge_properties_name{leading ? "_leading" : "_trailing"};
+
+    const auto efound{map.find(edge_properties_name)};
+    if (efound != map.end()) {
+        result = merge(efound->second, result);
+    }
+
+    return result;
+}
+
+/**************************************************************************************************/
+
 auto derive_edges(const adobe::forest<svg::node>& f,
+                  const edge_labels& labels,
+                  const edge_map& map,
                   bool leaf_edges,
                   bool leading_edges,
                   bool trailing_edges) {
@@ -451,6 +487,8 @@ auto derive_edges(const adobe::forest<svg::node>& f,
 
     auto  first{f.begin()};
     auto  last{f.end()};
+    auto  label_first{labels.begin()};
+    auto  label_last{labels.end()};
     bool  prev_leading{first.edge() == adobe::forest_leading_edge};
     const auto* prev_circle{std::get_if<svg::circle>(&*first)};
     const auto* prev_square{std::get_if<svg::square>(&*first)};
@@ -470,6 +508,11 @@ auto derive_edges(const adobe::forest<svg::node>& f,
         bool  cur_leading{first.edge() == adobe::forest_leading_edge};
         const auto* cur_circle{std::get_if<svg::circle>(&*first)};
         const auto* cur_square{std::get_if<svg::square>(&*first)};
+        edge_properties properties;
+
+        if (label_first != label_last) {
+            properties = derive_edge_properties(*label_first, map, cur_leading);
+        }
 
         assert(cur_circle != nullptr || cur_square != nullptr);
 
@@ -493,7 +536,7 @@ auto derive_edges(const adobe::forest<svg::node>& f,
         }
 
         if (bezier != cubic_bezier{}) {
-            result.push_back(svg::cubic_path{bezier, "black", stroke_width_k});
+            result.push_back(svg::cubic_path{bezier, std::move(properties._color), stroke_width_k, cur_leading});
 
 #if 0
             // Print the control points of the curve. Save these for debugging.
@@ -507,6 +550,10 @@ auto derive_edges(const adobe::forest<svg::node>& f,
         prev = cur;
 
         ++first;
+
+        if (label_first != label_last) {
+            ++label_first;
+        }
     }
 
     return result;
@@ -527,7 +574,7 @@ auto subscript_split(const std::string& s) {
 
 /**************************************************************************************************/
 
-auto derive_edge_labels(const edge_labels& labels, const svg::nodes& edges) {
+auto derive_edge_labels(const edge_labels& labels, const edge_map& map, const svg::nodes& edges) {
     auto       first{labels.begin()};
     auto       last{labels.end()};
     svg::nodes result;
@@ -541,9 +588,15 @@ auto derive_edge_labels(const edge_labels& labels, const svg::nodes& edges) {
 
         const auto* curve_ptr{std::get_if<svg::cubic_path>(&edge)};
         if (!curve_ptr) continue;
-
         const auto& curve{curve_ptr->_b};
+        auto properties{derive_edge_properties(*first, map, curve_ptr->_leading)};
+
         assert(curve != cubic_bezier{});
+
+        if (properties._hide) {
+            ++first;
+            continue;
+        }
 
         // The goal is to put the label along the edge. To do that we have to compute
         // a point along the curve where we want to put the label, then an offset from
@@ -646,6 +699,7 @@ auto derive_edge_labels(const edge_labels& labels, const svg::nodes& edges) {
             std::move(split.first),
             std::move(split.second),
             font_size_k,
+            properties._color,
         });
     }
 
@@ -654,128 +708,99 @@ auto derive_edge_labels(const edge_labels& labels, const svg::nodes& edges) {
 
 /**************************************************************************************************/
 
-namespace detail {
-
-/**************************************************************************************************/
-
-// helper type for the visitor
-template<class... Ts> struct overloaded : Ts... { using Ts::operator()...; };
-// explicit deduction guide (not needed as of C++20)
-template<class... Ts> overloaded(Ts...) -> overloaded<Ts...>;
-
-/**************************************************************************************************/
-
-struct svg_line_to_xml {
-    xml_node operator()(svg::line line) {
-        return xml_node{
-            "line",
-            {
-                { "x1", std::to_string(line._a.x) },
-                { "y1", std::to_string(line._a.y) },
-                { "x2", std::to_string(line._b.x) },
-                { "y2", std::to_string(line._b.y) },
-                { "stroke", std::move(line._color) },
-                { "stroke-width", std::to_string(line._width) },
-            }
-        };
-    }
-};
-
-/**************************************************************************************************/
-
-struct svg_cubic_path_to_xml {
-    xml_node operator()(svg::cubic_path path) {
-        return xml_node{
-            "path",
-            {
-                { "d", svg_bezier(path._b) },
-                { "stroke", std::move(path._color) },
-                { "fill", "none" },
-                { "stroke-width", std::to_string(path._width) },
-                { "marker-end", "url(#arrowhead)" },
-            }
-        };
-    }
-};
-
-/**************************************************************************************************/
-
-auto subscriptify(std::string s, std::string sub) {
-    static const auto drop = std::to_string(font_size_k / 2);
-
-    return std::move(s) +
-           "<tspan dy=\'" + drop + "\' font-size=\'.7em\'>" +
-           std::move(sub) +
-           "</tspan>";
+xml_node svg_to_xml(svg::line line) {
+    return xml_node{
+        "line",
+        {
+            { "x1", std::to_string(line._a.x) },
+            { "y1", std::to_string(line._a.y) },
+            { "x2", std::to_string(line._b.x) },
+            { "y2", std::to_string(line._b.y) },
+            { "stroke", std::move(line._color) },
+            { "stroke-width", std::to_string(line._width) },
+        }
+    };
 }
 
-struct svg_text_to_xml {
-    xml_node operator()(svg::text text) {
-        return xml_node{
-            "text",
-            {
-                { "font-size", std::to_string(text._size) },
-                { "text-anchor", "middle" },
-                { "dominant-baseline", "central" },
-                { "x", std::to_string(text._p.x) },
-                { "y", std::to_string(text._p.y) },
-            },
-            subscriptify(std::move(text._s), std::move(text._subscript))
-        };
-    }
-};
+/**************************************************************************************************/
+
+xml_node svg_to_xml(svg::cubic_path path) {
+    return xml_node{
+        "path",
+        {
+            { "d", svg_bezier(path._b) },
+            { "stroke", std::move(path._color) },
+            { "fill", "none" },
+            { "stroke-width", std::to_string(path._width) },
+            { "marker-end", "url(#arrowhead)" },
+        }
+    };
+}
 
 /**************************************************************************************************/
 
-struct svg_circle_to_xml {
-    xml_node operator()(svg::circle c) {
-        return xml_node{
-            "circle",
-            {
-                { "cx", std::to_string(c._c.x) },
-                { "cy", std::to_string(c._c.y) },
-                { "r", std::to_string(c._r) },
-                { "fill", "white" },
-                { "stroke", std::move(c._color) },
-                { "stroke-width", std::to_string(c._stroke_width) },
-                //{ "stroke-dasharray", node_properties._stroke_dasharray },
-            }
-        };
-    }
-};
+xml_node svg_to_xml(svg::text text) {
+    const auto drop{std::to_string(text._size / 2)};
+
+    const auto string{std::move(text._s) +
+           "<tspan dy=\'" + drop + "\' font-size=\'.7em\'>" +
+           std::move(text._subscript) +
+           "</tspan>"
+    };
+
+    return xml_node{
+        "text",
+        {
+            { "font-size", std::to_string(text._size) },
+            { "text-anchor", "middle" },
+            { "dominant-baseline", "central" },
+            { "x", std::to_string(text._p.x) },
+            { "y", std::to_string(text._p.y) },
+            { "fill", std::move(text._color) }
+        },
+        std::move(string)
+    };
+}
 
 /**************************************************************************************************/
 
-struct svg_square_to_xml {
-    xml_node operator()(svg::square s) {
-        return xml_node{
-            "rect",
-            {
-                { "x", std::to_string(s._p.x) },
-                { "y", std::to_string(s._p.y) },
-                { "width", std::to_string(s._size) },
-                { "height", std::to_string(s._size) },
-                { "fill", "white" },
-                { "stroke", std::move(s._color) },
-                { "stroke-width", std::to_string(s._stroke_width) },
-            }
-        };
-    }
-};
+xml_node svg_to_xml(svg::circle c) {
+    return xml_node{
+        "circle",
+        {
+            { "cx", std::to_string(c._c.x) },
+            { "cy", std::to_string(c._c.y) },
+            { "r", std::to_string(c._r) },
+            { "fill", "white" },
+            { "stroke", std::move(c._color) },
+            { "stroke-width", std::to_string(c._stroke_width) },
+            //{ "stroke-dasharray", node_properties._stroke_dasharray },
+        }
+    };
+}
 
 /**************************************************************************************************/
 
-} // namespace detail
+xml_node svg_to_xml(svg::square s) {
+    return xml_node{
+        "rect",
+        {
+            { "x", std::to_string(s._p.x) },
+            { "y", std::to_string(s._p.y) },
+            { "width", std::to_string(s._size) },
+            { "height", std::to_string(s._size) },
+            { "fill", "white" },
+            { "stroke", std::move(s._color) },
+            { "stroke-width", std::to_string(s._stroke_width) },
+        }
+    };
+}
 
 /**************************************************************************************************/
 
 xml_node svg_to_xml(svg::node n) {
-    return std::visit(detail::overloaded {
-        detail::svg_line_to_xml(),
-        detail::svg_cubic_path_to_xml(),
-        detail::svg_text_to_xml(),
-        detail::svg_circle_to_xml(),
-        detail::svg_square_to_xml(),
+    return std::visit([](auto&& n) {
+        return svg_to_xml(std::forward<decltype(n)>(n));
     }, std::move(n));
 }
 
@@ -855,6 +880,8 @@ void write_svg(state state, const std::filesystem::path& path) {
     // Derive the edges.
 
     auto svg_edges{derive_edges(svg_nodes,
+                                state._l,
+                                state._e,
                                 state._s._with_leaf_edges,
                                 !state._e["_leading"]._hide,
                                 !state._e["_trailing"]._hide)};
@@ -863,7 +890,6 @@ void write_svg(state state, const std::filesystem::path& path) {
 
     auto svg_labels{transcribe_forest(state._f, [](const auto& n){
         auto split{subscript_split(n)};
-
         return svg::text{
             point{},
             std::move(split.first),
@@ -882,7 +908,7 @@ void write_svg(state state, const std::filesystem::path& path) {
 
     // Construct edge labels
 
-    auto edge_labels{derive_edge_labels(state._l, svg_edges)};
+    auto edge_labels{derive_edge_labels(state._l, state._e, svg_edges)};
 
     // Begin constructing the final XML.
 
@@ -894,7 +920,6 @@ void write_svg(state state, const std::filesystem::path& path) {
     auto p = adobe::trailing_of(xml.insert(xml.begin(), xml_node{
         "svg",
         {
-            { "version", "1.1" },
             { "xmlns", "http://www.w3.org/2000/svg" },
             { "xmlns:xlink", "http://www.w3.org/1999/xlink" },
             { "width", std::to_string(width) },
@@ -918,6 +943,9 @@ void write_svg(state state, const std::filesystem::path& path) {
         "polygon",
         {
             { "points", "0 0, 12 5, 0 10" },
+            // Apparently these are an SVG 2.0 feature that aren't supported well... anywhere.
+            // { "fill", "context-stroke" },
+            // { "stroke", "context-stroke" },
         }
     });
 

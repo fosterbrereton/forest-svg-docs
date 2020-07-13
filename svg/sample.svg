@@ -1,5 +1,5 @@
 <?xml version='1.0' encoding='utf-8'?>
-<svg version='1.1' xmlns='http://www.w3.org/2000/svg' xmlns:xlink='http://www.w3.org/1999/xlink' width='550' height='320'>
+<svg xmlns='http://www.w3.org/2000/svg' xmlns:xlink='http://www.w3.org/1999/xlink' width='550' height='320'>
     <defs>
         <marker id='arrowhead' markerWidth='12' markerHeight='10' orient='auto-start-reverse' refY='5' markerUnits='userSpaceOnUse'>
             <polygon points='0 0, 12 5, 0 10'/>
@@ -37,37 +37,37 @@
     <circle cx='350.000000' r='25.000000' stroke='blue' stroke-width='2.000000' cy='260.000000' fill='white'/>
     <circle cx='425.000000' r='25.000000' stroke='blue' stroke-width='2.000000' cy='260.000000' fill='white'/>
     <circle cx='500.000000' r='25.000000' stroke='blue' stroke-width='2.000000' cy='185.000000' fill='white'/>
-    <text font-size='16.000000' text-anchor='middle' x='275.000000' y='35.000000' dominant-baseline='central'>
-A<tspan dy='8' font-size='.7em'></tspan>
+    <text font-size='16.000000' text-anchor='middle' x='275.000000' y='35.000000' dominant-baseline='central' fill=''>
+A<tspan dy='8.000000' font-size='.7em'></tspan>
     </text>
-    <text font-size='16.000000' text-anchor='middle' x='275.000000' y='110.000000' dominant-baseline='central'>
-B<tspan dy='8' font-size='.7em'></tspan>
+    <text font-size='16.000000' text-anchor='middle' x='275.000000' y='110.000000' dominant-baseline='central' fill=''>
+B<tspan dy='8.000000' font-size='.7em'></tspan>
     </text>
-    <text font-size='16.000000' text-anchor='middle' x='125.000000' y='185.000000' dominant-baseline='central'>
-C<tspan dy='8' font-size='.7em'></tspan>
+    <text font-size='16.000000' text-anchor='middle' x='125.000000' y='185.000000' dominant-baseline='central' fill=''>
+C<tspan dy='8.000000' font-size='.7em'></tspan>
     </text>
-    <text font-size='16.000000' text-anchor='middle' x='50.000000' y='260.000000' dominant-baseline='central'>
-F<tspan dy='8' font-size='.7em'></tspan>
+    <text font-size='16.000000' text-anchor='middle' x='50.000000' y='260.000000' dominant-baseline='central' fill=''>
+F<tspan dy='8.000000' font-size='.7em'></tspan>
     </text>
-    <text font-size='16.000000' text-anchor='middle' x='125.000000' y='260.000000' dominant-baseline='central'>
-G<tspan dy='8' font-size='.7em'></tspan>
+    <text font-size='16.000000' text-anchor='middle' x='125.000000' y='260.000000' dominant-baseline='central' fill=''>
+G<tspan dy='8.000000' font-size='.7em'></tspan>
     </text>
-    <text font-size='16.000000' text-anchor='middle' x='200.000000' y='260.000000' dominant-baseline='central'>
-H<tspan dy='8' font-size='.7em'></tspan>
+    <text font-size='16.000000' text-anchor='middle' x='200.000000' y='260.000000' dominant-baseline='central' fill=''>
+H<tspan dy='8.000000' font-size='.7em'></tspan>
     </text>
-    <text font-size='16.000000' text-anchor='middle' x='350.000000' y='185.000000' dominant-baseline='central'>
-D<tspan dy='8' font-size='.7em'></tspan>
+    <text font-size='16.000000' text-anchor='middle' x='350.000000' y='185.000000' dominant-baseline='central' fill=''>
+D<tspan dy='8.000000' font-size='.7em'></tspan>
     </text>
-    <text font-size='16.000000' text-anchor='middle' x='275.000000' y='260.000000' dominant-baseline='central'>
-I<tspan dy='8' font-size='.7em'></tspan>
+    <text font-size='16.000000' text-anchor='middle' x='275.000000' y='260.000000' dominant-baseline='central' fill=''>
+I<tspan dy='8.000000' font-size='.7em'></tspan>
     </text>
-    <text font-size='16.000000' text-anchor='middle' x='350.000000' y='260.000000' dominant-baseline='central'>
-J<tspan dy='8' font-size='.7em'></tspan>
+    <text font-size='16.000000' text-anchor='middle' x='350.000000' y='260.000000' dominant-baseline='central' fill=''>
+J<tspan dy='8.000000' font-size='.7em'></tspan>
     </text>
-    <text font-size='16.000000' text-anchor='middle' x='425.000000' y='260.000000' dominant-baseline='central'>
-K<tspan dy='8' font-size='.7em'></tspan>
+    <text font-size='16.000000' text-anchor='middle' x='425.000000' y='260.000000' dominant-baseline='central' fill=''>
+K<tspan dy='8.000000' font-size='.7em'></tspan>
     </text>
-    <text font-size='16.000000' text-anchor='middle' x='500.000000' y='185.000000' dominant-baseline='central'>
-E<tspan dy='8' font-size='.7em'></tspan>
+    <text font-size='16.000000' text-anchor='middle' x='500.000000' y='185.000000' dominant-baseline='central' fill=''>
+E<tspan dy='8.000000' font-size='.7em'></tspan>
     </text>
 </svg>

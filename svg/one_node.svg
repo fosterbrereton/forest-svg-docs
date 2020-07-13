@@ -1,5 +1,5 @@
 <?xml version='1.0' encoding='utf-8'?>
-<svg version='1.1' xmlns='http://www.w3.org/2000/svg' xmlns:xlink='http://www.w3.org/1999/xlink' width='100' height='170'>
+<svg xmlns='http://www.w3.org/2000/svg' xmlns:xlink='http://www.w3.org/1999/xlink' width='100' height='170'>
     <defs>
         <marker id='arrowhead' markerWidth='12' markerHeight='10' orient='auto-start-reverse' refY='5' markerUnits='userSpaceOnUse'>
             <polygon points='0 0, 12 5, 0 10'/>
@@ -10,10 +10,10 @@
     <path d='M 66.159496 91.307919 C77.264047 78.463015 109.000000 81.500000 84.000000 56.500000' fill='none' stroke='black' stroke-width='2.000000' marker-end='url(#arrowhead)'/>
     <rect x='25.000000' y='10.000000' fill='white' width='50.000000' height='50.000000' stroke='darkred' stroke-width='2.000000'/>
     <circle cx='50.000000' r='25.000000' stroke='blue' stroke-width='2.000000' cy='110.000000' fill='white'/>
-    <text font-size='16.000000' text-anchor='middle' x='50.000000' y='35.000000' dominant-baseline='central'>
-&#x211C;<tspan dy='8' font-size='.7em'></tspan>
+    <text font-size='16.000000' text-anchor='middle' x='50.000000' y='35.000000' dominant-baseline='central' fill=''>
+&#x211C;<tspan dy='8.000000' font-size='.7em'></tspan>
     </text>
-    <text font-size='16.000000' text-anchor='middle' x='50.000000' y='110.000000' dominant-baseline='central'>
-A<tspan dy='8' font-size='.7em'></tspan>
+    <text font-size='16.000000' text-anchor='middle' x='50.000000' y='110.000000' dominant-baseline='central' fill=''>
+A<tspan dy='8.000000' font-size='.7em'></tspan>
     </text>
 </svg>

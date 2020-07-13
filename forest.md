@@ -61,7 +61,7 @@ tab: Forest
             <text font-size='{{node_font_size}}' text-anchor="middle" fill='{{color_disabled}}' dominant-baseline="central">C<tspan dy="15" font-size=".7em">last</tspan></text>
         </g>
         <g id='edge_lo_ti'>
-            <path d='M -25 50 Q -75 125 0 125 Q 75 125 25 50' fill='transparent' stroke='black' stroke-width='5' marker-end="url(#arrowhead)"/>?
+            <path d='M -25 50 Q -75 125 0 125 Q 75 125 25 50' fill='none' stroke='black' stroke-width='5' marker-end="url(#arrowhead)"/>?
         </g>
         <g id='edge_li'>
             <line x1="-100" y1="-100" x2="-40" y2="-40" stroke='black' stroke-width='5' marker-end="url(#arrowhead)"/>?
@@ -76,19 +76,19 @@ tab: Forest
             <line x1="40" y1="-40" x2="100" y2="-100" stroke='black' stroke-width='5' marker-end="url(#arrowhead)"/>?
         </g>
         <g id='edge_lo_li'>
-            <path d='M 0 50 Q -50 100 0 150' fill='transparent' stroke='black' stroke-width='5' marker-end="url(#arrowhead)"/>?
+            <path d='M 0 50 Q -50 100 0 150' fill='none' stroke='black' stroke-width='5' marker-end="url(#arrowhead)"/>?
         </g>
         <g id='edge_lo_li_2'>
-            <path d='M 100 50 Q -50 100 0 150' fill='transparent' stroke='black' stroke-width='5' marker-end="url(#arrowhead)"/>?
+            <path d='M 100 50 Q -50 100 0 150' fill='none' stroke='black' stroke-width='5' marker-end="url(#arrowhead)"/>?
         </g>
         <g id='edge_to_li'>
-            <path d='M 50 0 Q 100 -50 150 0' fill='transparent' stroke='black' stroke-width='5' marker-end="url(#arrowhead)"/>?
+            <path d='M 50 0 Q 100 -50 150 0' fill='none' stroke='black' stroke-width='5' marker-end="url(#arrowhead)"/>?
         </g>
         <g id='edge_to_ti'>
-            <path d='M 50 150 Q 100 100 50 50' fill='transparent' stroke='black' stroke-width='5' marker-end="url(#arrowhead)"/>?
+            <path d='M 50 150 Q 100 100 50 50' fill='none' stroke='black' stroke-width='5' marker-end="url(#arrowhead)"/>?
         </g>
         <g id='edge_to_ti_2'>
-            <path d='M 50 150 Q 100 100 -50 50' fill='transparent' stroke='black' stroke-width='5' marker-end="url(#arrowhead)"/>?
+            <path d='M 50 150 Q 100 100 -50 50' fill='none' stroke='black' stroke-width='5' marker-end="url(#arrowhead)"/>?
         </g>
     </defs>
 </svg>
@@ -296,3 +296,44 @@ The root node is not considered during forest traversal. As such it is omitted f
 The traversal behavior of `adobe::forest<T>::itrator` is always fullorder. This means every node is visited twice: first, right before any of its children are visited (on the leading edge), and then again after the last child is visited (on the trailing edge). This behavior is recursive, and results in a depth-first traversal of the forest:
 
 <img class='svg-img' src='{{site.baseurl}}/svg/fullorder_one.svg'/>
+
+Here is the same diagram with the leading and trailing edges colorized green and red, respectively:
+
+<img class='svg-img' src='{{site.baseurl}}/svg/fullorder_two.svg'/>
+
+### Fullorder traversal of $N$'s subtree
+
+To traverse a node $N$ and all of its descendants, the iterator range is:
+
+
+- `leading_of({N, x})` &rarr; `first`
+- `++trailing_of({N, x})` &rarr; `last`
+
+<svg width='175' height='150' viewBox='0 0 350 300'>
+    <use xlink:href='#edge_li' x='150' y = '150'/>
+    <use xlink:href='#edge_lo' x='150' y = '150'/>
+    <use xlink:href='#edge_ti' x='150' y = '150'/>
+    <use xlink:href='#edge_to' x='150' y = '150'/>
+    <use xlink:href='#node' x='150' y='150'/>
+    <text font-size='{{small_font_size}}' x='0' y='30' dominant-baseline="central">{N, L} (first)</text>
+    <text font-size='{{small_font_size}}' x='250' y='260' dominant-baseline="central">{N, T}</text>
+    <text font-size='{{small_font_size}}' x='200' y='30' dominant-baseline="central">++{N, T} (last)</text>
+</svg>
+
+Note this technique does not work if $N==R$.
+
+### Preorder
+
+A preorder traversal of the forest will visit every node once. During preorder traversal a parent will be visited before its children. We achieve preorder iteration by incrementing fullorder repeatedly, visiting a node only when the iterator is on a leading edge:
+
+- `do ++{node, edge} while edge == trailing`
+
+<img class='svg-img' src='{{site.baseurl}}/svg/preorder.svg'/>
+
+### Postorder
+
+A postorder traversal of the forest will visit every node once. During postorder traversal a parent will be visited after its children. We achieve postorder iteration by incrementing fullorder repeatedly, visiting a node only when the iterator is on a trailing edge:
+
+- `do ++{node, edge} while edge == leading`
+
+<img class='svg-img' src='{{site.baseurl}}/svg/postorder.svg'/>

@@ -82,7 +82,8 @@ auto make_state_edges(const json_object& object) {
         }
 
         result[entry.first] = edge_properties {
-            get<bool>(mapped, "_hide")
+            get<bool>(mapped, "_hide"),
+            get<std::string>(mapped, "_color")
         };
     }
 

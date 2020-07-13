@@ -29,6 +29,7 @@ struct node_properties {
 
 struct edge_properties {
     bool _hide{false};
+    std::string _color{"black"};
 };
 
 struct graph_settings {
