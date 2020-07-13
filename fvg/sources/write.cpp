@@ -9,6 +9,8 @@
 
 // application
 #include "forest_algorithms.hpp"
+#include "geometry.hpp"
+#include "svg.hpp"
 
 /**************************************************************************************************/
 
@@ -190,96 +192,10 @@ auto derive_y_offsets(const state& state) {
 
 /**************************************************************************************************/
 
-struct point {
-    double x{0};
-    double y{0};
-
-    auto magnitude() const { return std::sqrt(x * x + y * y); }
-
-    inline constexpr auto operator+=(const point& rhs) { x += rhs.x; y += rhs.y; return *this; }
-    inline constexpr auto operator-=(const point& rhs) { x -= rhs.x; y -= rhs.y; return *this; }
-    inline constexpr auto operator*=(const point& rhs) { x *= rhs.x; y *= rhs.y; return *this; }
-    inline constexpr auto operator/=(const point& rhs) { x /= rhs.x; y /= rhs.y; return *this; }
-
-    inline constexpr auto operator+=(const double rhs) { x += rhs; y += rhs; return *this; }
-    inline constexpr auto operator-=(const double rhs) { x -= rhs; y -= rhs; return *this; }
-    inline constexpr auto operator*=(const double rhs) { x *= rhs; y *= rhs; return *this; }
-    inline constexpr auto operator/=(const double rhs) { x /= rhs; y /= rhs; return *this; }
-};
-
-inline constexpr auto operator==(const point& a, const point& b) { return a.x == b.x && a.y == b.y; }
-inline constexpr auto operator!=(const point& a, const point& b) { return !(a == b);}
-inline constexpr auto operator+(const point& a, const point& b) { point r{a}; r += b; return r; }
-inline constexpr auto operator-(const point& a, const point& b) { point r{a}; r -= b; return r; }
-inline constexpr auto operator*(const point& a, const point& b) { point r{a}; r *= b; return r; }
-inline constexpr auto operator/(const point& a, const point& b) { point r{a}; r /= b; return r; }
-inline constexpr auto operator+(const point& a, const double b) { point r{a}; r += b; return r; }
-inline constexpr auto operator-(const point& a, const double b) { point r{a}; r -= b; return r; }
-inline constexpr auto operator*(const point& a, const double b) { point r{a}; r *= b; return r; }
-inline constexpr auto operator/(const point& a, const double b) { point r{a}; r /= b; return r; }
-inline constexpr auto operator-(const point& a) { return point{-a.x, -a.y}; }
-
-/**************************************************************************************************/
-
-struct cubic_bezier {
-    auto operator()(double t) const;
-
-    auto derivative(double t) const;
-
-    point _s;
-    point _c1;
-    point _c2;
-    point _e;
-};
-
-inline constexpr auto operator==(const cubic_bezier& a, const cubic_bezier& b) {
-    return a._s == b._s &&
-           a._c1 == b._c1 &&
-           a._c2 == b._c2 &&
-           a._e == b._e;
-}
-inline constexpr auto operator!=(const cubic_bezier& a, const cubic_bezier& b) { return !(a == b); }
-
-/**************************************************************************************************/
-
-auto cubic_bezier::operator()(double t) const {
-    assert(t >= 0);
-    assert(t <= 1);
-
-    const auto u{1 - t};
-    auto p0_term{1 * std::pow(u, 3) * 1             };
-    auto p1_term{3 * std::pow(u, 2) * t             };
-    auto p2_term{3 * u              * std::pow(t, 2)};
-    auto p3_term{1 * 1              * std::pow(t, 3)};
-
-    return _s * p0_term + _c1 * p1_term + _c2 * p2_term + _e * p3_term;
-}
-
-/**************************************************************************************************/
-
-auto cubic_bezier::derivative(double t) const {
-    assert(t >= 0);
-    assert(t <= 1);
-
-    const auto u{1 - t};
-    auto p0_term{3 * std::pow(u, 2)};
-    auto p1_term{6 * u * t};
-    auto p2_term{3 * std::pow(t, 2)};
-
-    return (_c1 - _s) * p0_term + (_c2 - _c1) * p1_term + (_e - _c2) * p2_term;
-}
-
-/**************************************************************************************************/
-
 struct xml_node {
     std::string _tag;
     std::unordered_map<std::string, std::string> _attributes;
     std::string _content;
-
-    // Not necessary for XML output, but handy to keep around.
-    point _pos;
-    point _sz;
-    cubic_bezier _c; // nonempty if this node is an edge
 };
 
 /**************************************************************************************************/
@@ -496,7 +412,7 @@ auto edge_to_self(const point& from, const point& to, bool rect) {
 
 /**************************************************************************************************/
 
-auto derive_edges(const adobe::forest<xml_node>& f,
+auto derive_edges(const adobe::forest<svg::node>& f,
                   bool leaf_edges,
                   bool leading_edges,
                   bool trailing_edges) {
@@ -529,16 +445,20 @@ auto derive_edges(const adobe::forest<xml_node>& f,
     // cubic path for each edge in the graph. So that's where we'll go. I did implement the
     // extreme/long edge angle backoff- that seems to have helped a bit.
 
-    std::vector<xml_node> result;
+    svg::nodes result;
 
     if (f.empty()) return result;
 
-    auto        first{f.begin()};
-    auto        last{f.end()};
-    bool        prev_leading{first.edge() == adobe::forest_leading_edge};
-    bool        prev_rect{first->_tag == "rect"};
-    point       prev{first->_pos.x, first->_pos.y};
-    std::size_t edge_count{0};
+    auto  first{f.begin()};
+    auto  last{f.end()};
+    bool  prev_leading{first.edge() == adobe::forest_leading_edge};
+    const auto* prev_circle{std::get_if<svg::circle>(&*first)};
+    const auto* prev_square{std::get_if<svg::square>(&*first)};
+
+    assert(prev_circle != nullptr || prev_square != nullptr);
+
+    bool  prev_rect{prev_square != nullptr};
+    point prev{prev_rect ? prev_square->_p : prev_circle->_c};
 
     ++first;
 
@@ -548,8 +468,13 @@ auto derive_edges(const adobe::forest<xml_node>& f,
 
     while (first != last) {
         bool  cur_leading{first.edge() == adobe::forest_leading_edge};
-        bool  cur_rect{first->_tag == "rect"};
-        point cur{first->_pos.x, first->_pos.y};
+        const auto* cur_circle{std::get_if<svg::circle>(&*first)};
+        const auto* cur_square{std::get_if<svg::square>(&*first)};
+
+        assert(cur_circle != nullptr || cur_square != nullptr);
+
+        bool  cur_rect{cur_square != nullptr};
+        point cur{cur_rect ? cur_square->_p : cur_circle->_c};
         const auto t{delerp<double>((prev - cur).magnitude(), min_mag_k, max_mag_k)};
         cubic_bezier bezier;
 
@@ -568,46 +493,12 @@ auto derive_edges(const adobe::forest<xml_node>& f,
         }
 
         if (bezier != cubic_bezier{}) {
-            result.push_back(xml_node{
-                "path",
-                {
-                    { "id", "edge_" + std::to_string(++edge_count) },
-                    { "d", svg_bezier(bezier) },
-                    { "fill", "transparent" },
-                    { "stroke", "black" },
-                    { "stroke-width", std::to_string(stroke_width_k) },
-                    { "marker-end", "url(#arrowhead)" },
-                }
-            });
+            result.push_back(svg::cubic_path{bezier, "black", stroke_width_k});
 
-            result.back()._c = std::move(bezier);
 #if 0
             // Print the control points of the curve. Save these for debugging.
-            result.push_back(xml_node{
-                "line",
-                {
-                    { "id", "edge_" + std::to_string(++edge_count) },
-                    { "x1", std::to_string(bezier._s.x) },
-                    { "y1", std::to_string(bezier._s.y) },
-                    { "x2", std::to_string(bezier._c1.x) },
-                    { "y2", std::to_string(bezier._c1.y) },
-                    { "fill", "transparent" },
-                    { "stroke", "green" },
-                    { "stroke-width", "2" },
-                }});
-
-            result.push_back(xml_node{
-                "line",
-                {
-                    { "id", "edge_" + std::to_string(++edge_count) },
-                    { "x1", std::to_string(bezier._e.x) },
-                    { "y1", std::to_string(bezier._e.y) },
-                    { "x2", std::to_string(bezier._c2.x) },
-                    { "y2", std::to_string(bezier._c2.y) },
-                    { "fill", "transparent" },
-                    { "stroke", "green" },
-                    { "stroke-width", "2" },
-                }});
+            result.push_back(svg::line{bezier._s, bezier._c1, "green", 2});
+            result.push_back(svg::line{bezier._e, bezier._c2, "green", 2});
 #endif
         }
 
@@ -623,152 +514,35 @@ auto derive_edges(const adobe::forest<xml_node>& f,
 
 /**************************************************************************************************/
 
-auto subscriptify(const std::string& s) {
+auto subscript_split(const std::string& s) {
     auto subscript_pos{s.find("_")};
 
-    if (subscript_pos == std::string::npos) return s;
+    if (subscript_pos == std::string::npos) return std::make_pair(s, std::string());
 
     std::string pre{s.substr(0, subscript_pos)};
     std::string sub{s.substr(subscript_pos + 1)};
-    static const auto drop = std::to_string(font_size_k / 2);
 
-    return pre + "<tspan dy=\'" + drop + "\' font-size=\'.7em\'>" + sub + "</tspan>";
+    return std::make_pair(std::move(pre), std::move(sub));
 }
 
 /**************************************************************************************************/
 
-void write_svg(state state, const std::filesystem::path& path) {
-    std::ofstream out{path, std::ios::out | std::ios::binary};
+auto derive_edge_labels(const edge_labels& labels, const svg::nodes& edges) {
+    auto       first{labels.begin()};
+    auto       last{labels.end()};
+    svg::nodes result;
 
-    if (!out) {
-        throw std::runtime_error("error creating output file");
-    }
-
-    // Add optional root
-    if (state._s._with_root) {
-        auto first{adobe::child_begin(state._f.root())};
-        auto last{adobe::child_end(state._f.root())};
-        state._f.insert_parent(first, last, root_name_k);
-    }
-
-    auto counts = child_counts(state);
-    auto widths = derive_widths(counts);
-    auto height = derive_height(counts, state._s._with_leaf_edges);
-    auto width = derive_width(widths);
-    auto x_offsets = derive_x_offsets(widths);
-    auto y_offsets = derive_y_offsets(state);
-
-    // Save for debugging.
-    // fvg::print(state._f);
-    // std::cout << "=-=-=-=-\n";
-    // fvg::print(counts);
-    // std::cout << "=-=-=-=-\n";
-    // fvg::print(widths);
-    // std::cout << "=-=-=-=-\n";
-    // fvg::print(x_offsets);
-    // std::cout << "=-=-=-=-\n";
-    // fvg::print(y_offsets);
-
-    // Construct the nodes.
-
-    auto svg_nodes{transcribe_forest(state._f, [&_map = state._n](const auto& n){
-        const auto& node_properties{_map[n]};
-
-        const xml_node circle_k{
-            "circle",
-            {
-                { "r", std::to_string(node_radius_k) },
-                { "fill", "white" },
-                { "stroke", node_properties._color },
-                { "stroke-width", std::to_string(stroke_width_k) },
-                { "stroke-dasharray", node_properties._stroke_dasharray },
-            },
-            "",
-            { 0, 0 }, { node_radius_k*2, node_radius_k*2 }
-        };
-
-        static const xml_node square_k{
-            "rect",
-            {
-                { "width", std::to_string(node_size_k) },
-                { "height", std::to_string(node_size_k) },
-                { "fill", "white" },
-                { "stroke", "darkred" },
-                { "stroke-width", std::to_string(stroke_width_k) },
-            },
-            "",
-            { 0, 0 }, { node_radius_k*2, node_radius_k*2 }
-        };
-
-        return n == root_name_k ? square_k : circle_k;
-    })};
-
-    apply_forest(svg_nodes.begin(), svg_nodes.end(), x_offsets.begin(), [](auto& a, auto& b){
-        if (a._tag == "circle") {
-            a._pos.x = b + node_radius_k;
-            a._attributes["cx"] = std::to_string(a._pos.x);
-        } else if (a._tag == "rect") {
-            a._pos.x = b;
-            a._attributes["x"] = std::to_string(a._pos.x);
-        } else {
-            throw std::runtime_error("Uknown node shape");
-        }
-    });
-
-    apply_forest(svg_nodes.begin(), svg_nodes.end(), y_offsets.begin(), [](auto& a, auto& b){
-        if (a._tag == "circle") {
-            a._pos.y = b + node_radius_k;
-            a._attributes["cy"] = std::to_string(a._pos.y);
-        } else if (a._tag == "rect") {
-            a._pos.y = b;
-            a._attributes["y"] = std::to_string(a._pos.y);
-        } else {
-            throw std::runtime_error("Uknown node shape");
-        }
-    });
-
-    // Derive the edges.
-
-    auto svg_edges{derive_edges(svg_nodes,
-                                state._s._with_leaf_edges,
-                                !state._e["_leading"]._hide,
-                                !state._e["_trailing"]._hide)};
-
-    // Construct the node labels.
-
-    auto svg_labels{transcribe_forest(state._f, [](const auto& n){
-        return xml_node{
-            "text",
-            {
-                { "font-size", std::to_string(font_size_k) },
-                { "text-anchor", "middle" },
-                { "dominant-baseline", "central" },
-            },
-            subscriptify(n)
-        };
-    })};
-
-    apply_forest(svg_labels.begin(), svg_labels.end(), x_offsets.begin(), [](auto& a, auto& b){
-        a._attributes["x"] = std::to_string(b + node_radius_k);
-    });
-
-    apply_forest(svg_labels.begin(), svg_labels.end(), y_offsets.begin(), [](auto& a, auto& b){
-        a._attributes["y"] = std::to_string(b + node_radius_k);
-    });
-
-    // Construct edge labels
-    auto                  label_first{state._l.begin()};
-    auto                  label_last{state._l.end()};
-    std::vector<xml_node> edge_labels;
-
-    for (auto& edge : svg_edges) {
-        if (label_first == label_last) break;
-        if (label_first->empty()) {
-            ++label_first;
+    for (auto& edge : edges) {
+        if (first == last) break;
+        if (first->empty()) {
+            ++first;
             continue;
         }
 
-        const auto& curve{edge._c};
+        const auto* curve_ptr{std::get_if<svg::cubic_path>(&edge)};
+        if (!curve_ptr) continue;
+
+        const auto& curve{curve_ptr->_b};
         assert(curve != cubic_bezier{});
 
         // The goal is to put the label along the edge. To do that we have to compute
@@ -786,17 +560,16 @@ void write_svg(state state, const std::filesystem::path& path) {
         const point dmid{curve.derivative(0.5)};
         const double slope{dmid.x ? dmid.y / dmid.x : 0};
         const bool flat{std::abs(slope) < 0.01};
+        constexpr auto distance_k{font_size_k * 0.55};
 
         point bs; // baseline start
         point be; // baseline end
 
         if (flat) {
-            constexpr auto delta_k{font_size_k * 0.7};
-
             bs = mid;
-            bs.y += delta_k;
+            bs.y += distance_k;
             be = mid;
-            be.y -= delta_k;
+            be.y -= distance_k;
         } else {
             const double orth{-1 / slope};
             const auto b{mid.y - orth * mid.x};
@@ -838,8 +611,7 @@ void write_svg(state state, const std::filesystem::path& path) {
             // equidistant along the perpendicular at the bezier "midpoint". Once I had x for both
             // points, I used the slope-intercept line equation to get their corresponding y values.
 
-            const auto distance{font_size_k * 0.7};
-            const auto d2{distance * distance};
+            const auto d2{distance_k * distance_k};
             const auto qa{-1};
             const auto qb{2 * mid.x};
             const auto o2{orth * orth};
@@ -861,31 +633,256 @@ void write_svg(state state, const std::filesystem::path& path) {
                 std::swap(bs, be);
             }
         }
-#if 1
-        edge_labels.push_back(xml_node{
-            "line",
-            {
-                { "x1", std::to_string(bs.x) },
-                { "y1", std::to_string(bs.y) },
-                { "x2", std::to_string(be.x) },
-                { "y2", std::to_string(be.y) },
-                { "fill", "transparent" },
-                { "stroke", "yellow" },
-                { "stroke-width", "2" },
-            }});
+
+#if 0
+        // Output the perpendicular line upon which the label rests. Save this for debugging.
+        result.push_back(svg::line{bs, be, "yellow", 2});
 #endif
-        edge_labels.push_back(xml_node{
-            "text",
-            {
-                { "font-size", std::to_string(font_size_k) },
-                { "text-anchor", "middle" },
-                { "dominant-baseline", "central" },
-                { "x", std::to_string(bs.x) },
-                { "y", std::to_string(bs.y) },
-            },
-            *label_first++
+
+        auto split{subscript_split(*first++)};
+
+        result.push_back(svg::text{
+            bs,
+            std::move(split.first),
+            std::move(split.second),
+            font_size_k,
         });
     }
+
+    return result;
+}
+
+/**************************************************************************************************/
+
+namespace detail {
+
+/**************************************************************************************************/
+
+// helper type for the visitor
+template<class... Ts> struct overloaded : Ts... { using Ts::operator()...; };
+// explicit deduction guide (not needed as of C++20)
+template<class... Ts> overloaded(Ts...) -> overloaded<Ts...>;
+
+/**************************************************************************************************/
+
+struct svg_line_to_xml {
+    xml_node operator()(svg::line line) {
+        return xml_node{
+            "line",
+            {
+                { "x1", std::to_string(line._a.x) },
+                { "y1", std::to_string(line._a.y) },
+                { "x2", std::to_string(line._b.x) },
+                { "y2", std::to_string(line._b.y) },
+                { "stroke", std::move(line._color) },
+                { "stroke-width", std::to_string(line._width) },
+            }
+        };
+    }
+};
+
+/**************************************************************************************************/
+
+struct svg_cubic_path_to_xml {
+    xml_node operator()(svg::cubic_path path) {
+        return xml_node{
+            "path",
+            {
+                { "d", svg_bezier(path._b) },
+                { "stroke", std::move(path._color) },
+                { "fill", "none" },
+                { "stroke-width", std::to_string(path._width) },
+                { "marker-end", "url(#arrowhead)" },
+            }
+        };
+    }
+};
+
+/**************************************************************************************************/
+
+auto subscriptify(std::string s, std::string sub) {
+    static const auto drop = std::to_string(font_size_k / 2);
+
+    return std::move(s) +
+           "<tspan dy=\'" + drop + "\' font-size=\'.7em\'>" +
+           std::move(sub) +
+           "</tspan>";
+}
+
+struct svg_text_to_xml {
+    xml_node operator()(svg::text text) {
+        return xml_node{
+            "text",
+            {
+                { "font-size", std::to_string(text._size) },
+                { "text-anchor", "middle" },
+                { "dominant-baseline", "central" },
+                { "x", std::to_string(text._p.x) },
+                { "y", std::to_string(text._p.y) },
+            },
+            subscriptify(std::move(text._s), std::move(text._subscript))
+        };
+    }
+};
+
+/**************************************************************************************************/
+
+struct svg_circle_to_xml {
+    xml_node operator()(svg::circle c) {
+        return xml_node{
+            "circle",
+            {
+                { "cx", std::to_string(c._c.x) },
+                { "cy", std::to_string(c._c.y) },
+                { "r", std::to_string(c._r) },
+                { "fill", "white" },
+                { "stroke", std::move(c._color) },
+                { "stroke-width", std::to_string(c._stroke_width) },
+                //{ "stroke-dasharray", node_properties._stroke_dasharray },
+            }
+        };
+    }
+};
+
+/**************************************************************************************************/
+
+struct svg_square_to_xml {
+    xml_node operator()(svg::square s) {
+        return xml_node{
+            "rect",
+            {
+                { "x", std::to_string(s._p.x) },
+                { "y", std::to_string(s._p.y) },
+                { "width", std::to_string(s._size) },
+                { "height", std::to_string(s._size) },
+                { "fill", "white" },
+                { "stroke", std::move(s._color) },
+                { "stroke-width", std::to_string(s._stroke_width) },
+            }
+        };
+    }
+};
+
+/**************************************************************************************************/
+
+} // namespace detail
+
+/**************************************************************************************************/
+
+xml_node svg_to_xml(svg::node n) {
+    return std::visit(detail::overloaded {
+        detail::svg_line_to_xml(),
+        detail::svg_cubic_path_to_xml(),
+        detail::svg_text_to_xml(),
+        detail::svg_circle_to_xml(),
+        detail::svg_square_to_xml(),
+    }, std::move(n));
+}
+
+/**************************************************************************************************/
+
+void write_svg(state state, const std::filesystem::path& path) {
+    std::ofstream out{path, std::ios::out | std::ios::binary};
+
+    if (!out) {
+        throw std::runtime_error("error creating output file");
+    }
+
+    // Add optional root
+    if (state._s._with_root) {
+        auto first{adobe::child_begin(state._f.root())};
+        auto last{adobe::child_end(state._f.root())};
+        state._f.insert_parent(first, last, root_name_k);
+    }
+
+    auto counts = child_counts(state);
+    auto widths = derive_widths(counts);
+    auto height = derive_height(counts, state._s._with_leaf_edges);
+    auto width = derive_width(widths);
+    auto x_offsets = derive_x_offsets(widths);
+    auto y_offsets = derive_y_offsets(state);
+
+    // Save for debugging.
+    // fvg::print(state._f);
+    // std::cout << "=-=-=-=-\n";
+    // fvg::print(counts);
+    // std::cout << "=-=-=-=-\n";
+    // fvg::print(widths);
+    // std::cout << "=-=-=-=-\n";
+    // fvg::print(x_offsets);
+    // std::cout << "=-=-=-=-\n";
+    // fvg::print(y_offsets);
+
+    // Construct the nodes.
+
+    auto svg_nodes{transcribe_forest(state._f, [&_map = state._n](const auto& n){
+        const auto& node_properties{_map[n]};
+        return n == root_name_k ?
+            svg::node{svg::square{
+                point{},
+                node_size_k,
+                "darkred",
+                stroke_width_k
+            }} :
+            svg::node{svg::circle{
+                point{},
+                node_radius_k,
+                node_properties._color,
+                stroke_width_k
+            }};
+    })};
+
+    apply_forest(svg_nodes.begin(), svg_nodes.end(), x_offsets.begin(), [](auto& a, auto& b){
+        if (auto* circle = std::get_if<svg::circle>(&a)) {
+            circle->_c.x = b + node_radius_k;
+        } else if (auto* square = std::get_if<svg::square>(&a)) {
+            square->_p.x = b;
+        } else {
+            throw std::runtime_error("Unknown node shape");
+        }
+    });
+
+    apply_forest(svg_nodes.begin(), svg_nodes.end(), y_offsets.begin(), [](auto& a, auto& b){
+        if (auto* circle = std::get_if<svg::circle>(&a)) {
+            circle->_c.y = b + node_radius_k;
+        } else if (auto* square = std::get_if<svg::square>(&a)) {
+            square->_p.y = b;
+        } else {
+            throw std::runtime_error("Unknown node shape");
+        }
+    });
+
+    // Derive the edges.
+
+    auto svg_edges{derive_edges(svg_nodes,
+                                state._s._with_leaf_edges,
+                                !state._e["_leading"]._hide,
+                                !state._e["_trailing"]._hide)};
+
+    // Construct the node labels.
+
+    auto svg_labels{transcribe_forest(state._f, [](const auto& n){
+        auto split{subscript_split(n)};
+
+        return svg::text{
+            point{},
+            std::move(split.first),
+            std::move(split.second),
+            font_size_k
+        };
+    })};
+
+    apply_forest(svg_labels.begin(), svg_labels.end(), x_offsets.begin(), [](auto& a, auto& b){
+        a._p.x = b + node_radius_k;
+    });
+
+    apply_forest(svg_labels.begin(), svg_labels.end(), y_offsets.begin(), [](auto& a, auto& b){
+        a._p.y = b + node_radius_k;
+    });
+
+    // Construct edge labels
+
+    auto edge_labels{derive_edge_labels(state._l, svg_edges)};
 
     // Begin constructing the final XML.
 
@@ -924,27 +921,21 @@ void write_svg(state state, const std::filesystem::path& path) {
         }
     });
 
-    auto copy_flat{[](auto& dst, auto p, auto& src){
-        auto range{adobe::preorder_range(src)};
-        auto first{range.begin()};
-        auto last{range.end()};
-
-        while (first != last) {
-            dst.insert(p, *first);
-            ++first;
-        }
-    }};
-
     for (auto& edge : svg_edges) {
-        xml.insert(p, std::move(edge));
+        xml.insert(p, svg_to_xml(std::move(edge)));
     }
 
     for (auto& label : edge_labels) {
-        xml.insert(p, std::move(label));
+        xml.insert(p, svg_to_xml(std::move(label)));
     }
 
-    copy_flat(xml, p, svg_nodes);
-    copy_flat(xml, p, svg_labels);
+    for (auto& node : adobe::preorder_range(svg_nodes)) {
+        xml.insert(p, svg_to_xml(std::move(node)));
+    }
+
+    for (auto& label : adobe::preorder_range(svg_labels)) {
+        xml.insert(p, svg_to_xml(std::move(label)));
+    }
 
     print_xml(std::move(xml), out);
 }

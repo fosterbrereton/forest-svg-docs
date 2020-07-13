@@ -5,9 +5,9 @@
             <polygon points='0 0, 12 5, 0 10'/>
         </marker>
     </defs>
-    <path id='edge_1' d='M 40.432914 58.096988 C27.995703 88.123073 73.350629 78.645482 68.567086 67.096988' fill='transparent' stroke='black' stroke-width='2' marker-end='url(#arrowhead)'/>
-    <circle cy='35.000000' cx='50.000000' fill='white' stroke-dasharray='0' stroke-width='2' stroke='blue' r='25'/>
-    <text font-size='16' y='35' x='50' text-anchor='middle' dominant-baseline='central'>
-N
+    <path d='M 40.432914 58.096988 C27.995703 88.123073 73.350629 78.645482 68.567086 67.096988' fill='none' stroke='black' stroke-width='2.000000' marker-end='url(#arrowhead)'/>
+    <circle cx='50.000000' r='25.000000' stroke='blue' stroke-width='2.000000' cy='35.000000' fill='white'/>
+    <text font-size='16.000000' text-anchor='middle' x='50.000000' y='35.000000' dominant-baseline='central'>
+N<tspan dy='8' font-size='.7em'></tspan>
     </text>
 </svg>

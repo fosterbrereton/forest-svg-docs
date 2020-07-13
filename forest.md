@@ -295,16 +295,4 @@ The root node is not considered during forest traversal. As such it is omitted f
 
 The traversal behavior of `adobe::forest<T>::itrator` is always fullorder. This means every node is visited twice: first, right before any of its children are visited (on the leading edge), and then again after the last child is visited (on the trailing edge). This behavior is recursive, and results in a depth-first traversal of the forest:
 
-<svg width='230' height='250' viewBox='0 0 460 500'>
-    <use xlink:href='#edge_li' x='125' y = '125'/>
-    <text font-size='{{node_font_size}}' x='50' y='25' fill='blue' dominant-baseline="central">1</text>
-    <use xlink:href='#node' x='125' y='125'/>
-    <use xlink:href='#edge_lo_li' x='100' y = '125'/>
-    <use xlink:href='#edge_to_ti' x='100' y = '125'/>
-    <use xlink:href='#edge_to_li' x='125' y = '100'/>
-    <use xlink:href='#node' x='125' y='325'/>
-    <use xlink:href='#edge_lo_ti' x='125' y = '325'/>
-    <use xlink:href='#node' x='325' y='125'/>
-    <use xlink:href='#edge_lo_ti' x='325' y = '125'/>
-    <use xlink:href='#edge_to' x='325' y = '125'/>
-</svg>
+<img class='svg-img' src='{{site.baseurl}}/svg/fullorder_one.svg'/>

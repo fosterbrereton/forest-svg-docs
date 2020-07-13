@@ -5,55 +5,48 @@
             <polygon points='0 0, 12 5, 0 10'/>
         </marker>
     </defs>
-    <path id='edge_1' d='M 62.000000 47.500000 C37.000000 72.500000 13.776911 69.899658 24.712886 82.393191' fill='transparent' stroke='black' stroke-width='2' marker-end='url(#arrowhead)'/>
-    <path id='edge_2' d='M 32.322330 127.677670 C23.483496 136.516504 14.483496 149.483496 23.322330 158.322330' fill='transparent' stroke='black' stroke-width='2' marker-end='url(#arrowhead)'/>
-    <path id='edge_3' d='M 40.432914 208.096988 C27.995703 238.123073 73.350629 228.645482 68.567086 217.096988' fill='transparent' stroke='black' stroke-width='2' marker-end='url(#arrowhead)'/>
-    <path id='edge_4' d='M 67.677670 167.322330 C76.516504 158.483496 85.516504 145.516504 76.677670 136.677670' fill='transparent' stroke='black' stroke-width='2' marker-end='url(#arrowhead)'/>
-    <path id='edge_5' d='M 67.677670 92.322330 C76.516504 83.483496 89.483496 74.483496 98.322330 83.322330' fill='transparent' stroke='black' stroke-width='2' marker-end='url(#arrowhead)'/>
-    <path id='edge_6' d='M 115.432914 133.096988 C102.995703 163.123073 148.350629 153.645482 143.567086 142.096988' fill='transparent' stroke='black' stroke-width='2' marker-end='url(#arrowhead)'/>
-    <path id='edge_7' d='M 140.342334 90.761909 C152.431124 75.603509 146.000000 81.500000 121.000000 56.500000' fill='transparent' stroke='black' stroke-width='2' marker-end='url(#arrowhead)'/>
-    <line x1='24.607228' y1='59.755574' x2='35.153677' y2='79.517467' fill='transparent' stroke='yellow' stroke-width='2'/>
-    <text font-size='16' text-anchor='middle' x='24.607228' y='59.755574' dominant-baseline='central'>
-1
+    <path d='M 62.000000 47.500000 C37.000000 72.500000 13.776911 69.899658 24.712886 82.393191' fill='none' stroke='black' stroke-width='2.000000' marker-end='url(#arrowhead)'/>
+    <path d='M 32.322330 127.677670 C23.483496 136.516504 14.483496 149.483496 23.322330 158.322330' fill='none' stroke='black' stroke-width='2.000000' marker-end='url(#arrowhead)'/>
+    <path d='M 40.432914 208.096988 C27.995703 238.123073 73.350629 228.645482 68.567086 217.096988' fill='none' stroke='black' stroke-width='2.000000' marker-end='url(#arrowhead)'/>
+    <path d='M 67.677670 167.322330 C76.516504 158.483496 85.516504 145.516504 76.677670 136.677670' fill='none' stroke='black' stroke-width='2.000000' marker-end='url(#arrowhead)'/>
+    <path d='M 67.677670 92.322330 C76.516504 83.483496 89.483496 74.483496 98.322330 83.322330' fill='none' stroke='black' stroke-width='2.000000' marker-end='url(#arrowhead)'/>
+    <path d='M 115.432914 133.096988 C102.995703 163.123073 148.350629 153.645482 143.567086 142.096988' fill='none' stroke='black' stroke-width='2.000000' marker-end='url(#arrowhead)'/>
+    <path d='M 140.342334 90.761909 C152.431124 75.603509 146.000000 81.500000 121.000000 56.500000' fill='none' stroke='black' stroke-width='2.000000' marker-end='url(#arrowhead)'/>
+    <text font-size='16.000000' text-anchor='middle' x='25.737204' y='61.872920' dominant-baseline='central'>
+1<tspan dy='8' font-size='.7em'></tspan>
     </text>
-    <line x1='10.840345' y1='138.727026' x2='31.546064' y2='147.272974' fill='transparent' stroke='yellow' stroke-width='2'/>
-    <text font-size='16' text-anchor='middle' x='10.840345' y='138.727026' dominant-baseline='central'>
-2
+    <text font-size='16.000000' text-anchor='middle' x='13.058815' y='139.642663' dominant-baseline='central'>
+2<tspan dy='8' font-size='.7em'></tspan>
     </text>
-    <line x1='51.629874' y1='239.387455' x2='51.629874' y2='216.987455' fill='transparent' stroke='yellow' stroke-width='2'/>
-    <text font-size='16' text-anchor='middle' x='51.629874' y='239.387455' dominant-baseline='central'>
-3
+    <text font-size='16.000000' text-anchor='middle' x='51.629874' y='236.987455' dominant-baseline='central'>
+3<tspan dy='8' font-size='.7em'></tspan>
     </text>
-    <line x1='68.453936' y1='147.727026' x2='89.159655' y2='156.272974' fill='transparent' stroke='yellow' stroke-width='2'/>
-    <text font-size='16' text-anchor='middle' x='68.453936' y='147.727026' dominant-baseline='central'>
-4
+    <text font-size='16.000000' text-anchor='middle' x='70.672406' y='148.642663' dominant-baseline='central'>
+4<tspan dy='8' font-size='.7em'></tspan>
     </text>
-    <line x1='78.727026' y1='70.840345' x2='87.272974' y2='91.546064' fill='transparent' stroke='yellow' stroke-width='2'/>
-    <text font-size='16' text-anchor='middle' x='78.727026' y='70.840345' dominant-baseline='central'>
-5
+    <text font-size='16.000000' text-anchor='middle' x='79.642663' y='73.058815' dominant-baseline='central'>
+5<tspan dy='8' font-size='.7em'></tspan>
     </text>
-    <line x1='126.629874' y1='164.387455' x2='126.629874' y2='141.987455' fill='transparent' stroke='yellow' stroke-width='2'/>
-    <text font-size='16' text-anchor='middle' x='126.629874' y='164.387455' dominant-baseline='central'>
-6
+    <text font-size='16.000000' text-anchor='middle' x='126.629874' y='161.987455' dominant-baseline='central'>
+6<tspan dy='8' font-size='.7em'></tspan>
     </text>
-    <line x1='152.868724' y1='69.789745' x2='136.290202' y2='84.853364' fill='transparent' stroke='yellow' stroke-width='2'/>
-    <text font-size='16' text-anchor='middle' x='152.868724' y='69.789745' dominant-baseline='central'>
-7
+    <text font-size='16.000000' text-anchor='middle' x='151.092454' y='71.403704' dominant-baseline='central'>
+7<tspan dy='8' font-size='.7em'></tspan>
     </text>
-    <rect y='10.000000' x='62.000000' stroke='darkred' stroke-width='2' fill='white' height='50' width='50'/>
-    <circle cy='110.000000' cx='50.000000' fill='white' stroke-dasharray='0' stroke-width='2' stroke='blue' r='25'/>
-    <circle cy='185.000000' cx='50.000000' fill='white' stroke-dasharray='0' stroke-width='2' stroke='blue' r='25'/>
-    <circle cy='110.000000' cx='125.000000' fill='white' stroke-dasharray='0' stroke-width='2' stroke='blue' r='25'/>
-    <text font-size='16' y='35' x='87' text-anchor='middle' dominant-baseline='central'>
-&#x211C;
+    <rect x='62.000000' y='10.000000' fill='white' width='50.000000' height='50.000000' stroke='darkred' stroke-width='2.000000'/>
+    <circle cx='50.000000' r='25.000000' stroke='blue' stroke-width='2.000000' cy='110.000000' fill='white'/>
+    <circle cx='50.000000' r='25.000000' stroke='blue' stroke-width='2.000000' cy='185.000000' fill='white'/>
+    <circle cx='125.000000' r='25.000000' stroke='blue' stroke-width='2.000000' cy='110.000000' fill='white'/>
+    <text font-size='16.000000' text-anchor='middle' x='87.000000' y='35.000000' dominant-baseline='central'>
+&#x211C;<tspan dy='8' font-size='.7em'></tspan>
     </text>
-    <text font-size='16' y='110' x='50' text-anchor='middle' dominant-baseline='central'>
+    <text font-size='16.000000' text-anchor='middle' x='50.000000' y='110.000000' dominant-baseline='central'>
 N<tspan dy='8' font-size='.7em'>1</tspan>
     </text>
-    <text font-size='16' y='185' x='50' text-anchor='middle' dominant-baseline='central'>
+    <text font-size='16.000000' text-anchor='middle' x='50.000000' y='185.000000' dominant-baseline='central'>
 N<tspan dy='8' font-size='.7em'>3</tspan>
     </text>
-    <text font-size='16' y='110' x='125' text-anchor='middle' dominant-baseline='central'>
+    <text font-size='16.000000' text-anchor='middle' x='125.000000' y='110.000000' dominant-baseline='central'>
 N<tspan dy='8' font-size='.7em'>2</tspan>
     </text>
 </svg>
