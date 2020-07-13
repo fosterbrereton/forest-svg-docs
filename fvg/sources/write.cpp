@@ -763,6 +763,10 @@ void write_svg(state state, const std::filesystem::path& path) {
 
     for (auto& edge : svg_edges) {
         if (label_first == label_last) break;
+        if (label_first->empty()) {
+            ++label_first;
+            continue;
+        }
 
         const auto& curve{edge._c};
         assert(curve != cubic_bezier{});
@@ -775,40 +779,109 @@ void write_svg(state state, const std::filesystem::path& path) {
         // that's perpendicular to the curve at the point we care about, and the label
         // can "slide" up and down that line to figure out where we want it to go. For
         // curves that are more or less flat at the point where we want the label (for
-        // some definition of "more or less flat").
+        // some definition of "more or less flat"), we take an alternative path that
+        // does not rely on the slope of the perpendicular.
 
         const point mid{curve(0.5)};
         const point dmid{curve.derivative(0.5)};
         const double slope{dmid.x ? dmid.y / dmid.x : 0};
         const bool flat{std::abs(slope) < 0.01};
-        const double orth{flat ? 1 : -1 / slope};
-        const auto b{mid.y - orth * mid.x};
-        const auto bsx{mid.x + 7}; // baseline start x
-        const auto bex{mid.x - 7}; // baseline end x
-        // y = mx + b
-        const auto bsy{orth * bsx + b};
-        const auto bey{orth * bex + b};
 
+        point bs; // baseline start
+        point be; // baseline end
+
+        if (flat) {
+            constexpr auto delta_k{font_size_k * 0.7};
+
+            bs = mid;
+            bs.y += delta_k;
+            be = mid;
+            be.y -= delta_k;
+        } else {
+            const double orth{-1 / slope};
+            const auto b{mid.y - orth * mid.x};
+
+            // The goal here is to get two points that are a certain distance from the computed
+            // bezier point along the line that is perpendicular to the tanget at that point in the
+            // bezier. Blah, that was a mouthful. No time to sum up, let me explain. We're adding a
+            // label to an edge, which is drawn via a bezier path. In order for viewers to associate
+            // the label to the path, that label needs to be a certain distance from the path, but
+            // related to a point along the path. For ease of explaining, let's say that point is t
+            // = 0.5, the bezier "midpoint". We want the label some distance away from the curve
+            // relative to that "midpoint". That requires the label move perpendicular to the bezier
+            // curve at that point. That requires getting the tangent first, and inverting the
+            // slope.
+
+            // To get these two points some distance away from but perpendicular to the bezier path
+            // at a certain point, we compute one of the points and then can derive the other. To
+            // compute the one point, we have two unknowns, x, and y. Therefore, we need two
+            // equations, solve for y in terms of x in one, and then replace y in the other equation
+            // and solve for x. The first equation I used was the distance equation:
+
+            // d^2 = (x2 - x1)^2 + (y2 - y1)^2
+
+            // and the second was the two-point line equation:
+
+            // (y2 - y1) = m * (x2 - x1)
+
+            // Above, all the values are constants except x2 and y2. (x1, y1) is the bezier
+            // "midpoint", d is a fixed distance along the perpendicular that we're hunting for, and
+            // m is the slope of the perpendicular at the "midpoint". Using those two formulas, I
+            // was able to get a solution to the point where the quadratic equation could be used to
+            // solve for x. Given a quadratic ax^2 + bx + c = 0, the constants for my situation are:
+
+            // a = -1
+            // b = 2 * mid.x
+            // c = -(mid.x^2 * (1 + m^2) - d^2) / (1 + m^2)
+
+            // The added benefit of the quadratic formula is that it gives me both x values that are
+            // equidistant along the perpendicular at the bezier "midpoint". Once I had x for both
+            // points, I used the slope-intercept line equation to get their corresponding y values.
+
+            const auto distance{font_size_k * 0.7};
+            const auto d2{distance * distance};
+            const auto qa{-1};
+            const auto qb{2 * mid.x};
+            const auto o2{orth * orth};
+            const auto qc_num{std::pow(mid.x, 2) * (1 + o2) - d2};
+            const auto qc_den{1 + o2};
+            const auto qc{-qc_num / qc_den};
+            const auto qs{std::sqrt(std::pow(qb, 2) - 4 * qa * qc)};
+            const auto x1{(-qb + qs) / (2 * qa)};
+            const auto x2{(-qb - qs) / (2 * qa)};
+
+            bs.x = x1;
+            be.x = x2;
+            bs.y = orth * bs.x + b;
+            be.y = orth * be.x + b;
+
+            // we want bs to be the higher of the two values, so the label always
+            // shows above the edge.
+            if (bs.y > be.y) {
+                std::swap(bs, be);
+            }
+        }
+#if 1
         edge_labels.push_back(xml_node{
             "line",
             {
-                { "x1", std::to_string(bsx) },
-                { "y1", std::to_string(bsy) },
-                { "x2", std::to_string(bex) },
-                { "y2", std::to_string(bey) },
+                { "x1", std::to_string(bs.x) },
+                { "y1", std::to_string(bs.y) },
+                { "x2", std::to_string(be.x) },
+                { "y2", std::to_string(be.y) },
                 { "fill", "transparent" },
                 { "stroke", "yellow" },
                 { "stroke-width", "2" },
             }});
-
+#endif
         edge_labels.push_back(xml_node{
             "text",
             {
                 { "font-size", std::to_string(font_size_k) },
                 { "text-anchor", "middle" },
                 { "dominant-baseline", "central" },
-                { "x", std::to_string(bsx) },
-                { "y", std::to_string(bsy) },
+                { "x", std::to_string(bs.x) },
+                { "y", std::to_string(bs.y) },
             },
             *label_first++
         });
