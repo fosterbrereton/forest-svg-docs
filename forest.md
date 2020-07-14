@@ -126,8 +126,6 @@ Every forest has a root node, which is not a node used to store values in the fo
 
 <img class='svg-img' src='{{site.baseurl}}/svg/root.svg'/>
 
-The root does have a trailing-out edge which always points to the root leading-in edge. This creates a unique and detectible termination case, which is a useful property. For example, the end iterator for a preorder traversal (which always points to a leading edge) is this trailing-out to leading-in edge of the root.
-
 ## Edges
 
 Forest nodes are connected to one another with edges. For every node in the forest, there are exactly two edges that lead away from the node, and exactly two that lead towards the node. In this document edges will be drawn as arrows pointed in the direction of forward travel:
@@ -226,6 +224,8 @@ With the fundamental building blocks in place, here is how they combine to form 
 <img class='svg-img' src='{{site.baseurl}}/svg/empty.svg'/>
 
 Given a forest that contains only the root node, `forest<T>::empty()` will return `true`. Otherwise, it will return `false`.
+
+The root does have a trailing-out edge which always points to the root leading-in edge. This creates a unique and detectible termination case, which is a useful property. For example, the end iterator for a preorder traversal (which always points to a leading edge) is this trailing-out to leading-in edge of the root.
 
 ### One Node
 
