@@ -48,6 +48,17 @@ auto make_state_forest(const json_array& array) {
 
 /**************************************************************************************************/
 
+template <typename T>
+bool maybe_get(T& f, const json_t& j, const std::string& k) {
+    if (!j.count(k)) return false;
+
+    f = get<T>(j, k);
+
+    return true;
+}
+
+/**************************************************************************************************/
+
 auto make_state_nodes(const json_object& object) {
     node_map result;
 
@@ -58,10 +69,12 @@ auto make_state_nodes(const json_object& object) {
             throw std::runtime_error("dictionary expected for node property");
         }
 
-        result[entry.first] = node_properties {
-            get<std::string>(mapped, "color"),
-            get<std::string>(mapped, "stroke-dasharray"),
-        };
+        node_properties value;
+
+        maybe_get(value._color, mapped, "color");
+        maybe_get(value._stroke_dasharray, mapped, "stroke-dasharray");
+
+        result[entry.first] = std::move(value);
     }
 
     return result;
@@ -81,10 +94,10 @@ auto make_state_edges(const json_object& object) {
 
         edge_properties value;
 
-        if (mapped.count("_hide")) value._hide = get<bool>(mapped, "_hide");
-        if (mapped.count("_color")) value._color = get<std::string>(mapped, "_color");
-        if (mapped.count("t")) value._t = get<double>(mapped, "t");
-        if (mapped.count("stroke-dasharray")) value._stroke_dasharray = get<std::string>(mapped, "stroke-dasharray");
+        maybe_get(value._hide, mapped, "_hide");
+        maybe_get(value._color, mapped, "_color");
+        maybe_get(value._t, mapped, "t");
+        maybe_get(value._stroke_dasharray, mapped, "stroke-dasharray");
 
         result[entry.first] = std::move(value);
     }
