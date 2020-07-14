@@ -393,20 +393,24 @@ auto edge_to_self(const point& from, const point& to, bool rect) {
 /**************************************************************************************************/
 
 auto merge(edge_properties a, const edge_properties& b) {
-    static const edge_properties dfault;
+    static const edge_properties defalt;
 
     // If b's value isn't a default value, it wins over whatever value was in a.
 
-    if (b._hide != dfault._hide) {
+    if (b._hide != defalt._hide) {
         a._hide = b._hide;
     }
 
-    if (b._color != dfault._color) {
+    if (b._color != defalt._color) {
         a._color = b._color;
     }
 
-    if (b._t != dfault._t) {
+    if (b._t != defalt._t) {
         a._t = b._t;
+    }
+
+    if (b._stroke_dasharray != defalt._stroke_dasharray) {
+        a._stroke_dasharray = b._stroke_dasharray;
     }
 
     return a;
@@ -527,7 +531,11 @@ auto derive_edges(const adobe::forest<svg::node>& f,
             // trim back the bezier path to account for the arrow.
             bezier = bezier.subdivide(alp(bezier).rfind(12)).first;
 
-            result.push_back(svg::cubic_path{bezier, properties._color, stroke_width_k, cur_leading});
+            result.push_back(svg::cubic_path{bezier,
+                                             properties._color,
+                                             stroke_width_k,
+                                             properties._stroke_dasharray,
+                                             cur_leading});
 
             result.push_back(svg::arrowhead{bezier._e,
                                             arrowhead_normal,
@@ -576,13 +584,15 @@ auto derive_edge_labels(const edge_labels& labels, const edge_map& map, const sv
 
     for (auto& edge : edges) {
         if (first == last) break;
+
+        const auto* curve_ptr{std::get_if<svg::cubic_path>(&edge)};
+        if (!curve_ptr) continue;
+
         if (first->empty()) {
             ++first;
             continue;
         }
 
-        const auto* curve_ptr{std::get_if<svg::cubic_path>(&edge)};
-        if (!curve_ptr) continue;
         const auto& curve{curve_ptr->_b};
         auto properties{derive_edge_properties(*first, map, curve_ptr->_leading)};
 
@@ -679,6 +689,7 @@ xml_node svg_to_xml(svg::cubic_path path) {
             { "stroke-linecap", "round" },
             { "fill", "none" },
             { "stroke-width", std::to_string(path._width) },
+            { "stroke-dasharray", std::move(path._stroke_dasharray) },
         }
     };
 }
@@ -720,7 +731,7 @@ xml_node svg_to_xml(svg::circle c) {
             { "fill", "white" },
             { "stroke", std::move(c._color) },
             { "stroke-width", std::to_string(c._stroke_width) },
-            //{ "stroke-dasharray", node_properties._stroke_dasharray },
+            { "stroke-dasharray", std::move(c._stroke_dasharray) },
         }
     };
 }
@@ -827,7 +838,8 @@ void write_svg(state state, const std::filesystem::path& path) {
                 point{},
                 node_radius_k,
                 node_properties._color,
-                stroke_width_k
+                stroke_width_k,
+                node_properties._stroke_dasharray
             }};
     })};
 

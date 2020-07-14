@@ -84,6 +84,7 @@ auto make_state_edges(const json_object& object) {
         if (mapped.count("_hide")) value._hide = get<bool>(mapped, "_hide");
         if (mapped.count("_color")) value._color = get<std::string>(mapped, "_color");
         if (mapped.count("t")) value._t = get<double>(mapped, "t");
+        if (mapped.count("stroke-dasharray")) value._stroke_dasharray = get<std::string>(mapped, "stroke-dasharray");
 
         result[entry.first] = std::move(value);
     }

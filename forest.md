@@ -339,3 +339,11 @@ A postorder traversal of the forest will visit every node once. During postorder
 - `do ++{node, edge} while edge == leading`
 
 <img class='svg-img' src='{{site.baseurl}}/svg/postorder.svg'/>
+
+### Child Iteration
+
+A child traversal of a node P traverses only its immediate children; P itself is not visited. Child traversal is achieved by setting the edge of the iterator to trailing, then incrementing it:
+
+- `++trailing_of({Cn, L})` &rarr; `{Cn+1, L}` (next child) or `{P, T}` (the end of the range)
+
+<img class='svg-img' src='{{site.baseurl}}/svg/child_iteration.svg'/>

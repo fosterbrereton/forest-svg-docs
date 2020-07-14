@@ -31,6 +31,7 @@ struct edge_properties {
     bool _hide{false};
     std::string _color{"black"};
     double _t{0.5}; // Range (0..1). Bezier point where label will go. Unused as of now.
+    std::string _stroke_dasharray{"0"};
 };
 
 struct graph_settings {

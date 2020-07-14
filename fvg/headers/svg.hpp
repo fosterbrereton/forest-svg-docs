@@ -33,6 +33,8 @@ struct cubic_path {
     cubic_bezier _b;
     std::string _color;
     double _width;
+    std::string _stroke_dasharray;
+
     bool _leading; // a forest-specific detail
 };
 
@@ -53,7 +55,7 @@ struct circle {
     double _r;
     std::string _color;
     double _stroke_width;
-    // dasharray
+    std::string _stroke_dasharray;
 };
 
 /**************************************************************************************************/
