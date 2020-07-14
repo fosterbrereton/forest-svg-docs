@@ -1,7 +1,7 @@
 <?xml version='1.0' encoding='utf-8'?>
 <svg xmlns='http://www.w3.org/2000/svg' xmlns:xlink='http://www.w3.org/1999/xlink' width='550' height='395'>
-    <path d='M 250.000000 47.500000 C228.411068 69.088932 230.639736 67.887266 247.996483 83.504099' fill='none' stroke='black' stroke-linecap='round' stroke-width='2.000000'/>
-    <polygon points='251.532017 79.968565, 256.481765 91.989380, 244.460949 87.039633' fill='black' stroke='none'/>
+    <path d='M 250.000000 47.500000 C228.181792 47.500000 230.689760 62.305492 248.554581 82.947153' fill='none' stroke='black' stroke-linecap='round' stroke-width='2.000000'/>
+    <polygon points='252.090115 79.411619, 257.039863 91.432435, 245.019047 86.482687' fill='black' stroke='none'/>
     <path d='M 257.322330 127.677670 C251.135878 133.864122 249.279430 146.481849 251.752986 156.528132' fill='none' stroke='black' stroke-linecap='round' stroke-width='2.000000'/>
     <polygon points='255.288520 152.992598, 260.238268 165.013413, 248.217453 160.063665' fill='black' stroke='none'/>
     <path d='M 257.322330 202.677670 C208.461417 251.538583 77.290131 199.000733 98.429655 231.907611' fill='none' stroke='black' stroke-linecap='round' stroke-width='2.000000'/>
@@ -44,8 +44,8 @@
     <polygon points='300.172596 214.368459, 295.222848 202.347644, 307.243664 207.297391' fill='black' stroke='none'/>
     <path d='M 292.677670 167.322330 C298.864122 161.135878 300.720570 148.518151 298.247014 138.471868' fill='none' stroke='black' stroke-linecap='round' stroke-width='2.000000'/>
     <polygon points='294.711480 142.007402, 289.761732 129.986587, 301.782547 134.936335' fill='black' stroke='none'/>
-    <path d='M 292.677670 92.322330 C314.357015 70.642985 322.581991 71.535828 308.946512 56.683729' fill='none' stroke='black' stroke-linecap='round' stroke-width='2.000000'/>
-    <polygon points='305.410978 60.219263, 300.461231 48.198447, 312.482046 53.148195' fill='black' stroke='none'/>
+    <path d='M 292.677670 92.322330 C312.412261 72.587739 320.998074 56.446569 312.094370 50.239560' fill='none' stroke='black' stroke-linecap='round' stroke-width='2.000000'/>
+    <polygon points='312.094370 55.239560, 300.094370 50.239560, 312.094370 45.239560' fill='black' stroke='none'/>
     <rect x='250.000000' y='10.000000' fill='white' width='50.000000' height='50.000000' stroke='darkred' stroke-width='2.000000'/>
     <circle cx='275.000000' r='25.000000' stroke='blue' stroke-width='2.000000' cy='110.000000' fill='white'/>
     <circle cx='275.000000' r='25.000000' stroke='blue' stroke-width='2.000000' cy='185.000000' fill='white'/>

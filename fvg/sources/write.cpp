@@ -304,7 +304,7 @@ auto edge_to_parent(const point& from, const point& to, double t, bool to_rect) 
         s = from + node_scale_k * out_unit;
         c1 = from + node_scale_k * out_unit * scale;
         e = to + point{node_size_k, node_size_k * .75};
-        c2 = e + point{margin_width_k, margin_width_k};
+        c2 = e + point{margin_width_k, 0};
     } else {
         s = from + out_unit * node_scale_k;
         c1 = from + out_unit * node_scale_k * scale;
@@ -333,7 +333,7 @@ auto edge_to_child(const point& from, const point& to, double t, bool from_rect)
 
     if (from_rect) {
         s = from + point{0, node_size_k * 0.75};
-        c1 = s + point{-margin_width_k, margin_width_k};
+        c1 = s + point{-margin_width_k, 0};
         c2 = to + in_unit * node_scale_k * scale;
         e = to + in_unit * node_scale_k;
     } else {
@@ -605,12 +605,12 @@ auto derive_edge_labels(const edge_labels& labels, const edge_map& map, const sv
         // does not rely on the slope of the perpendicular.
 
         const alp arcs{curve};
-        const auto mid_distance{(arcs.length() + 11) / 2}; // 11 should be the same as when the edge was clipped.
+        const auto mid_distance{(arcs.length() + 12) / 2}; // 12 should be the same as when the edge was clipped.
         const auto midpoint_t{arcs.find(mid_distance)};
         const point mid{curve(midpoint_t)};
         const point dmid{curve.derivative(midpoint_t)};
         const double slope{dmid.x ? dmid.y / dmid.x : 0};
-        const bool flat{std::abs(slope) < 0.05};
+        const bool flat{std::abs(slope) < 0.06};
         constexpr auto distance_k{font_size_k * 0.55};
 
         point tp;
