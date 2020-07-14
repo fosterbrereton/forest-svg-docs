@@ -521,15 +521,16 @@ auto derive_edges(const adobe::forest<svg::node>& f,
         }
 
         if (bezier != cubic_bezier{}) {
-            // trim back the bezier path to account for the arrow. I'm not a fan of the magic
-            // number. I think it's something near the width of the arrow (12) minus half the
-            // stroke width of the node (5).
-            bezier = bezier.subdivide(alp(bezier).rfind(11)).first;
+            // get the arrowhead normal pre-trim, so it for sure points at the node.
+            const auto arrowhead_normal{bezier.derivative(1).unit()};
+
+            // trim back the bezier path to account for the arrow.
+            bezier = bezier.subdivide(alp(bezier).rfind(12)).first;
 
             result.push_back(svg::cubic_path{bezier, properties._color, stroke_width_k, cur_leading});
 
             result.push_back(svg::arrowhead{bezier._e,
-                                            bezier.derivative(1).unit(),
+                                            arrowhead_normal,
                                             properties._color});
 
 #if 0
@@ -675,9 +676,9 @@ xml_node svg_to_xml(svg::cubic_path path) {
         {
             { "d", svg_bezier(path._b) },
             { "stroke", std::move(path._color) },
+            { "stroke-linecap", "round" },
             { "fill", "none" },
             { "stroke-width", std::to_string(path._width) },
-            //{ "marker-end", "url(#arrowhead)" },
         }
     };
 }
@@ -716,7 +717,7 @@ xml_node svg_to_xml(svg::circle c) {
             { "cx", std::to_string(c._c.x) },
             { "cy", std::to_string(c._c.y) },
             { "r", std::to_string(c._r) },
-            { "fill", "none" },
+            { "fill", "white" },
             { "stroke", std::move(c._color) },
             { "stroke-width", std::to_string(c._stroke_width) },
             //{ "stroke-dasharray", node_properties._stroke_dasharray },
@@ -734,17 +735,11 @@ xml_node svg_to_xml(svg::square s) {
             { "y", std::to_string(s._p.y) },
             { "width", std::to_string(s._size) },
             { "height", std::to_string(s._size) },
-            { "fill", "none" },
+            { "fill", "white" },
             { "stroke", std::move(s._color) },
             { "stroke-width", std::to_string(s._stroke_width) },
         }
     };
-}
-
-/**************************************************************************************************/
-
-auto rad2deg(double rad) {
-    return rad * 180 / M_PI;
 }
 
 /**************************************************************************************************/

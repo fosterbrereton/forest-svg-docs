@@ -1,63 +1,63 @@
 <?xml version='1.0' encoding='utf-8'?>
 <svg xmlns='http://www.w3.org/2000/svg' xmlns:xlink='http://www.w3.org/1999/xlink' width='550' height='395'>
-    <path d='M 250.000000 47.500000 C228.106727 69.393273 230.707305 67.848857 248.739518 84.174693' fill='none' stroke='black' stroke-width='2.000000'/>
-    <polygon points='252.095325 80.468137, 257.635252 92.228630, 245.383710 87.881249' fill='black' stroke='none'/>
-    <path d='M 257.322330 127.677670 C250.935617 134.064383 249.163778 147.305482 252.006812 157.495363' fill='none' stroke='black' stroke-width='2.000000'/>
-    <polygon points='256.822873 156.151655, 255.231712 169.053911, 247.190750 158.839072' fill='black' stroke='none'/>
-    <path d='M 257.322330 202.677670 C208.058573 251.941427 75.121602 198.127523 98.983713 232.739062' fill='none' stroke='black' stroke-width='2.000000'/>
-    <polygon points='103.100217 229.901035, 105.794977 242.618671, 94.867209 235.577088' fill='black' stroke='none'/>
-    <path d='M 107.322330 277.677670 C84.431529 300.568471 27.509033 293.741348 26.508953 307.317915' fill='none' stroke='black' stroke-width='2.000000'/>
-    <polygon points='31.495443 307.685230, 25.627396 319.285490, 21.522464 306.950599' fill='black' stroke='none'/>
-    <path d='M 36.377622 355.387329 C11.837930 392.113573 75.711069 395.760030 68.727953 366.326699' fill='none' stroke='black' stroke-width='2.000000'/>
-    <polygon points='63.862999 367.480919, 65.957825 354.650809, 73.592906 365.172479' fill='black' stroke='none'/>
-    <path d='M 67.677670 317.322330 C74.064383 310.935617 87.305482 309.163778 97.495363 312.006812' fill='none' stroke='black' stroke-width='2.000000'/>
-    <polygon points='98.839072 307.190750, 109.053911 315.231712, 96.151655 316.822873' fill='black' stroke='none'/>
-    <path d='M 111.377622 355.387329 C86.837930 392.113573 150.711069 395.760030 143.727953 366.326699' fill='none' stroke='black' stroke-width='2.000000'/>
-    <polygon points='138.862999 367.480919, 140.957825 354.650809, 148.592906 365.172479' fill='black' stroke='none'/>
-    <path d='M 142.677670 317.322330 C149.064383 310.935617 162.305482 309.163778 172.495363 312.006812' fill='none' stroke='black' stroke-width='2.000000'/>
-    <polygon points='173.839072 307.190750, 184.053911 315.231712, 171.151655 316.822873' fill='black' stroke='none'/>
-    <path d='M 186.377622 355.387329 C161.837930 392.113573 225.711069 395.760030 218.727953 366.326699' fill='none' stroke='black' stroke-width='2.000000'/>
-    <polygon points='213.862999 367.480919, 215.957825 354.650809, 223.592906 365.172479' fill='black' stroke='none'/>
-    <path d='M 217.677670 317.322330 C242.077457 292.922543 183.945900 302.287897 152.225196 284.716784' fill='none' stroke='black' stroke-width='2.000000'/>
-    <polygon points='149.802410 289.090582, 141.728082 278.902097, 154.647983 280.342986' fill='black' stroke='none'/>
-    <path d='M 148.096988 250.432914 C179.561019 237.400086 272.775604 236.203297 315.580588 246.842549' fill='none' stroke='black' stroke-width='2.000000'/>
-    <polygon points='316.786651 241.990187, 327.226256 249.737099, 314.374526 251.694910' fill='black' stroke='none'/>
-    <path d='M 332.322330 277.677670 C309.431529 300.568471 252.509033 293.741348 251.508953 307.317915' fill='none' stroke='black' stroke-width='2.000000'/>
-    <polygon points='256.495443 307.685230, 250.627396 319.285490, 246.522464 306.950599' fill='black' stroke='none'/>
-    <path d='M 261.377622 355.387329 C236.837930 392.113573 300.711069 395.760030 293.727953 366.326699' fill='none' stroke='black' stroke-width='2.000000'/>
-    <polygon points='288.862999 367.480919, 290.957825 354.650809, 298.592906 365.172479' fill='black' stroke='none'/>
-    <path d='M 292.677670 317.322330 C299.064383 310.935617 312.305482 309.163778 322.495363 312.006812' fill='none' stroke='black' stroke-width='2.000000'/>
-    <polygon points='323.839072 307.190750, 334.053911 315.231712, 321.151655 316.822873' fill='black' stroke='none'/>
-    <path d='M 336.377622 355.387329 C311.837930 392.113573 375.711069 395.760030 368.727953 366.326699' fill='none' stroke='black' stroke-width='2.000000'/>
-    <polygon points='363.862999 367.480919, 365.957825 354.650809, 373.592906 365.172479' fill='black' stroke='none'/>
-    <path d='M 367.677670 317.322330 C374.064383 310.935617 387.305482 309.163778 397.495363 312.006812' fill='none' stroke='black' stroke-width='2.000000'/>
-    <polygon points='398.839072 307.190750, 409.053911 315.231712, 396.151655 316.822873' fill='black' stroke='none'/>
-    <path d='M 411.377622 355.387329 C386.837930 392.113573 450.711069 395.760030 443.727953 366.326699' fill='none' stroke='black' stroke-width='2.000000'/>
-    <polygon points='438.862999 367.480919, 440.957825 354.650809, 448.592906 365.172479' fill='black' stroke='none'/>
-    <path d='M 442.677670 317.322330 C467.077457 292.922543 408.945900 302.287897 377.225196 284.716784' fill='none' stroke='black' stroke-width='2.000000'/>
-    <polygon points='374.802410 289.090582, 366.728082 278.902097, 379.647983 280.342986' fill='black' stroke='none'/>
-    <path d='M 373.096988 250.432914 C404.028630 237.620609 434.856310 236.247187 465.765663 246.312648' fill='none' stroke='black' stroke-width='2.000000'/>
-    <polygon points='467.313865 241.558380, 477.175909 250.028332, 464.217462 251.066917' fill='black' stroke='none'/>
-    <path d='M 486.377622 280.387329 C461.837930 317.113573 525.711069 320.760030 518.727953 291.326699' fill='none' stroke='black' stroke-width='2.000000'/>
-    <polygon points='513.862999 292.480919, 515.957825 279.650809, 523.592906 290.172479' fill='black' stroke='none'/>
-    <path d='M 517.677670 242.322330 C567.812135 192.187865 369.475086 248.806936 302.840937 210.341796' fill='none' stroke='black' stroke-width='2.000000'/>
-    <polygon points='300.341234 214.672095, 292.448220 204.342510, 305.340639 206.011497' fill='black' stroke='none'/>
-    <path d='M 292.677670 167.322330 C299.064383 160.935617 300.836222 147.694518 297.993188 137.504637' fill='none' stroke='black' stroke-width='2.000000'/>
-    <polygon points='293.177127 138.848345, 294.768288 125.946089, 302.809250 136.160928' fill='black' stroke='none'/>
-    <path d='M 292.677670 92.322330 C314.708246 70.291754 322.844969 71.570683 308.266530 55.949303' fill='none' stroke='black' stroke-width='2.000000'/>
-    <polygon points='304.611076 59.360704, 300.079166 47.176215, 311.921983 52.537901' fill='black' stroke='none'/>
-    <rect x='250.000000' y='10.000000' fill='none' width='50.000000' height='50.000000' stroke='darkred' stroke-width='2.000000'/>
-    <circle cx='275.000000' r='25.000000' stroke='blue' stroke-width='2.000000' cy='110.000000' fill='none'/>
-    <circle cx='275.000000' r='25.000000' stroke='blue' stroke-width='2.000000' cy='185.000000' fill='none'/>
-    <circle cx='125.000000' r='25.000000' stroke='blue' stroke-width='2.000000' cy='260.000000' fill='none'/>
-    <circle cx='50.000000' r='25.000000' stroke='blue' stroke-width='2.000000' cy='335.000000' fill='none'/>
-    <circle cx='125.000000' r='25.000000' stroke='blue' stroke-width='2.000000' cy='335.000000' fill='none'/>
-    <circle cx='200.000000' r='25.000000' stroke='blue' stroke-width='2.000000' cy='335.000000' fill='none'/>
-    <circle cx='350.000000' r='25.000000' stroke='blue' stroke-width='2.000000' cy='260.000000' fill='none'/>
-    <circle cx='275.000000' r='25.000000' stroke='blue' stroke-width='2.000000' cy='335.000000' fill='none'/>
-    <circle cx='350.000000' r='25.000000' stroke='blue' stroke-width='2.000000' cy='335.000000' fill='none'/>
-    <circle cx='425.000000' r='25.000000' stroke='blue' stroke-width='2.000000' cy='335.000000' fill='none'/>
-    <circle cx='500.000000' r='25.000000' stroke='blue' stroke-width='2.000000' cy='260.000000' fill='none'/>
+    <path d='M 250.000000 47.500000 C228.411068 69.088932 230.639736 67.887266 247.996483 83.504099' fill='none' stroke='black' stroke-linecap='round' stroke-width='2.000000'/>
+    <polygon points='251.532017 79.968565, 256.481765 91.989380, 244.460949 87.039633' fill='black' stroke='none'/>
+    <path d='M 257.322330 127.677670 C251.135878 133.864122 249.279430 146.481849 251.752986 156.528132' fill='none' stroke='black' stroke-linecap='round' stroke-width='2.000000'/>
+    <polygon points='255.288520 152.992598, 260.238268 165.013413, 248.217453 160.063665' fill='black' stroke='none'/>
+    <path d='M 257.322330 202.677670 C208.461417 251.538583 77.290131 199.000733 98.429655 231.907611' fill='none' stroke='black' stroke-linecap='round' stroke-width='2.000000'/>
+    <polygon points='101.965189 228.372077, 106.914936 240.392893, 94.894121 235.443145' fill='black' stroke='none'/>
+    <path d='M 107.322330 277.677670 C85.004628 299.995372 30.337950 294.064571 26.687815 306.335778' fill='none' stroke='black' stroke-linecap='round' stroke-width='2.000000'/>
+    <polygon points='30.223349 302.800244, 35.173096 314.821060, 23.152281 309.871312' fill='black' stroke='none'/>
+    <path d='M 36.377622 355.387329 C12.112562 391.702559 74.292494 395.674270 68.936003 367.302462' fill='none' stroke='black' stroke-linecap='round' stroke-width='2.000000'/>
+    <polygon points='64.778655 370.080313, 62.269160 357.324826, 73.093351 364.524610' fill='black' stroke='none'/>
+    <path d='M 67.677670 317.322330 C73.864122 311.135878 86.481849 309.279430 96.528132 311.752986' fill='none' stroke='black' stroke-linecap='round' stroke-width='2.000000'/>
+    <polygon points='100.063665 308.217453, 105.013413 320.238268, 92.992598 315.288520' fill='black' stroke='none'/>
+    <path d='M 111.377622 355.387329 C87.112562 391.702559 149.292494 395.674270 143.936003 367.302462' fill='none' stroke='black' stroke-linecap='round' stroke-width='2.000000'/>
+    <polygon points='139.778655 370.080313, 137.269160 357.324826, 148.093351 364.524610' fill='black' stroke='none'/>
+    <path d='M 142.677670 317.322330 C148.864122 311.135878 161.481849 309.279430 171.528132 311.752986' fill='none' stroke='black' stroke-linecap='round' stroke-width='2.000000'/>
+    <polygon points='175.063665 308.217453, 180.013413 320.238268, 167.992598 315.288520' fill='black' stroke='none'/>
+    <path d='M 186.377622 355.387329 C162.112562 391.702559 224.292494 395.674270 218.936003 367.302462' fill='none' stroke='black' stroke-linecap='round' stroke-width='2.000000'/>
+    <polygon points='214.778655 370.080313, 212.269160 357.324826, 223.093351 364.524610' fill='black' stroke='none'/>
+    <path d='M 217.677670 317.322330 C241.853707 293.146293 185.005111 302.118973 153.104427 285.193425' fill='none' stroke='black' stroke-linecap='round' stroke-width='2.000000'/>
+    <polygon points='149.568893 288.728959, 144.619145 276.708144, 156.639961 281.657891' fill='black' stroke='none'/>
+    <path d='M 148.096988 250.432914 C179.325183 237.497772 271.381708 236.221903 314.609615 246.605307' fill='none' stroke='black' stroke-linecap='round' stroke-width='2.000000'/>
+    <polygon points='316.523032 241.985909, 325.696170 251.197508, 312.696198 251.224704' fill='black' stroke='none'/>
+    <path d='M 332.322330 277.677670 C310.004628 299.995372 255.337950 294.064571 251.687815 306.335778' fill='none' stroke='black' stroke-linecap='round' stroke-width='2.000000'/>
+    <polygon points='255.223349 302.800244, 260.173096 314.821060, 248.152281 309.871312' fill='black' stroke='none'/>
+    <path d='M 261.377622 355.387329 C237.112562 391.702559 299.292494 395.674270 293.936003 367.302462' fill='none' stroke='black' stroke-linecap='round' stroke-width='2.000000'/>
+    <polygon points='289.778655 370.080313, 287.269160 357.324826, 298.093351 364.524610' fill='black' stroke='none'/>
+    <path d='M 292.677670 317.322330 C298.864122 311.135878 311.481849 309.279430 321.528132 311.752986' fill='none' stroke='black' stroke-linecap='round' stroke-width='2.000000'/>
+    <polygon points='325.063665 308.217453, 330.013413 320.238268, 317.992598 315.288520' fill='black' stroke='none'/>
+    <path d='M 336.377622 355.387329 C312.112562 391.702559 374.292494 395.674270 368.936003 367.302462' fill='none' stroke='black' stroke-linecap='round' stroke-width='2.000000'/>
+    <polygon points='364.778655 370.080313, 362.269160 357.324826, 373.093351 364.524610' fill='black' stroke='none'/>
+    <path d='M 367.677670 317.322330 C373.864122 311.135878 386.481849 309.279430 396.528132 311.752986' fill='none' stroke='black' stroke-linecap='round' stroke-width='2.000000'/>
+    <polygon points='400.063665 308.217453, 405.013413 320.238268, 392.992598 315.288520' fill='black' stroke='none'/>
+    <path d='M 411.377622 355.387329 C387.112562 391.702559 449.292494 395.674270 443.936003 367.302462' fill='none' stroke='black' stroke-linecap='round' stroke-width='2.000000'/>
+    <polygon points='439.778655 370.080313, 437.269160 357.324826, 448.093351 364.524610' fill='black' stroke='none'/>
+    <path d='M 442.677670 317.322330 C466.853707 293.146293 410.005111 302.118973 378.104427 285.193425' fill='none' stroke='black' stroke-linecap='round' stroke-width='2.000000'/>
+    <polygon points='374.568893 288.728959, 369.619145 276.708144, 381.639961 281.657891' fill='black' stroke='none'/>
+    <path d='M 373.096988 250.432914 C403.711118 237.752127 434.223410 236.276588 464.813839 246.006300' fill='none' stroke='black' stroke-linecap='round' stroke-width='2.000000'/>
+    <polygon points='466.727257 241.386902, 475.900394 250.598501, 462.900422 250.625697' fill='black' stroke='none'/>
+    <path d='M 486.377622 280.387329 C462.112562 316.702559 524.292494 320.674270 518.936003 292.302462' fill='none' stroke='black' stroke-linecap='round' stroke-width='2.000000'/>
+    <polygon points='514.778655 295.080313, 512.269160 282.324826, 523.093351 289.524610' fill='black' stroke='none'/>
+    <path d='M 517.677670 242.322330 C567.596474 192.403526 371.176844 248.321800 303.708130 210.832925' fill='none' stroke='black' stroke-linecap='round' stroke-width='2.000000'/>
+    <polygon points='300.172596 214.368459, 295.222848 202.347644, 307.243664 207.297391' fill='black' stroke='none'/>
+    <path d='M 292.677670 167.322330 C298.864122 161.135878 300.720570 148.518151 298.247014 138.471868' fill='none' stroke='black' stroke-linecap='round' stroke-width='2.000000'/>
+    <polygon points='294.711480 142.007402, 289.761732 129.986587, 301.782547 134.936335' fill='black' stroke='none'/>
+    <path d='M 292.677670 92.322330 C314.357015 70.642985 322.581991 71.535828 308.946512 56.683729' fill='none' stroke='black' stroke-linecap='round' stroke-width='2.000000'/>
+    <polygon points='305.410978 60.219263, 300.461231 48.198447, 312.482046 53.148195' fill='black' stroke='none'/>
+    <rect x='250.000000' y='10.000000' fill='white' width='50.000000' height='50.000000' stroke='darkred' stroke-width='2.000000'/>
+    <circle cx='275.000000' r='25.000000' stroke='blue' stroke-width='2.000000' cy='110.000000' fill='white'/>
+    <circle cx='275.000000' r='25.000000' stroke='blue' stroke-width='2.000000' cy='185.000000' fill='white'/>
+    <circle cx='125.000000' r='25.000000' stroke='blue' stroke-width='2.000000' cy='260.000000' fill='white'/>
+    <circle cx='50.000000' r='25.000000' stroke='blue' stroke-width='2.000000' cy='335.000000' fill='white'/>
+    <circle cx='125.000000' r='25.000000' stroke='blue' stroke-width='2.000000' cy='335.000000' fill='white'/>
+    <circle cx='200.000000' r='25.000000' stroke='blue' stroke-width='2.000000' cy='335.000000' fill='white'/>
+    <circle cx='350.000000' r='25.000000' stroke='blue' stroke-width='2.000000' cy='260.000000' fill='white'/>
+    <circle cx='275.000000' r='25.000000' stroke='blue' stroke-width='2.000000' cy='335.000000' fill='white'/>
+    <circle cx='350.000000' r='25.000000' stroke='blue' stroke-width='2.000000' cy='335.000000' fill='white'/>
+    <circle cx='425.000000' r='25.000000' stroke='blue' stroke-width='2.000000' cy='335.000000' fill='white'/>
+    <circle cx='500.000000' r='25.000000' stroke='blue' stroke-width='2.000000' cy='260.000000' fill='white'/>
     <text font-size='16.000000' text-anchor='middle' x='275.000000' y='35.000000' dominant-baseline='central' fill=''>
 &#x211C;<tspan dy='8.000000' font-size='.7em'></tspan>
     </text>

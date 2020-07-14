@@ -1,18 +1,18 @@
 <?xml version='1.0' encoding='utf-8'?>
 <svg xmlns='http://www.w3.org/2000/svg' xmlns:xlink='http://www.w3.org/1999/xlink' width='175' height='170'>
-    <path d='M 62.000000 47.500000 C40.754913 68.745087 16.859013 68.924129 24.884585 83.223110' fill='none' stroke='black' stroke-width='2.000000'/>
-    <polygon points='29.244755 80.775883, 30.757930 93.687517, 20.524415 85.670337' fill='black' stroke='none'/>
-    <path d='M 36.377622 130.387329 C11.837930 167.113573 75.711069 170.760030 68.727953 141.326699' fill='none' stroke='black' stroke-width='2.000000'/>
-    <polygon points='63.862999 142.480919, 65.957825 129.650809, 73.592906 140.172479' fill='black' stroke='none'/>
-    <path d='M 67.677670 92.322330 C74.064383 85.935617 87.305482 84.163778 97.495363 87.006812' fill='none' stroke='black' stroke-width='2.000000'/>
-    <polygon points='98.839072 82.190750, 109.053911 90.231712, 96.151655 91.822873' fill='black' stroke='none'/>
-    <path d='M 111.377622 130.387329 C86.837930 167.113573 150.711069 170.760030 143.727953 141.326699' fill='none' stroke='black' stroke-width='2.000000'/>
-    <polygon points='138.862999 142.480919, 140.957825 129.650809, 148.592906 140.172479' fill='black' stroke='none'/>
-    <path d='M 142.677670 92.322330 C172.947312 62.052688 145.349649 69.778300 121.264949 54.806841' fill='none' stroke='black' stroke-width='2.000000'/>
-    <polygon points='118.625293 59.053276, 111.073504 48.471665, 123.904606 50.560405' fill='black' stroke='none'/>
-    <rect x='62.000000' y='10.000000' fill='none' width='50.000000' height='50.000000' stroke='darkred' stroke-width='2.000000'/>
-    <circle cx='50.000000' r='25.000000' stroke='blue' stroke-width='2.000000' cy='110.000000' fill='none'/>
-    <circle cx='125.000000' r='25.000000' stroke='blue' stroke-width='2.000000' cy='110.000000' fill='none'/>
+    <path d='M 62.000000 47.500000 C41.202637 68.297363 17.865012 68.907226 24.419394 82.337574' fill='none' stroke='black' stroke-linecap='round' stroke-width='2.000000'/>
+    <polygon points='27.954928 78.802040, 32.904676 90.822855, 20.883860 85.873107' fill='black' stroke='none'/>
+    <path d='M 36.377622 130.387329 C12.112562 166.702559 74.292494 170.674270 68.936003 142.302462' fill='none' stroke='black' stroke-linecap='round' stroke-width='2.000000'/>
+    <polygon points='64.778655 145.080313, 62.269160 132.324826, 73.093351 139.524610' fill='black' stroke='none'/>
+    <path d='M 67.677670 92.322330 C73.864122 86.135878 86.481849 84.279430 96.528132 86.752986' fill='none' stroke='black' stroke-linecap='round' stroke-width='2.000000'/>
+    <polygon points='100.063665 83.217453, 105.013413 95.238268, 92.992598 90.288520' fill='black' stroke='none'/>
+    <path d='M 111.377622 130.387329 C87.112562 166.702559 149.292494 170.674270 143.936003 142.302462' fill='none' stroke='black' stroke-linecap='round' stroke-width='2.000000'/>
+    <polygon points='139.778655 145.080313, 137.269160 132.324826, 148.093351 139.524610' fill='black' stroke='none'/>
+    <path d='M 142.677670 92.322330 C172.590020 62.409980 145.993092 69.601213 122.119178 55.327607' fill='none' stroke='black' stroke-linecap='round' stroke-width='2.000000'/>
+    <polygon points='118.583644 58.863141, 113.633897 46.842325, 125.654712 51.792073' fill='black' stroke='none'/>
+    <rect x='62.000000' y='10.000000' fill='white' width='50.000000' height='50.000000' stroke='darkred' stroke-width='2.000000'/>
+    <circle cx='50.000000' r='25.000000' stroke='blue' stroke-width='2.000000' cy='110.000000' fill='white'/>
+    <circle cx='125.000000' r='25.000000' stroke='blue' stroke-width='2.000000' cy='110.000000' fill='white'/>
     <text font-size='16.000000' text-anchor='middle' x='87.000000' y='35.000000' dominant-baseline='central' fill=''>
 &#x211C;<tspan dy='8.000000' font-size='.7em'></tspan>
     </text>
