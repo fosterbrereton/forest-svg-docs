@@ -5,11 +5,25 @@
 
 /**************************************************************************************************/
 
+#include <algorithm>
+#include <array>
 #include <cmath>
 
 /**************************************************************************************************/
 
 namespace fvg {
+
+/**************************************************************************************************/
+
+template <typename T>
+auto lerp(const T& a, const T& b, double t) {
+    return a + (b - a) * t;
+}
+
+template <typename T>
+double delerp(const T& val, const T& lo, const T& hi) {
+    return std::clamp((val - lo) / (hi - lo), 0., 1.);
+}
 
 /**************************************************************************************************/
 
@@ -55,6 +69,7 @@ struct cubic_bezier {
 
     point operator()(double t) const;
     point derivative(double t) const;
+    std::pair<cubic_bezier, cubic_bezier> subdivide(double t) const;
 };
 
 inline constexpr auto operator==(const cubic_bezier& a, const cubic_bezier& b) {
@@ -64,6 +79,28 @@ inline constexpr auto operator==(const cubic_bezier& a, const cubic_bezier& b) {
            a._e == b._e;
 }
 inline constexpr auto operator!=(const cubic_bezier& a, const cubic_bezier& b) { return !(a == b); }
+
+/**************************************************************************************************/
+// arc-length parameterization
+struct alp {
+    explicit alp(cubic_bezier b) : _b(std::move(b)) {
+        compute_arc_table();
+    }
+
+    double length() const { return _l.back(); }
+
+    double find(double u) const;
+    double rfind(double u) const { return find(length() - u); }
+
+private:
+    static constexpr auto sz_k{128};
+
+    void compute_arc_table();
+
+    const cubic_bezier _b;
+    std::array<point, sz_k> _a; // points
+    std::array<double, sz_k> _l; // accumulated lengths
+};
 
 /**************************************************************************************************/
 

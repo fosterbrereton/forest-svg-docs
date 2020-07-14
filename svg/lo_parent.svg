@@ -2,12 +2,12 @@
 <svg xmlns='http://www.w3.org/2000/svg' xmlns:xlink='http://www.w3.org/1999/xlink' width='100' height='145'>
     <defs>
         <marker id='arrowhead' markerWidth='12' markerHeight='10' orient='auto-start-reverse' refY='5' markerUnits='userSpaceOnUse'>
-            <polygon points='0 0, 12 5, 0 10'/>
+            <polygon points='0 0, 12 5, 0 10' fill='currentColor' stroke='none'/>
         </marker>
     </defs>
-    <path d='M 32.322330 52.677670 C23.483496 61.516504 14.483496 74.483496 23.322330 83.322330' fill='none' stroke='black' stroke-width='2.000000' marker-end='url(#arrowhead)'/>
-    <circle cx='50.000000' r='25.000000' stroke='blue' stroke-width='2.000000' cy='35.000000' fill='white'/>
-    <circle cx='50.000000' r='25.000000' stroke='lightgrey' stroke-width='2.000000' cy='110.000000' fill='white'/>
+    <path d='M 32.322330 52.677670 C25.834763 59.165237 24.108969 72.725379 27.144950 82.975775' fill='none' stroke='black' stroke-width='2.000000' marker-end='url(#arrowhead)'/>
+    <circle cx='50.000000' r='25.000000' stroke='blue' stroke-width='2.000000' cy='35.000000' fill='none'/>
+    <circle cx='50.000000' r='25.000000' stroke='lightgrey' stroke-width='2.000000' cy='110.000000' fill='none'/>
     <text font-size='16.000000' text-anchor='middle' x='50.000000' y='35.000000' dominant-baseline='central' fill=''>
 N<tspan dy='8.000000' font-size='.7em'></tspan>
     </text>

@@ -258,18 +258,6 @@ void apply_forest(ForestIterator1 dst_first,
 
 /**************************************************************************************************/
 
-template <typename T>
-auto lerp(const T& a, const T& b, double t) {
-    return a + (b - a) * t;
-}
-
-template <typename T>
-double delerp(const T& val, const T& lo, const T& hi) {
-    return std::clamp((val - lo) / hi, 0., 1.);
-}
-
-/**************************************************************************************************/
-
 auto svg_bezier(const cubic_bezier& b) {
     return "M " + std::to_string(b._s.x) + " " + std::to_string(b._s.y) +
            " C" + std::to_string(b._c1.x) + " " + std::to_string(b._c1.y) +
@@ -303,10 +291,10 @@ static const point nnw_k{std::cos(5.5*M_PI_4), std::sin(5.5*M_PI_4)};
 auto edge_to_parent(const point& from, const point& to, double t, bool to_rect) {
     constexpr point node_scale_k{node_radius_k, node_radius_k};
     constexpr double min_scale_k{1.5};
-    constexpr double max_scale_k{2.5};
+    constexpr double max_scale_k{4};
 
-    const auto out_unit{lerp(ne_k, nne_k, t)};
-    const auto in_unit{lerp(se_k, ese_k, t)};
+    const auto out_unit{lerp(ne_k, ne_k, t)};
+    const auto in_unit{lerp(se_k, se_k, t)};
     const auto scale{lerp(min_scale_k, max_scale_k, t)};
 
     point s;
@@ -317,14 +305,13 @@ auto edge_to_parent(const point& from, const point& to, double t, bool to_rect) 
     if (to_rect) {
         s = from + node_scale_k * out_unit;
         c1 = from + node_scale_k * out_unit * scale;
-        e = to + point{node_size_k, node_size_k * .75} + arrowhead_offset_k;
+        e = to + point{node_size_k, node_size_k * .75};
         c2 = e + point{margin_width_k, margin_width_k};
     } else {
-        const auto dst{to + arrowhead_offset_k};
         s = from + out_unit * node_scale_k;
         c1 = from + out_unit * node_scale_k * scale;
-        c2 = dst + in_unit * node_scale_k * scale;
-        e = dst + in_unit * node_scale_k;
+        c2 = to + in_unit * node_scale_k * scale;
+        e = to + in_unit * node_scale_k;
     }
 
     return cubic_bezier{s, c1, c2, e};
@@ -335,12 +322,11 @@ auto edge_to_parent(const point& from, const point& to, double t, bool to_rect) 
 auto edge_to_child(const point& from, const point& to, double t, bool from_rect) {
     constexpr point node_scale_k{node_radius_k, node_radius_k};
     constexpr double min_scale_k{1.5};
-    constexpr double max_scale_k{2.5};
+    constexpr double max_scale_k{4};
 
-    const auto out_unit{lerp(sw_k, wsw_k, t)};
-    const auto in_unit{lerp(nw_k, nnw_k, t)};
+    const auto out_unit{lerp(sw_k, sw_k, t)};
+    const auto in_unit{lerp(nw_k, nw_k, t)};
     const auto scale{lerp(min_scale_k, max_scale_k, t)};
-    const auto dst{to - arrowhead_offset_k};
 
     point s;
     point c1;
@@ -350,13 +336,13 @@ auto edge_to_child(const point& from, const point& to, double t, bool from_rect)
     if (from_rect) {
         s = from + point{0, node_size_k * 0.75};
         c1 = s + point{-margin_width_k, margin_width_k};
-        c2 = dst + in_unit * node_scale_k * scale;
-        e = dst + in_unit * node_scale_k;
+        c2 = to + in_unit * node_scale_k * scale;
+        e = to + in_unit * node_scale_k;
     } else {
         s = from + out_unit * node_scale_k;
         c1 = from + out_unit * node_scale_k * scale;
-        c2 = dst + in_unit * node_scale_k * scale;
-        e = dst + in_unit * node_scale_k;
+        c2 = to + in_unit * node_scale_k * scale;
+        e = to + in_unit * node_scale_k;
     }
 
     return cubic_bezier{s, c1, c2, e};
@@ -372,42 +358,38 @@ auto edge_to_sibling(const point& from, const point& to, double t) {
     const auto out_unit{lerp(ne_k, ene_k, t)};
     const auto in_unit{lerp(nw_k, wnw_k, t)};
     const auto scale{lerp(min_scale_k, max_scale_k, t)};
-    const auto dst{to - arrowhead_offset_k};
 
-    point s = from + out_unit * node_scale_k;
-    point c1 = from + out_unit * node_scale_k * scale;
-    point c2 = dst + in_unit * node_scale_k * scale;
-    point e = dst + in_unit * node_scale_k;
+    cubic_bezier result{
+        from + out_unit * node_scale_k,
+        from + out_unit * node_scale_k * scale,
+        to + in_unit * node_scale_k * scale,
+        to + in_unit * node_scale_k,
+    };
 
-    return cubic_bezier{s, c1, c2, e};
+    return result;
 }
 
 /**************************************************************************************************/
 
 auto edge_to_self(const point& from, const point& to, bool rect) {
     constexpr point node_scale_k{node_radius_k, node_radius_k};
-    const auto out_unit{ssw_k};
-    const auto in_unit{sse_k};
-
-    point s;
-    point c1;
-    point c2;
-    point e;
+    static const auto out_unit{lerp(sw_k, ssw_k, 0.5)};
+    static const auto in_unit{lerp(se_k, sse_k, 0.5)};
+    cubic_bezier result;
 
     if (rect) {
-        s = from + point{node_size_k / 4, node_size_k};
-        c1 = s + point{-margin_width_k, margin_width_k};
-        e = s + point{node_size_k / 2, 0} + point{0, 9};
-        c2 = e + point{margin_width_k, margin_width_k};
+        result._s = from + point{node_size_k / 4, node_size_k};
+        result._c1 = result._s + out_unit * node_scale_k * 2;
+        result._e = result._s + point{node_size_k / 2, 0};
+        result._c2 = result._e + in_unit * node_scale_k * 2;
     } else {
-        const auto dst{to + arrowhead_offset_k};
-        s = from + out_unit * node_scale_k;
-        c1 = from + out_unit * node_scale_k * 2.3;
-        c2 = dst + in_unit * node_scale_k * 1.5;
-        e = dst + in_unit * node_scale_k;
+        result._s = from + out_unit * node_scale_k;
+        result._c1 = from + out_unit * node_scale_k * 3;
+        result._c2 = to + in_unit * node_scale_k * 3;
+        result._e = to + in_unit * node_scale_k;
     }
 
-    return cubic_bezier{s, c1, c2, e};
+    return result;
 }
 
 /**************************************************************************************************/
@@ -522,7 +504,8 @@ auto derive_edges(const adobe::forest<svg::node>& f,
 
         bool  cur_rect{cur_square != nullptr};
         point cur{cur_rect ? cur_square->_p : cur_circle->_c};
-        const auto t{delerp<double>((prev - cur).magnitude(), min_mag_k, max_mag_k)};
+        const auto cur_mag{(prev - cur).magnitude()};
+        const auto t{delerp<double>(cur_mag, min_mag_k, max_mag_k)};
         cubic_bezier bezier;
 
         if (prev_leading) {
@@ -540,12 +523,17 @@ auto derive_edges(const adobe::forest<svg::node>& f,
         }
 
         if (bezier != cubic_bezier{}) {
+            // trim back the bezier path to account for the arrow. I'm not a fan of the magic
+            // number. I think it's something near the width of the arrow (12) minus half the
+            // stroke width of the node (5).
+            bezier = bezier.subdivide(alp(bezier).rfind(10.5)).first;
+
             result.push_back(svg::cubic_path{bezier, std::move(properties._color), stroke_width_k, cur_leading});
 
 #if 0
             // Print the control points of the curve. Save these for debugging.
-            result.push_back(svg::line{bezier._s, bezier._c1, "green", 2});
-            result.push_back(svg::line{bezier._e, bezier._c2, "green", 2});
+            result.push_back(svg::line{bezier._s, bezier._c1, "green", 0.5});
+            result.push_back(svg::line{bezier._e, bezier._c2, "green", 0.5});
 #endif
         }
 
@@ -624,9 +612,9 @@ auto derive_edge_labels(const edge_labels& labels, const edge_map& map, const sv
 
         if (flat) {
             bs = mid;
-            bs.y += distance_k;
+            bs.y -= distance_k;
             be = mid;
-            be.y -= distance_k;
+            be.y += distance_k;
         } else {
             const double orth{-1 / slope};
             const auto b{mid.y - orth * mid.x};
@@ -693,7 +681,7 @@ auto derive_edge_labels(const edge_labels& labels, const edge_map& map, const sv
 
 #if 0
         // Output the perpendicular line upon which the label rests. Save this for debugging.
-        result.push_back(svg::line{bs, be, "yellow", 2});
+        result.push_back(svg::line{bs, be, "green", 0.5});
 #endif
 
         auto split{subscript_split(*first++)};
@@ -775,7 +763,7 @@ xml_node svg_to_xml(svg::circle c) {
             { "cx", std::to_string(c._c.x) },
             { "cy", std::to_string(c._c.y) },
             { "r", std::to_string(c._r) },
-            { "fill", "white" },
+            { "fill", "none" },
             { "stroke", std::move(c._color) },
             { "stroke-width", std::to_string(c._stroke_width) },
             //{ "stroke-dasharray", node_properties._stroke_dasharray },
@@ -793,7 +781,7 @@ xml_node svg_to_xml(svg::square s) {
             { "y", std::to_string(s._p.y) },
             { "width", std::to_string(s._size) },
             { "height", std::to_string(s._size) },
-            { "fill", "white" },
+            { "fill", "none" },
             { "stroke", std::move(s._color) },
             { "stroke-width", std::to_string(s._stroke_width) },
         }
@@ -947,9 +935,14 @@ void write_svg(state state, const std::filesystem::path& path) {
         "polygon",
         {
             { "points", "0 0, 12 5, 0 10" },
+#if 0
             // Apparently these are an SVG 2.0 feature that aren't supported well... anywhere.
-            // { "fill", "context-stroke" },
-            // { "stroke", "context-stroke" },
+            { "fill", "context-stroke" },
+            { "stroke", "context-stroke" },
+#else
+            { "fill", "black" },
+            { "stroke", "none" },
+#endif
         }
     });
 
