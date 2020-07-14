@@ -2,7 +2,7 @@
 <svg xmlns='http://www.w3.org/2000/svg' xmlns:xlink='http://www.w3.org/1999/xlink' width='175' height='245'>
     <defs>
         <marker id='arrowhead' markerWidth='12' markerHeight='10' orient='auto-start-reverse' refY='5' markerUnits='userSpaceOnUse'>
-            <polygon points='0 0, 12 5, 0 10' fill='currentColor' stroke='none'/>
+            <polygon points='0 0, 12 5, 0 10' fill='black' stroke='none'/>
         </marker>
     </defs>
     <path d='M 62.000000 47.500000 C40.542472 68.957528 16.380852 68.925603 25.134951 83.656331' fill='none' stroke='black' stroke-width='2.000000' marker-end='url(#arrowhead)'/>
@@ -12,25 +12,25 @@
     <path d='M 67.677670 92.322330 C74.165237 85.834763 87.725379 84.108969 97.975775 87.144950' fill='none' stroke='black' stroke-width='2.000000' marker-end='url(#arrowhead)'/>
     <path d='M 111.377622 130.387329 C86.703514 167.314742 151.413455 170.798985 143.606798 140.840056' fill='none' stroke='lightgrey' stroke-width='2.000000' marker-end='url(#arrowhead)'/>
     <path d='M 142.677670 92.322330 C173.124713 61.875287 145.024179 69.870159 120.841865 54.541261' fill='none' stroke='lightgrey' stroke-width='2.000000' marker-end='url(#arrowhead)'/>
-    <text font-size='16.000000' text-anchor='middle' x='25.306445' y='62.033763' dominant-baseline='central' fill='black'>
+    <text font-size='16.000000' text-anchor='middle' x='30.620236' y='58.877039' dominant-baseline='central' fill='black'>
 1<tspan dy='8.000000' font-size='.7em'></tspan>
     </text>
-    <text font-size='16.000000' text-anchor='middle' x='17.194131' y='142.091028' dominant-baseline='central' fill='black'>
+    <text font-size='16.000000' text-anchor='middle' x='16.894326' y='147.168283' dominant-baseline='central' fill='black'>
 2<tspan dy='8.000000' font-size='.7em'></tspan>
     </text>
-    <text font-size='16.000000' text-anchor='middle' x='49.845148' y='227.167883' dominant-baseline='central' fill='lightgrey'>
+    <text font-size='16.000000' text-anchor='middle' x='49.373607' y='227.157712' dominant-baseline='central' fill='lightgrey'>
 3<tspan dy='8.000000' font-size='.7em'></tspan>
     </text>
-    <text font-size='16.000000' text-anchor='middle' x='65.315824' y='150.944711' dominant-baseline='central' fill='lightgrey'>
+    <text font-size='16.000000' text-anchor='middle' x='65.506076' y='147.712717' dominant-baseline='central' fill='lightgrey'>
 4<tspan dy='8.000000' font-size='.7em'></tspan>
     </text>
-    <text font-size='16.000000' text-anchor='middle' x='82.091028' y='77.194131' dominant-baseline='central' fill='black'>
+    <text font-size='16.000000' text-anchor='middle' x='87.227783' y='76.894125' dominant-baseline='central' fill='black'>
 5<tspan dy='8.000000' font-size='.7em'></tspan>
     </text>
-    <text font-size='16.000000' text-anchor='middle' x='124.845148' y='152.167883' dominant-baseline='central' fill='lightgrey'>
+    <text font-size='16.000000' text-anchor='middle' x='124.373607' y='152.157712' dominant-baseline='central' fill='lightgrey'>
 6<tspan dy='8.000000' font-size='.7em'></tspan>
     </text>
-    <text font-size='16.000000' text-anchor='middle' x='153.817525' y='58.683232' dominant-baseline='central' fill='lightgrey'>
+    <text font-size='16.000000' text-anchor='middle' x='149.054471' y='56.806258' dominant-baseline='central' fill='lightgrey'>
 7<tspan dy='8.000000' font-size='.7em'></tspan>
     </text>
     <rect x='62.000000' y='10.000000' fill='none' width='50.000000' height='50.000000' stroke='darkred' stroke-width='2.000000'/>

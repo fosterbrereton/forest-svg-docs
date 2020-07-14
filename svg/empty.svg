@@ -2,7 +2,7 @@
 <svg xmlns='http://www.w3.org/2000/svg' xmlns:xlink='http://www.w3.org/1999/xlink' width='100' height='95'>
     <defs>
         <marker id='arrowhead' markerWidth='12' markerHeight='10' orient='auto-start-reverse' refY='5' markerUnits='userSpaceOnUse'>
-            <polygon points='0 0, 12 5, 0 10' fill='currentColor' stroke='none'/>
+            <polygon points='0 0, 12 5, 0 10' fill='black' stroke='none'/>
         </marker>
     </defs>
     <path d='M 37.000000 60.000000 C12.320315 96.935758 75.223114 100.413229 67.035063 70.432411' fill='none' stroke='black' stroke-width='2.000000' marker-end='url(#arrowhead)'/>

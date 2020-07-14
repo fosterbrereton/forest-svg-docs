@@ -601,8 +601,11 @@ auto derive_edge_labels(const edge_labels& labels, const edge_map& map, const sv
         // some definition of "more or less flat"), we take an alternative path that
         // does not rely on the slope of the perpendicular.
 
-        const point mid{curve(properties._t)};
-        const point dmid{curve.derivative(properties._t)};
+        const alp arcs{curve};
+        const auto mid_distance{(arcs.length() + 10.5) / 2}; // 10.5 should be the same as when the edge was clipped.
+        const auto midpoint_t{arcs.find(mid_distance)};
+        const point mid{curve(midpoint_t)};
+        const point dmid{curve.derivative(midpoint_t)};
         const double slope{dmid.x ? dmid.y / dmid.x : 0};
         const bool flat{std::abs(slope) < 0.01};
         constexpr auto distance_k{font_size_k * 0.55};

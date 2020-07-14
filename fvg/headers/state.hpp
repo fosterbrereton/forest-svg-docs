@@ -30,7 +30,7 @@ struct node_properties {
 struct edge_properties {
     bool _hide{false};
     std::string _color{"black"};
-    double _t{0.55}; // Range (0..1). Bezier point where label will go.
+    double _t{0.5}; // Range (0..1). Bezier point where label will go. Unused as of now.
 };
 
 struct graph_settings {
