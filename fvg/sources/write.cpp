@@ -413,7 +413,7 @@ auto edge_to_self(const point& from, const point& to, bool rect) {
 /**************************************************************************************************/
 
 auto merge(edge_properties a, const edge_properties& b) {
-    const edge_properties dfault;
+    static const edge_properties dfault;
 
     // If b's value isn't a default value, it wins over whatever value was in a.
 
@@ -423,6 +423,10 @@ auto merge(edge_properties a, const edge_properties& b) {
 
     if (b._color != dfault._color) {
         a._color = b._color;
+    }
+
+    if (b._t != dfault._t) {
+        a._t = b._t;
     }
 
     return a;
@@ -609,8 +613,8 @@ auto derive_edge_labels(const edge_labels& labels, const edge_map& map, const sv
         // some definition of "more or less flat"), we take an alternative path that
         // does not rely on the slope of the perpendicular.
 
-        const point mid{curve(0.5)};
-        const point dmid{curve.derivative(0.5)};
+        const point mid{curve(properties._t)};
+        const point dmid{curve.derivative(properties._t)};
         const double slope{dmid.x ? dmid.y / dmid.x : 0};
         const bool flat{std::abs(slope) < 0.01};
         constexpr auto distance_k{font_size_k * 0.55};

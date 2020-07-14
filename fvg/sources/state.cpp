@@ -61,8 +61,6 @@ auto make_state_nodes(const json_object& object) {
         result[entry.first] = node_properties {
             get<std::string>(mapped, "color"),
             get<std::string>(mapped, "stroke-dasharray"),
-            get<std::string>(mapped, "_leading_label"),
-            get<std::string>(mapped, "_trailing_label"),
         };
     }
 
@@ -81,10 +79,13 @@ auto make_state_edges(const json_object& object) {
             throw std::runtime_error("dictionary expected for node property");
         }
 
-        result[entry.first] = edge_properties {
-            get<bool>(mapped, "_hide"),
-            get<std::string>(mapped, "_color")
-        };
+        edge_properties value;
+
+        if (mapped.count("_hide")) value._hide = get<bool>(mapped, "_hide");
+        if (mapped.count("_color")) value._color = get<std::string>(mapped, "_color");
+        if (mapped.count("t")) value._t = get<double>(mapped, "t");
+
+        result[entry.first] = std::move(value);
     }
 
     return result;

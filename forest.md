@@ -126,6 +126,8 @@ Every forest has a root node, which is not a node used to store values in the fo
 
 <img class='svg-img' src='{{site.baseurl}}/svg/root.svg'/>
 
+The root does have a trailing-out edge which always points to the root leading-in edge. This creates a unique and detectible termination case, which is a useful property. For example, the end iterator for a preorder traversal (which always points to a leading edge) is this trailing-out to leading-in edge of the root.
+
 ## Edges
 
 Forest nodes are connected to one another with edges. For every node in the forest, there are exactly two edges that lead away from the node, and exactly two that lead towards the node. In this document edges will be drawn as arrows pointed in the direction of forward travel:
@@ -242,9 +244,9 @@ Given a forest that contains only the root node, `forest<T>::empty()` will retur
 Iterators are comprised of two pieces of data:
 
 - The node ($N$) to which they point
-- Whether they are on the leading ($L$) or trailing ($T$) side of the node
+- Whether they are on the leading ($L$) or trailing ($T$) edge of the node
 
-In this documentation, iterators will be described by this pair as `{node, side}`.
+In this documentation, iterators will be described by this pair as `{node, edge}`.
 
 ### Examples
 
@@ -268,10 +270,10 @@ Since iterators always point to a node, we never speak of an iterator being on t
 
 ### Edge Flipping
 
-Utility functions `adobe::leading_of(I)` and `adobe::trailing_of(I)` change the edge of an iterator to leading or trailing, respectively. The iterator will still point to the same node. These are free functions, not members of `adobe::forest<T>`. In this document we will represent these routines in pseudocode as such:
+Utility functions `adobe::leading_of(I)` and `adobe::trailing_of(I)` change the edge of an iterator to leading or trailing, respectively. It does not matter what edge the iterator was originally on. The iterator will still point to the same node. These are free functions, not members of `adobe::forest<T>`. In this document we will represent these routines in pseudocode as such:
 
-- `leading_of({P, T})` &rarr; `{P, L}`
-- `trailing_of({N, L})` &rarr; `{N, T}`
+- `leading_of({P, X})` &rarr; `{P, L}`
+- `trailing_of({N, X})` &rarr; `{N, T}`
 
 ### Iterator Adaptors
 
@@ -293,7 +295,7 @@ The root node is not considered during forest traversal. As such it is omitted f
 
 ### Fullorder
 
-The traversal behavior of `adobe::forest<T>::itrator` is always fullorder. This means every node is visited twice: first, right before any of its children are visited (on the leading edge), and then again after the last child is visited (on the trailing edge). This behavior is recursive, and results in a depth-first traversal of the forest:
+The traversal behavior of `adobe::forest<T>::iterator` is always fullorder. This means every node is visited twice: first, right before any of its children are visited (on the leading edge), and then again after the last child is visited (on the trailing edge). This behavior is recursive, and results in a depth-first traversal of the forest:
 
 <img class='svg-img' src='{{site.baseurl}}/svg/fullorder_one.svg'/>
 
