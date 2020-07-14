@@ -67,7 +67,15 @@ struct square {
 
 /**************************************************************************************************/
 
-using node = std::variant<line, cubic_path, text, circle, square>;
+struct arrowhead {
+    point _p; // center of the base of the arrowhead
+    point _n; // unit normal where the arrowhead should point
+    std::string _color;
+};
+
+/**************************************************************************************************/
+
+using node = std::variant<line, cubic_path, text, circle, square, arrowhead>;
 using nodes = std::vector<node>;
 
 /**************************************************************************************************/

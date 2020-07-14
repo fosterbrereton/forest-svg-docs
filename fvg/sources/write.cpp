@@ -267,24 +267,22 @@ auto svg_bezier(const cubic_bezier& b) {
 
 /**************************************************************************************************/
 
-static const point arrowhead_offset_k{9, 9};
-
 //static const point n_k{std::cos(6*M_PI_4), std::sin(6*M_PI_4)};
-static const point nne_k{std::cos(6.5*M_PI_4), std::sin(6.5*M_PI_4)};
+//static const point nne_k{std::cos(6.5*M_PI_4), std::sin(6.5*M_PI_4)};
 static const point ne_k{std::cos(7*M_PI_4), std::sin(7*M_PI_4)};
 static const point ene_k{std::cos(7.5*M_PI_4), std::sin(7.5*M_PI_4)};
 //static const point e_k{std::cos(M_PI_4), std::sin(M_PI_4)};
-static const point ese_k{std::cos(0.5*M_PI_4), std::sin(0.5*M_PI_4)};
+//static const point ese_k{std::cos(0.5*M_PI_4), std::sin(0.5*M_PI_4)};
 static const point se_k{std::cos(1*M_PI_4), std::sin(1*M_PI_4)};
 static const point sse_k{std::cos(1.5*M_PI_4), std::sin(1.5*M_PI_4)};
 //static const point s_k{std::cos(2*M_PI_4), std::sin(2*M_PI_4)};
 static const point ssw_k{std::cos(2.5*M_PI_4), std::sin(2.5*M_PI_4)};
 static const point sw_k{std::cos(3*M_PI_4), std::sin(3*M_PI_4)};
-static const point wsw_k{std::cos(3.5*M_PI_4), std::sin(3.5*M_PI_4)};
+//static const point wsw_k{std::cos(3.5*M_PI_4), std::sin(3.5*M_PI_4)};
 //static const point w_k{std::cos(4*M_PI_4), std::sin(4*M_PI_4)};
 static const point wnw_k{std::cos(4.5*M_PI_4), std::sin(4.5*M_PI_4)};
 static const point nw_k{std::cos(5*M_PI_4), std::sin(5*M_PI_4)};
-static const point nnw_k{std::cos(5.5*M_PI_4), std::sin(5.5*M_PI_4)};
+//static const point nnw_k{std::cos(5.5*M_PI_4), std::sin(5.5*M_PI_4)};
 
 /**************************************************************************************************/
 
@@ -526,9 +524,13 @@ auto derive_edges(const adobe::forest<svg::node>& f,
             // trim back the bezier path to account for the arrow. I'm not a fan of the magic
             // number. I think it's something near the width of the arrow (12) minus half the
             // stroke width of the node (5).
-            bezier = bezier.subdivide(alp(bezier).rfind(10.5)).first;
+            bezier = bezier.subdivide(alp(bezier).rfind(11)).first;
 
-            result.push_back(svg::cubic_path{bezier, std::move(properties._color), stroke_width_k, cur_leading});
+            result.push_back(svg::cubic_path{bezier, properties._color, stroke_width_k, cur_leading});
+
+            result.push_back(svg::arrowhead{bezier._e,
+                                            bezier.derivative(1).unit(),
+                                            properties._color});
 
 #if 0
             // Print the control points of the curve. Save these for debugging.
@@ -602,95 +604,43 @@ auto derive_edge_labels(const edge_labels& labels, const edge_map& map, const sv
         // does not rely on the slope of the perpendicular.
 
         const alp arcs{curve};
-        const auto mid_distance{(arcs.length() + 10.5) / 2}; // 10.5 should be the same as when the edge was clipped.
+        const auto mid_distance{(arcs.length() + 11) / 2}; // 11 should be the same as when the edge was clipped.
         const auto midpoint_t{arcs.find(mid_distance)};
         const point mid{curve(midpoint_t)};
         const point dmid{curve.derivative(midpoint_t)};
         const double slope{dmid.x ? dmid.y / dmid.x : 0};
-        const bool flat{std::abs(slope) < 0.01};
+        const bool flat{std::abs(slope) < 0.05};
         constexpr auto distance_k{font_size_k * 0.55};
 
-        point bs; // baseline start
-        point be; // baseline end
+        point tp;
 
         if (flat) {
-            bs = mid;
-            bs.y -= distance_k;
-            be = mid;
-            be.y += distance_k;
+            tp = mid;
+            tp.y -= distance_k;
         } else {
-            const double orth{-1 / slope};
-            const auto b{mid.y - orth * mid.x};
+            const point pmid{point{-dmid.y, dmid.x}.unit()};
 
-            // The goal here is to get two points that are a certain distance from the computed
-            // bezier point along the line that is perpendicular to the tanget at that point in the
-            // bezier. Blah, that was a mouthful. No time to sum up, let me explain. We're adding a
-            // label to an edge, which is drawn via a bezier path. In order for viewers to associate
-            // the label to the path, that label needs to be a certain distance from the path, but
-            // related to a point along the path. For ease of explaining, let's say that point is t
-            // = 0.5, the bezier "midpoint". We want the label some distance away from the curve
-            // relative to that "midpoint". That requires the label move perpendicular to the bezier
-            // curve at that point. That requires getting the tangent first, and inverting the
-            // slope.
+#if 0
+            // Output the tangent at its magnitude. Save for debugging.
+            result.push_back(svg::line{mid, mid + dmid, "blue", 0.5});
+#endif
+#if 0
+            // Output the unit normal for this point (slightly embiggened). Save for debugging.
+            result.push_back(svg::line{mid, mid + pmid * 5, "blue", 0.5});
+#endif
 
-            // To get these two points some distance away from but perpendicular to the bezier path
-            // at a certain point, we compute one of the points and then can derive the other. To
-            // compute the one point, we have two unknowns, x, and y. Therefore, we need two
-            // equations, solve for y in terms of x in one, and then replace y in the other equation
-            // and solve for x. The first equation I used was the distance equation:
-
-            // d^2 = (x2 - x1)^2 + (y2 - y1)^2
-
-            // and the second was the two-point line equation:
-
-            // (y2 - y1) = m * (x2 - x1)
-
-            // Above, all the values are constants except x2 and y2. (x1, y1) is the bezier
-            // "midpoint", d is a fixed distance along the perpendicular that we're hunting for, and
-            // m is the slope of the perpendicular at the "midpoint". Using those two formulas, I
-            // was able to get a solution to the point where the quadratic equation could be used to
-            // solve for x. Given a quadratic ax^2 + bx + c = 0, the constants for my situation are:
-
-            // a = -1
-            // b = 2 * mid.x
-            // c = -(mid.x^2 * (1 + m^2) - d^2) / (1 + m^2)
-
-            // The added benefit of the quadratic formula is that it gives me both x values that are
-            // equidistant along the perpendicular at the bezier "midpoint". Once I had x for both
-            // points, I used the slope-intercept line equation to get their corresponding y values.
-
-            const auto d2{distance_k * distance_k};
-            const auto qa{-1};
-            const auto qb{2 * mid.x};
-            const auto o2{orth * orth};
-            const auto qc_num{std::pow(mid.x, 2) * (1 + o2) - d2};
-            const auto qc_den{1 + o2};
-            const auto qc{-qc_num / qc_den};
-            const auto qs{std::sqrt(std::pow(qb, 2) - 4 * qa * qc)};
-            const auto x1{(-qb + qs) / (2 * qa)};
-            const auto x2{(-qb - qs) / (2 * qa)};
-
-            bs.x = x1;
-            be.x = x2;
-            bs.y = orth * bs.x + b;
-            be.y = orth * be.x + b;
-
-            // we want bs to be the higher of the two values, so the label always
-            // shows above the edge.
-            if (bs.y > be.y) {
-                std::swap(bs, be);
-            }
+            tp = mid + pmid * distance_k;
         }
 
 #if 0
-        // Output the perpendicular line upon which the label rests. Save this for debugging.
-        result.push_back(svg::line{bs, be, "green", 0.5});
+        // Output the point from which the label is rendered. Save this for debugging.
+        result.push_back(svg::circle{tp - 0.25, 0.5, "blue", 1});
 #endif
 
         auto split{subscript_split(*first++)};
 
         result.push_back(svg::text{
-            bs,
+            std::move(tp),
             std::move(split.first),
             std::move(split.second),
             font_size_k,
@@ -727,7 +677,7 @@ xml_node svg_to_xml(svg::cubic_path path) {
             { "stroke", std::move(path._color) },
             { "fill", "none" },
             { "stroke-width", std::to_string(path._width) },
-            { "marker-end", "url(#arrowhead)" },
+            //{ "marker-end", "url(#arrowhead)" },
         }
     };
 }
@@ -793,9 +743,43 @@ xml_node svg_to_xml(svg::square s) {
 
 /**************************************************************************************************/
 
+auto rad2deg(double rad) {
+    return rad * 180 / M_PI;
+}
+
+/**************************************************************************************************/
+
+xml_node svg_to_xml(svg::arrowhead a) {
+    const point perp{-a._n.y, a._n.x};
+    const point p0{a._p - perp * 5};
+    const point p1{a._p + a._n * 12};
+    const point p2{a._p + perp * 5};
+
+    static const auto p2s{[](const point& p){
+        return std::to_string(p.x) + " " + std::to_string(p.y);
+    }};
+
+    return xml_node{
+        "polygon",
+        {
+            { "points", p2s(p0) + ", " + p2s(p1) + ", " +p2s(p2) },
+            { "fill", std::move(a._color) },
+            { "stroke", "none" },
+        }
+    };
+}
+
+/**************************************************************************************************/
+
 xml_node svg_to_xml(svg::node n) {
     return std::visit([](auto&& n) {
-        return svg_to_xml(std::forward<decltype(n)>(n));
+        // We call the function this way to detect at compile time if there
+        // is a version of the API we want to call for the _specific_ type.
+        // Don't let the compiler shoot us in the foot here by taking us to
+        // some routine it thinks we want (including wrapping back around
+        // into this one implicitly.)
+        xml_node(*f)(std::decay_t<decltype(n)>){&svg_to_xml};
+        return f(std::forward<decltype(n)>(n));
     }, std::move(n));
 }
 
@@ -921,33 +905,6 @@ void write_svg(state state, const std::filesystem::path& path) {
             { "height", std::to_string(height) },
         }
     }));
-
-    auto defs = adobe::trailing_of(xml.insert(p, xml_node{ "defs" }));
-    auto marker_arrowhead = adobe::trailing_of(xml.insert(defs, xml_node{
-        "marker",
-        {
-            { "id", "arrowhead" },
-            { "markerWidth", "12" },
-            { "markerHeight", "10" },
-            { "refY", "5" },
-            { "orient", "auto-start-reverse" },
-            { "markerUnits", "userSpaceOnUse" },
-        }
-    }));
-    xml.insert(marker_arrowhead, xml_node{
-        "polygon",
-        {
-            { "points", "0 0, 12 5, 0 10" },
-#if 0
-            // Apparently these are an SVG 2.0 feature that aren't supported well... anywhere.
-            { "fill", "context-stroke" },
-            { "stroke", "context-stroke" },
-#else
-            { "fill", "black" },
-            { "stroke", "none" },
-#endif
-        }
-    });
 
     for (auto& edge : svg_edges) {
         xml.insert(p, svg_to_xml(std::move(edge)));

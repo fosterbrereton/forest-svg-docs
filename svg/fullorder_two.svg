@@ -1,36 +1,38 @@
 <?xml version='1.0' encoding='utf-8'?>
 <svg xmlns='http://www.w3.org/2000/svg' xmlns:xlink='http://www.w3.org/1999/xlink' width='175' height='245'>
-    <defs>
-        <marker id='arrowhead' markerWidth='12' markerHeight='10' orient='auto-start-reverse' refY='5' markerUnits='userSpaceOnUse'>
-            <polygon points='0 0, 12 5, 0 10' fill='black' stroke='none'/>
-        </marker>
-    </defs>
-    <path d='M 62.000000 47.500000 C40.542472 68.957528 16.380852 68.925603 25.134951 83.656331' fill='none' stroke='green' stroke-width='2.000000' marker-end='url(#arrowhead)'/>
-    <path d='M 32.322330 127.677670 C25.834763 134.165237 24.108969 147.725379 27.144950 157.975775' fill='none' stroke='green' stroke-width='2.000000' marker-end='url(#arrowhead)'/>
-    <path d='M 36.377622 205.387329 C11.703514 242.314742 76.413455 245.798985 68.606798 215.840056' fill='none' stroke='red' stroke-width='2.000000' marker-end='url(#arrowhead)'/>
-    <path d='M 67.677670 167.322330 C74.165237 160.834763 75.891031 147.274621 72.855050 137.024225' fill='none' stroke='red' stroke-width='2.000000' marker-end='url(#arrowhead)'/>
-    <path d='M 67.677670 92.322330 C74.165237 85.834763 87.725379 84.108969 97.975775 87.144950' fill='none' stroke='green' stroke-width='2.000000' marker-end='url(#arrowhead)'/>
-    <path d='M 111.377622 130.387329 C86.703514 167.314742 151.413455 170.798985 143.606798 140.840056' fill='none' stroke='red' stroke-width='2.000000' marker-end='url(#arrowhead)'/>
-    <path d='M 142.677670 92.322330 C173.124713 61.875287 145.024179 69.870159 120.841865 54.541261' fill='none' stroke='red' stroke-width='2.000000' marker-end='url(#arrowhead)'/>
-    <text font-size='16.000000' text-anchor='middle' x='30.620236' y='58.877039' dominant-baseline='central' fill='green'>
+    <path d='M 62.000000 47.500000 C40.754913 68.745087 16.859013 68.924129 24.884585 83.223110' fill='none' stroke='green' stroke-width='2.000000'/>
+    <polygon points='29.244755 80.775883, 30.757930 93.687517, 20.524415 85.670337' fill='green' stroke='none'/>
+    <path d='M 32.322330 127.677670 C25.935617 134.064383 24.163778 147.305482 27.006812 157.495363' fill='none' stroke='green' stroke-width='2.000000'/>
+    <polygon points='31.822873 156.151655, 30.231712 169.053911, 22.190750 158.839072' fill='green' stroke='none'/>
+    <path d='M 36.377622 205.387329 C11.837930 242.113573 75.711069 245.760030 68.727953 216.326699' fill='none' stroke='red' stroke-width='2.000000'/>
+    <polygon points='63.862999 217.480919, 65.957825 204.650809, 73.592906 215.172479' fill='red' stroke='none'/>
+    <path d='M 67.677670 167.322330 C74.064383 160.935617 75.836222 147.694518 72.993188 137.504637' fill='none' stroke='red' stroke-width='2.000000'/>
+    <polygon points='68.177127 138.848345, 69.768288 125.946089, 77.809250 136.160928' fill='red' stroke='none'/>
+    <path d='M 67.677670 92.322330 C74.064383 85.935617 87.305482 84.163778 97.495363 87.006812' fill='none' stroke='green' stroke-width='2.000000'/>
+    <polygon points='98.839072 82.190750, 109.053911 90.231712, 96.151655 91.822873' fill='green' stroke='none'/>
+    <path d='M 111.377622 130.387329 C86.837930 167.113573 150.711069 170.760030 143.727953 141.326699' fill='none' stroke='red' stroke-width='2.000000'/>
+    <polygon points='138.862999 142.480919, 140.957825 129.650809, 148.592906 140.172479' fill='red' stroke='none'/>
+    <path d='M 142.677670 92.322330 C172.947312 62.052688 145.349649 69.778300 121.264949 54.806841' fill='none' stroke='red' stroke-width='2.000000'/>
+    <polygon points='118.625293 59.053276, 111.073504 48.471665, 123.904606 50.560405' fill='red' stroke='none'/>
+    <text font-size='16.000000' text-anchor='middle' x='30.612628' y='58.881340' dominant-baseline='central' fill='green'>
 1<tspan dy='8.000000' font-size='.7em'></tspan>
     </text>
-    <text font-size='16.000000' text-anchor='middle' x='16.894326' y='147.168283' dominant-baseline='central' fill='green'>
+    <text font-size='16.000000' text-anchor='middle' x='16.894315' y='147.169958' dominant-baseline='central' fill='green'>
 2<tspan dy='8.000000' font-size='.7em'></tspan>
     </text>
-    <text font-size='16.000000' text-anchor='middle' x='49.373607' y='227.157712' dominant-baseline='central' fill='red'>
+    <text font-size='16.000000' text-anchor='middle' x='49.082741' y='227.152906' dominant-baseline='central' fill='red'>
 3<tspan dy='8.000000' font-size='.7em'></tspan>
     </text>
-    <text font-size='16.000000' text-anchor='middle' x='65.506076' y='147.712717' dominant-baseline='central' fill='red'>
+    <text font-size='16.000000' text-anchor='middle' x='83.105685' y='147.830042' dominant-baseline='central' fill='red'>
 4<tspan dy='8.000000' font-size='.7em'></tspan>
     </text>
-    <text font-size='16.000000' text-anchor='middle' x='87.227783' y='76.894125' dominant-baseline='central' fill='green'>
+    <text font-size='16.000000' text-anchor='middle' x='87.229158' y='76.894115' dominant-baseline='central' fill='green'>
 5<tspan dy='8.000000' font-size='.7em'></tspan>
     </text>
-    <text font-size='16.000000' text-anchor='middle' x='124.373607' y='152.157712' dominant-baseline='central' fill='red'>
+    <text font-size='16.000000' text-anchor='middle' x='124.082741' y='152.152906' dominant-baseline='central' fill='red'>
 6<tspan dy='8.000000' font-size='.7em'></tspan>
     </text>
-    <text font-size='16.000000' text-anchor='middle' x='149.054471' y='56.806258' dominant-baseline='central' fill='red'>
+    <text font-size='16.000000' text-anchor='middle' x='149.050515' y='56.804865' dominant-baseline='central' fill='red'>
 7<tspan dy='8.000000' font-size='.7em'></tspan>
     </text>
     <rect x='62.000000' y='10.000000' fill='none' width='50.000000' height='50.000000' stroke='darkred' stroke-width='2.000000'/>

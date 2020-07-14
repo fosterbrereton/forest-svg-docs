@@ -33,6 +33,8 @@ struct point {
 
     auto magnitude() const { return std::sqrt(x * x + y * y); }
 
+    auto unit() const;
+
     inline constexpr auto operator+=(const point& rhs) { x += rhs.x; y += rhs.y; return *this; }
     inline constexpr auto operator-=(const point& rhs) { x -= rhs.x; y -= rhs.y; return *this; }
     inline constexpr auto operator*=(const point& rhs) { x *= rhs.x; y *= rhs.y; return *this; }
@@ -58,6 +60,8 @@ inline constexpr auto operator*(const point& a, const double b) { point r{a}; r 
 inline constexpr auto operator/(const point& a, const double b) { point r{a}; r /= b; return r; }
 
 inline constexpr auto operator-(const point& a) { return point{-a.x, -a.y}; }
+
+inline auto point::unit() const { return *this / magnitude(); }
 
 /**************************************************************************************************/
 
