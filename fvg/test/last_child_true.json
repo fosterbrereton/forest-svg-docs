@@ -17,6 +17,7 @@
     },
     "edge_labels": [" ", "I = {In, T}", "J = {Jn, T}"],
     "settings": {
+        "margin_bottom": 25,
         "margin_right": 75
     }
 }

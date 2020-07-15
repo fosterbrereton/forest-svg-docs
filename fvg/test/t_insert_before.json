@@ -10,6 +10,6 @@
     },
     "edge_labels": ["{N, T}"],
     "settings": {
-        "margin_width": 50
+        "margin_bottom": 25
     }
 }

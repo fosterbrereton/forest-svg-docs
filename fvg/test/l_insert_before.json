@@ -6,9 +6,12 @@
         "{N, L}" : {
             "color": "blue",
             "label_offset": 1.55
+        },
+        " ": {
+            "hide": true
         }
     },
-    "edge_labels": ["{N, L}"],
+    "edge_labels": ["{N, L}", " ", " "],
     "settings": {
         "with_root": true,
         "margin_width": 75

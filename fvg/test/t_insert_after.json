@@ -15,6 +15,7 @@
     },
     "edge_labels": ["", "", "{N, T}"],
     "settings": {
-        "margin_width": 50
+        "margin_width": 50,
+        "with_leaf_edges": false
     }
 }

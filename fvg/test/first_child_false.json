@@ -13,7 +13,7 @@
     },
     "edge_labels": ["H = {Hn, T}", "I = {In, L}"],
     "settings": {
-        "margin_left": 50,
-        "margin_top": 50
+        "margin_height": 50,
+        "margin_left": 50
     }
 }

@@ -13,10 +13,14 @@
     "edges": {
         "{N, L}" : {
             "color": "blue"
+        },
+        " ": {
+            "hide": true
         }
     },
-    "edge_labels": ["", "", "{N, L}"],
+    "edge_labels": ["", " ", "{N, L}", " ", " "],
     "settings": {
-        "with_root": true
+        "with_root": true,
+        "margin_top": 25
     }
 }
