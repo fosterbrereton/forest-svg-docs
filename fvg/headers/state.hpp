@@ -12,6 +12,7 @@
 #include <adobe/forest.hpp>
 
 // application
+#include "geometry.hpp"
 #include "json.hpp"
 
 /**************************************************************************************************/
@@ -32,11 +33,14 @@ struct edge_properties {
     std::string _color{"black"};
     double _t{0.5}; // Range (0..1). Bezier point where label will go. Unused as of now.
     std::string _stroke_dasharray{"0"};
+    double _label_offset{0.55}; // distance from edge to text anchor point, in units-font-size.
+    std::string _text_anchor{"middle"};
 };
 
 struct graph_settings {
     bool _with_root{false};
     bool _with_leaf_edges{true};
+    extents _margin{25, 10, 25, 10};
 };
 
 using node_forest = adobe::forest<std::string>;

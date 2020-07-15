@@ -11,10 +11,10 @@
     },
     "edges": {
         "_trailing": {
-            "_hide": true
+            "hide": true
         }
     },
     "settings": {
-        "no_leaf_edges": true
+        "with_leaf_edges": false
     }
 }

@@ -44,8 +44,6 @@ constexpr auto node_size_k{50};
 constexpr auto node_radius_k{node_size_k / 2};
 constexpr auto node_spacing_k{25};
 constexpr auto tier_height_k{50};
-constexpr auto margin_width_k{25};
-constexpr auto margin_height_k{10};
 constexpr auto stroke_width_k{2};
 constexpr auto font_size_k{16};
 constexpr auto root_name_k{"&#x211C;"};
@@ -86,7 +84,7 @@ auto derive_widths(const adobe::forest<std::size_t>& counts) {
 
 /**************************************************************************************************/
 
-auto derive_height(const adobe::forest<std::size_t>& counts, bool leaf_edges) {
+auto derive_height(const adobe::forest<std::size_t>& counts, bool leaf_edges, double margin_height) {
     adobe::depth_fullorder_iterator first{counts.begin()};
     adobe::depth_fullorder_iterator last{counts.end()};
     using depth_type = decltype(first.depth());
@@ -109,12 +107,12 @@ auto derive_height(const adobe::forest<std::size_t>& counts, bool leaf_edges) {
         height -= node_spacing_k;
     }
 
-    return height + margin_height_k * 2;
+    return height + margin_height;
 }
 
 /**************************************************************************************************/
 
-auto derive_width(const adobe::forest<std::size_t>& widths) {
+auto derive_width(const adobe::forest<std::size_t>& widths, double margin_width) {
     auto root{widths.root()};
     auto first{adobe::child_begin(root)};
     auto last{adobe::child_end(root)};
@@ -132,7 +130,7 @@ auto derive_width(const adobe::forest<std::size_t>& widths) {
         result -= node_spacing_k;
     }
 
-    return result + margin_width_k * 2;
+    return result + margin_width;
 }
 
 /**************************************************************************************************/
@@ -165,15 +163,15 @@ void derive_x_offsets(adobe::forest<std::size_t>::const_iterator src,
 
 /**************************************************************************************************/
 
-auto derive_x_offsets(const adobe::forest<std::size_t>& widths) {
+auto derive_x_offsets(const adobe::forest<std::size_t>& widths, double left_margin) {
     adobe::forest<std::size_t> result{widths};
-    detail::derive_x_offsets(widths.root(), result.root(), margin_width_k);
+    detail::derive_x_offsets(widths.root(), result.root(), left_margin);
     return result;
 }
 
 /**************************************************************************************************/
 
-auto derive_y_offsets(const state& state) {
+auto derive_y_offsets(const state& state, double margin_top) {
     adobe::forest<std::size_t> result;
     auto pos{result.root()};
     adobe::depth_fullorder_iterator first{state._f.begin()};
@@ -182,7 +180,7 @@ auto derive_y_offsets(const state& state) {
     while (first != last) {
         ++pos;
         if (first.edge() == adobe::forest_leading_edge) {
-            pos = result.insert(pos, margin_height_k + (tier_height_k + node_spacing_k) * first.depth());
+            pos = result.insert(pos, margin_top + (tier_height_k + node_spacing_k) * first.depth());
         }
         ++first;
     }
@@ -304,7 +302,7 @@ auto edge_to_parent(const point& from, const point& to, double t, bool to_rect) 
         s = from + node_scale_k * out_unit;
         c1 = from + node_scale_k * out_unit * scale;
         e = to + point{node_size_k, node_size_k * .75};
-        c2 = e + point{margin_width_k, 0};
+        c2 = e + point{node_spacing_k, 0};
     } else {
         s = from + out_unit * node_scale_k;
         c1 = from + out_unit * node_scale_k * scale;
@@ -333,7 +331,7 @@ auto edge_to_child(const point& from, const point& to, double t, bool from_rect)
 
     if (from_rect) {
         s = from + point{0, node_size_k * 0.75};
-        c1 = s + point{-margin_width_k, 0};
+        c1 = s + point{-node_spacing_k, 0};
         c2 = to + in_unit * node_scale_k * scale;
         e = to + in_unit * node_scale_k;
     } else {
@@ -411,6 +409,14 @@ auto merge(edge_properties a, const edge_properties& b) {
 
     if (b._stroke_dasharray != defalt._stroke_dasharray) {
         a._stroke_dasharray = b._stroke_dasharray;
+    }
+
+    if (b._label_offset != defalt._label_offset) {
+        a._label_offset = b._label_offset;
+    }
+
+    if (b._text_anchor != defalt._text_anchor) {
+        a._text_anchor = b._text_anchor;
     }
 
     return a;
@@ -496,11 +502,8 @@ auto derive_edges(const adobe::forest<svg::node>& f,
         bool  cur_leading{first.edge() == adobe::forest_leading_edge};
         const auto* cur_circle{std::get_if<svg::circle>(&*first)};
         const auto* cur_square{std::get_if<svg::square>(&*first)};
-        edge_properties properties;
-
-        if (label_first != label_last) {
-            properties = derive_edge_properties(*label_first, map, cur_leading);
-        }
+        auto label{label_first != label_last ? *label_first : ""};
+        edge_properties properties{derive_edge_properties(label, map, cur_leading)};
 
         assert(cur_circle != nullptr || cur_square != nullptr);
 
@@ -524,7 +527,7 @@ auto derive_edges(const adobe::forest<svg::node>& f,
             }
         }
 
-        if (bezier != cubic_bezier{}) {
+        if (bezier != cubic_bezier{} && !properties._hide) {
             // get the arrowhead normal pre-trim, so it for sure points at the node.
             const auto arrowhead_normal{bezier.derivative(1).unit()};
 
@@ -535,7 +538,8 @@ auto derive_edges(const adobe::forest<svg::node>& f,
                                              properties._color,
                                              stroke_width_k,
                                              properties._stroke_dasharray,
-                                             cur_leading});
+                                             cur_leading,
+                                             label});
 
             result.push_back(svg::arrowhead{bezier._e,
                                             arrowhead_normal,
@@ -577,31 +581,26 @@ auto subscript_split(const std::string& s) {
 
 /**************************************************************************************************/
 
-auto derive_edge_labels(const edge_labels& labels, const edge_map& map, const svg::nodes& edges) {
-    auto       first{labels.begin()};
-    auto       last{labels.end()};
+auto derive_edge_labels(const edge_map& map, const svg::nodes& edges) {
     svg::nodes result;
 
     for (auto& edge : edges) {
-        if (first == last) break;
-
         const auto* curve_ptr{std::get_if<svg::cubic_path>(&edge)};
         if (!curve_ptr) continue;
 
-        if (first->empty()) {
-            ++first;
+        const auto& curve{curve_ptr->_b};
+        const auto& id{curve_ptr->_id};
+
+        if (id.empty()) {
             continue;
         }
 
-        const auto& curve{curve_ptr->_b};
-        auto properties{derive_edge_properties(*first, map, curve_ptr->_leading)};
+        auto properties{derive_edge_properties(id, map, curve_ptr->_leading)};
 
         assert(curve != cubic_bezier{});
 
-        if (properties._hide) {
-            ++first;
-            continue;
-        }
+        // If the edge should have been hidden, it won't even be in the edges set.
+        assert(!properties._hide);
 
         // The goal is to put the label along the edge. To do that we have to compute
         // a point along the curve where we want to put the label, then an offset from
@@ -621,7 +620,7 @@ auto derive_edge_labels(const edge_labels& labels, const edge_map& map, const sv
         const point dmid{curve.derivative(midpoint_t)};
         const double slope{dmid.x ? dmid.y / dmid.x : 0};
         const bool flat{std::abs(slope) < 0.06};
-        constexpr auto distance_k{font_size_k * 0.55};
+        const auto distance_k{font_size_k * properties._label_offset};
 
         point tp;
 
@@ -648,14 +647,15 @@ auto derive_edge_labels(const edge_labels& labels, const edge_map& map, const sv
         result.push_back(svg::circle{tp - 0.25, 0.5, "blue", 1});
 #endif
 
-        auto split{subscript_split(*first++)};
+        auto split{subscript_split(id)};
 
         result.push_back(svg::text{
-            std::move(tp),
+            tp,
             std::move(split.first),
             std::move(split.second),
             font_size_k,
             properties._color,
+            properties._text_anchor,
         });
     }
 
@@ -709,7 +709,7 @@ xml_node svg_to_xml(svg::text text) {
         "text",
         {
             { "font-size", std::to_string(text._size) },
-            { "text-anchor", "middle" },
+            { "text-anchor", std::move(text._text_anchor) },
             { "dominant-baseline", "central" },
             { "x", std::to_string(text._p.x) },
             { "y", std::to_string(text._p.y) },
@@ -807,10 +807,10 @@ void write_svg(state state, const std::filesystem::path& path) {
 
     auto counts = child_counts(state);
     auto widths = derive_widths(counts);
-    auto height = derive_height(counts, state._s._with_leaf_edges);
-    auto width = derive_width(widths);
-    auto x_offsets = derive_x_offsets(widths);
-    auto y_offsets = derive_y_offsets(state);
+    auto height = derive_height(counts, state._s._with_leaf_edges, state._s._margin.height());
+    auto width = derive_width(widths, state._s._margin.width());
+    auto x_offsets = derive_x_offsets(widths, state._s._margin.l);
+    auto y_offsets = derive_y_offsets(state, state._s._margin.t);
 
     // Save for debugging.
     // fvg::print(state._f);
@@ -880,7 +880,9 @@ void write_svg(state state, const std::filesystem::path& path) {
             point{},
             std::move(split.first),
             std::move(split.second),
-            font_size_k
+            font_size_k,
+            "black",
+            "middle"
         };
     })};
 
@@ -894,7 +896,7 @@ void write_svg(state state, const std::filesystem::path& path) {
 
     // Construct edge labels
 
-    auto edge_labels{derive_edge_labels(state._l, state._e, svg_edges)};
+    auto edge_labels{derive_edge_labels(state._e, svg_edges)};
 
     // Begin constructing the final XML.
 

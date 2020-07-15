@@ -65,6 +65,19 @@ inline auto point::unit() const { return *this / magnitude(); }
 
 /**************************************************************************************************/
 
+// for things like margins, padding, etc. Where you're not defining a box per se.
+struct extents {
+    double l;
+    double t;
+    double r;
+    double b;
+
+    auto width() const { return l + r; }
+    auto height() const { return t + b; }
+};
+
+/**************************************************************************************************/
+
 struct cubic_bezier {
     point _s;
     point _c1;

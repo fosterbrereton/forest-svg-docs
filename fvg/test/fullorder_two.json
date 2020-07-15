@@ -4,10 +4,10 @@
     ],
     "edges" : {
         "_leading" : {
-            "_color": "green"
+            "color": "green"
         },
         "_trailing" : {
-            "_color": "red"
+            "color": "red"
         },
         "1" : {
             "t": 0.3

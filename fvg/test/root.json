@@ -1,6 +1,6 @@
 {
     "settings": {
         "with_root": true,
-        "no_leaf_edges": true
+        "with_leaf_edges": false
     }
 }

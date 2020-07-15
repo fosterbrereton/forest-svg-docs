@@ -4,7 +4,7 @@
     ],
     "edges": {
         "_trailing": {
-            "_hide": true
+            "hide": true
         }
     }
 }

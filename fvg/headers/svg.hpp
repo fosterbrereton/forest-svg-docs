@@ -35,7 +35,9 @@ struct cubic_path {
     double _width;
     std::string _stroke_dasharray;
 
-    bool _leading; // a forest-specific detail
+    // These details aren't related to the SVG node directly, but are used by fvg
+    bool _leading;
+    std::string _id;
 };
 
 /**************************************************************************************************/
@@ -46,6 +48,7 @@ struct text {
     std::string _subscript;
     double _size;
     std::string _color;
+    std::string _text_anchor;
 };
 
 /**************************************************************************************************/

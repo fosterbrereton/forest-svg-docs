@@ -1,12 +1,12 @@
 {
     "forest": [
-        "P", [ "C_first", "C_n", "C_last" ]
+        "P", [ "C_first", "...", "C_last" ]
     ],
     "nodes" : {
         "P" : {
             "color": "lightgrey"
         },
-        "C_n" : {
+        "..." : {
             "color": "blue",
             "stroke-dasharray": "4"
         }

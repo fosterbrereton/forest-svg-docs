@@ -40,7 +40,12 @@ int main(int argc, const char * argv[]) try {
             if (!is_regular_file(src)) continue;
             const auto& srcpath{src.path()};
             auto dst{(dstpath / srcpath.stem()).replace_extension("svg")};
-            fvg::write_svg(fvg::make_state(fvg::slurp_json(srcpath)), std::move(dst));
+            try {
+                fvg::write_svg(fvg::make_state(fvg::slurp_json(srcpath)), std::move(dst));
+            } catch (...) {
+                std::cerr << "Exception while processing file " << srcpath.string() << '\n';
+                throw;
+            }
         }
     }
 

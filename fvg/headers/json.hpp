@@ -111,6 +111,16 @@ inline auto as(const json_t& json) -> typename jget_return_type<T>::type {
 }
 
 template <>
+inline auto as<json_float>(const json_t& json) -> typename jget_return_type<json_float>::type {
+    // obnoxious, but a number can be stored one of many different ways.
+    if (json.is_number_float()) return json.get_ref<const json_float&>();
+    if (json.is_number_unsigned()) return json.get_ref<const json_uint&>();
+    if (json.is_number_integer()) return json.get_ref<const json_int&>();
+
+    return get_no_value<json_float>();
+}
+
+template <>
 inline auto as<boost::tribool>(const json_t& json) -> jget_return_type<boost::tribool>::type {
     if (json.is_boolean()) {
         return json.get_ref<const bool&>();

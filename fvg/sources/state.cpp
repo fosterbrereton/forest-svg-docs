@@ -59,6 +59,37 @@ bool maybe_get(T& f, const json_t& j, const std::string& k) {
 
 /**************************************************************************************************/
 
+template <>
+bool maybe_get(extents& f, const json_t& j, const std::string& k) {
+    double value{0};
+
+    if (maybe_get(value, j, k)) {
+        f.l = value;
+        f.t = value;
+        f.r = value;
+        f.b = value;
+    }
+
+    if (maybe_get(value, j, k + "_width")) {
+        f.l = value;
+        f.r = value;
+    }
+
+    if (maybe_get(value, j, k + "_height")) {
+        f.t = value;
+        f.b = value;
+    }
+
+    maybe_get(f.l, j, k + "_left");
+    maybe_get(f.t, j, k + "_top");
+    maybe_get(f.r, j, k + "_right");
+    maybe_get(f.b, j, k + "_bottom");
+
+    return true;
+}
+
+/**************************************************************************************************/
+
 auto make_state_nodes(const json_object& object) {
     node_map result;
 
@@ -94,10 +125,12 @@ auto make_state_edges(const json_object& object) {
 
         edge_properties value;
 
-        maybe_get(value._hide, mapped, "_hide");
-        maybe_get(value._color, mapped, "_color");
+        maybe_get(value._hide, mapped, "hide");
+        maybe_get(value._color, mapped, "color");
         maybe_get(value._t, mapped, "t");
         maybe_get(value._stroke_dasharray, mapped, "stroke-dasharray");
+        maybe_get(value._label_offset, mapped, "label_offset");
+        maybe_get(value._text_anchor, mapped, "text-anchor");
 
         result[entry.first] = std::move(value);
     }
@@ -124,10 +157,11 @@ auto make_state_edge_labels(const json_array& array) {
 /**************************************************************************************************/
 
 auto make_state_graph_settings(const json_object& object) {
-    graph_settings result{
-        get<bool>(object, "with_root"),
-        !get<bool>(object, "no_leaf_edges"),
-    };
+    graph_settings result;
+
+    maybe_get(result._with_root, object, "with_root");
+    maybe_get(result._with_leaf_edges, object, "with_leaf_edges");
+    maybe_get(result._margin, object, "margin");
 
     return result;
 }

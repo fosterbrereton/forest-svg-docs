@@ -270,7 +270,7 @@ Since iterators always point to a node, we never speak of an iterator being on t
 
 ### Edge Flipping
 
-Utility functions `adobe::leading_of(I)` and `adobe::trailing_of(I)` change the edge of an iterator to leading or trailing, respectively. It does not matter what edge the iterator was originally on. The iterator will still point to the same node. These are free functions, not members of `adobe::forest<T>`. In this document we will represent these routines in pseudocode as such:
+Utility functions `adobe::leading_of(I)` and `adobe::trailing_of(I)` change the edge of an iterator to leading or trailing, respectively. It does not matter what edge the iterator was originally on, and the iterator will still point to the same node. These are free functions, not members of `adobe::forest<T>`. In this document we will represent these routines in pseudocode as such:
 
 - `leading_of({P, X})` &rarr; `{P, L}`
 - `trailing_of({N, X})` &rarr; `{N, T}`
@@ -291,8 +291,6 @@ While iterators pointing to the root node $R$ are valid, they should never be de
 
 ## Forest Traversal
 
-The root node is not considered during forest traversal. As such it is omitted from traversal diagrams.
-
 ### Fullorder
 
 The traversal behavior of `adobe::forest<T>::iterator` is always fullorder. This means every node is visited twice: first, right before any of its children are visited (on the leading edge), and then again after the last child is visited (on the trailing edge). This behavior is recursive, and results in a depth-first traversal of the forest:
@@ -303,10 +301,9 @@ Here is the same diagram with the leading and trailing edges colorized green and
 
 <img class='svg-img' src='{{site.baseurl}}/svg/fullorder_two.svg'/>
 
-### Fullorder traversal of $N$'s subtree
+### Fullorder Traversal of $N$'s Subtree
 
 To traverse a node $N$ and all of its descendants, the iterator range is:
-
 
 - `leading_of({N, x})` &rarr; `first`
 - `++trailing_of({N, x})` &rarr; `last`
@@ -322,9 +319,9 @@ To traverse a node $N$ and all of its descendants, the iterator range is:
     <text font-size='{{small_font_size}}' x='200' y='30' dominant-baseline="central">++{N, T} (last)</text>
 </svg>
 
-Note this technique does not work if $N==R$.
+Note this technique does not work if $N==R$. In that case though, you'd be traversing the entire forest, in which case you can use `forest<T>::begin()` and `forest<T>::end()`.
 
-### Preorder
+### Preorder Traversal
 
 A preorder traversal of the forest will visit every node once. During preorder traversal a parent will be visited before its children. We achieve preorder iteration by incrementing fullorder repeatedly, visiting a node only when the iterator is on a leading edge:
 
@@ -332,7 +329,7 @@ A preorder traversal of the forest will visit every node once. During preorder t
 
 <img class='svg-img' src='{{site.baseurl}}/svg/preorder.svg'/>
 
-### Postorder
+### Postorder Traversal
 
 A postorder traversal of the forest will visit every node once. During postorder traversal a parent will be visited after its children. We achieve postorder iteration by incrementing fullorder repeatedly, visiting a node only when the iterator is on a trailing edge:
 
@@ -340,10 +337,101 @@ A postorder traversal of the forest will visit every node once. During postorder
 
 <img class='svg-img' src='{{site.baseurl}}/svg/postorder.svg'/>
 
-### Child Iteration
+### Child Traversal
 
 A child traversal of a node P traverses only its immediate children; P itself is not visited. Child traversal is achieved by setting the edge of the iterator to trailing, then incrementing it:
 
 - `++trailing_of({Cn, L})` &rarr; `{Cn+1, L}` (next child) or `{P, T}` (the end of the range)
 
 <img class='svg-img' src='{{site.baseurl}}/svg/child_iteration.svg'/>
+
+## Node Insertion
+
+`forest<T>::insert` requires an iterator (where to insert) and a value (what to insert). The iterator is never invalidated during an insertion. `insert` returns a leading edge iterator to the new node.
+
+### Leading Edge Insertion
+
+When the location for insertion is on the leading edge of $N$ (that is, $I$ is `{N, L}`) the new node will be created as $N$'s new prior sibling. So:
+
+<img class='svg-img' src='{{site.baseurl}}/svg/l_insert_before.svg'/>
+
+becomes the following. Note that the iterator $I$ is unchanged:
+
+<img class='svg-img' src='{{site.baseurl}}/svg/l_insert_after.svg'/>
+
+In this case insert returns `{Sprior, L}`. Leading edge insertion can be used to repeatedly "push back" prior siblings of $N$. To repeatedly "push front" prior siblings of $N$, use the resulting iterator of `insert` as the next insertion position.
+
+### Trailing Edge Insertion
+
+When the location for insertion is on the trailing edge of $N$ (that is, $I$ is `{N, T}`) the new node will be created as $N$'s new last child. So:
+
+<img class='svg-img' src='{{site.baseurl}}/svg/t_insert_before.svg'/>
+
+becomes the following. Note that the iterator $I$ is unchanged:
+
+<img class='svg-img' src='{{site.baseurl}}/svg/t_insert_after.svg'/>
+
+In this case insert returns `{Clast, L}`. Trailing edge insertion can be used to repeatedly "push back" children of $N$. To repeatedly "push front" children of $N$, use the resulting iterator of `insert` as the next insertion position.
+
+# Algorithms & Examples
+
+## Detecting if $I_{node}$ is the First Child of its Parent
+
+To understand how this works, lets start from the perspective of a parent node. Its first child (assuming it has one) will be pointed at after its leading edge iterator is incremented. In this specific situation, the iterator's edge will stay leading. (If the node has no children, the iterator will point to the trailing edge of the same node - the leaf node loop.)
+
+Working backwards, then, you can start with a leading edge iterator to a node and decrement it. If the resulting iterator is still leading, you know you're pointing at the child's parent node- which also implies that child is the first of its parent. Otherwise, the iterator will be pointing to the trailing edge of its prior sibling (and so would not be the first child.)
+
+More formally, given:
+
+1. An iterator $I$ pointing to $I_{node}$
+2. Its predecessor $H = std{\colon}{\colon}prev(I)$
+
+If $I_{edge} == leading$ and $H_{edge} == leading$, then $I_{node}$ is the first child of $H_{node}$.
+
+### Pseudocode
+
+```
+iterator i{/*...*/};
+iterator h{--leading_of(i)};
+bool     is_first_child{h.edge() == forest_leading_edge};
+```
+
+### Visually
+
+Here is the case where the node is the first child:
+
+<img class='svg-img' src='{{site.baseurl}}/svg/first_child_true.svg'/>
+
+And here it is not:
+
+<img class='svg-img' src='{{site.baseurl}}/svg/first_child_false.svg'/>
+
+## Detecting if $I_{node}$ is the Last Child of its Parent
+
+This one is pretty straightforward. Given a trailing edge iterator $I$ to the node $I_{node}$, incrementing it will either traverse to the next sibling or to its parent. In the former case, the edge of the iterator will flip from trailing to leading. In the latter case, the edge will stay trailing. Knowing this, the test is a check to see if the edge doesn't change.
+
+More formally, given:
+
+1. An iterator $I$ pointing to $I_{node}$
+2. Its successor $J = std{\colon}{\colon}next(I)$
+
+If $I_{edge} == trailing$ and $J_{edge} == trailing$, then $I_{node}$ is the last child of $J_{node}$.
+
+### Pseudocode
+
+```
+iterator i{/*...*/};
+iterator j{++trailing_of(i)};
+bool     is_first_child{j.edge() == forest_trailing_edge};
+```
+
+### Visually
+
+Here is the case where the node is the last child:
+
+<img class='svg-img' src='{{site.baseurl}}/svg/last_child_true.svg'/>
+
+And here it is not:
+
+<img class='svg-img' src='{{site.baseurl}}/svg/last_child_false.svg'/>
+
