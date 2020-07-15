@@ -98,22 +98,6 @@ tab: Forest
 
 A forest is a hierarchical, node-based data structure. This document serves to cover the high-level concepts of a forest, `adobe::forest<T>` implementation details, as well as examples of frequent patterns.
 
-## Concepts
-
-### Terminology
-
-$N$: An exemplar node
-
-$P$: The parent node of $N$
-
-$C$: A child node of $N$. Child nodes may be subscripted for clarity, e.g., $C_{first}$ and $C_{last}$, etc.
-
-$S$: A sibling node of $N$. Sibling nodes may be subscripted for clarity, e.g., $S_{prev}$ and $S_{next}$, etc.
-
-$R$: A root node
-
-$I$: A forest (fullorder) iterator
-
 ## Nodes
 
 Forest's fundamental element type is the node. They are heap-allocated by the forest as necessary for storing a value. Each node has exactly one parent and zero or more children. In this document we will draw nodes as circles:
