@@ -373,6 +373,24 @@ becomes the following. Note that the iterator $I$ is unchanged:
 
 In this case insert returns `{Clast, L}`. Trailing edge insertion can be used to repeatedly "push back" children of $N$. To repeatedly "push front" children of $N$, use the resulting iterator of `insert` as the next insertion position.
 
+# Erasing Nodes
+
+Like most STL containers, erasing nodes in a `forest` starts by passing two iterators denoting the range to erase. The rule for deleting forest nodes is this: a node will be erased if and only if the deletion traversal passes through that node twice. The nodes to be erased from the forest are always processed bottom-up. This means that a parent's child nodes will always be deleted before the parent. It also means that all nodes will be leaf nodes at the time they are erased.
+
+## Erasing Example
+
+Consider the following forest and the defined `first` and `last` iterators into that forest for erasing:
+
+<img class='svg-img' src='{{site.baseurl}}/svg/erase_begin.svg'/>
+
+Initially the iterators are at `{B, L}` and at `{R, T}`. The nodes $B$ and $C$ will be deleted because the traversal from `first` to `last` will go through each of those nodes twice. Even though the deletion iterator will pass through $A$, it is not deleted because it only passes through on the trailing edge, not on the leading edge:
+
+<img class='svg-img' src='{{site.baseurl}}/svg/erase_middle.svg'/>
+
+After the above erase has completed, the resulting forest will be:
+
+<img class='svg-img' src='{{site.baseurl}}/svg/erase_end.svg'/>
+
 # Algorithms & Examples
 
 ## Detecting if $I_{node}$ is the First Child of its Parent
@@ -422,7 +440,7 @@ If $I_{edge} == trailing$ and $J_{edge} == trailing$, then $I_{node}$ is the las
 ```
 iterator i{/*...*/};
 iterator j{++trailing_of(i)};
-bool     is_first_child{j.edge() == forest_trailing_edge};
+bool     is_last_child{j.edge() == forest_trailing_edge};
 ```
 
 ### Visually
@@ -435,3 +453,73 @@ And here it is not:
 
 <img class='svg-img' src='{{site.baseurl}}/svg/last_child_false.svg'/>
 
+## Detecting if $I_{node}$ Has Children
+
+This one is pretty straightforward. Given a leading edge iterator $I$ to the node $I_{node}$, incrementing it will either traverse to the first child or back to $I_{node}$ on the trailing edge. In the former case, the edge of the iterator will stay leading. In the latter case, the edge will flip from leading to trailing. Knowing this, the test is a check to see if the edge changes.
+
+More formally, given:
+
+1. An iterator $I$ pointing to $I_{node}$
+2. Its successor $J = std{\colon}{\colon}next(I)$
+
+If $I_{edge} == leading$ and $J_{edge} == trailing$, then $I_{node}$ has no children. Otherwise, it does.
+
+### Pseudocode
+
+```
+iterator i{/*...*/};
+iterator j{++leading_of(i)};
+bool     has_children{j.edge() == forest_leading_edge};
+```
+
+### Visually
+
+Here is the case where the node has children:
+
+<img class='svg-img' src='{{site.baseurl}}/svg/has_children_true.svg'/>
+
+And here it does not:
+
+<img class='svg-img' src='{{site.baseurl}}/svg/has_children_false.svg'/>
+
+## Push Back Children of $I_{node}$
+
+Given:
+
+1. An iterator $I=\\{node, trailing\\}$
+2. A sequence of values $S$ to insert
+
+We repeatedly insert subsequent values found in $S$ at position $I$.
+
+### Pseudocode
+
+```
+for (const auto& C : S) {
+    forest.insert(I, C);
+}
+```
+
+### Visualization
+
+<img class='svg-img' src='{{site.baseurl}}/svg/push_back.svg'/>
+
+## Push Front Children of $I_{node}$
+
+Given:
+
+1. An iterator $I=\\{node, trailing\\}$
+2. A sequence of values $S$ to insert
+
+We repeatedly insert subsequent values found in $S$ at position $I$, each time reassigning $I$ to be the result of the insertion.
+
+### Pseudocode
+
+```
+for (const auto& C : S) {
+    I = forest.insert(I, C);
+}
+```
+
+### Visualization
+
+<img class='svg-img' src='{{site.baseurl}}/svg/push_front.svg'/>

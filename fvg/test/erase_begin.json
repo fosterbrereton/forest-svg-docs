@@ -1,0 +1,19 @@
+{
+    "forest": [
+        "A", ["B", "C"]
+    ],
+    "edges": {
+        "first": {
+            "text-attach": "end",
+            "label_offset": 0.8
+        },
+        "last": {
+            "text-attach": "start",
+            "label_offset": 1.0
+        }
+    },
+    "edge_labels": ["", "first", "", "", "", "", "last"],
+    "settings": {
+        "with_root": true
+    }
+}

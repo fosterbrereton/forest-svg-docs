@@ -4,7 +4,7 @@
     ],
     "nodes": {
         "S_next": {
-            "color": "lightgrey"
+            "color": "#bbb"
         }
     },
     "edges": {

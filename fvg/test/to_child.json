@@ -6,7 +6,7 @@
     ],
     "nodes": {
         "P": {
-            "color": "lightgrey"
+            "color": "#bbb"
         }
     },
     "edges": {

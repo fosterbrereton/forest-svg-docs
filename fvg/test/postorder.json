@@ -4,7 +4,7 @@
     ],
     "edges" : {
         "_leading" : {
-            "color": "lightgrey"
+            "color": "#bbb"
         },
         "_trailing" : {
             "color": "green"

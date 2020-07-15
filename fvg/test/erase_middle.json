@@ -1,0 +1,37 @@
+{
+    "forest": [
+        "A", ["B", "C"]
+    ],
+    "nodes": {
+        "B" : {
+            "color": "#bbb"
+        },
+        "C" : {
+            "color": "#bbb"
+        }
+    },
+    "edges": {
+        "1" : {
+            "color": "#bbb"
+        },
+        "2" : {
+            "color": "#bbb"
+        },
+        "3" : {
+            "color": "#bbb"
+        },
+        "4" : {
+            "color": "#bbb"
+        },
+        "5" : {
+            "color": "#bbb"
+        },
+        "6" : {
+            "color": "#bbb"
+        }
+    },
+    "edge_labels": ["", "1", "2", "3", "4", "5", "6"],
+    "settings": {
+        "with_root": true
+    }
+}

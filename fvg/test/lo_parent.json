@@ -6,7 +6,7 @@
     ],
     "nodes": {
         "C_first": {
-            "color": "lightgrey"
+            "color": "#bbb"
         }
     },
     "edges": {
