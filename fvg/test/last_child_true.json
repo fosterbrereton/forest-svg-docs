@@ -1,0 +1,22 @@
+{
+    "forest": [
+        "J_n", ["I_n"]
+    ],
+    "edges": {
+        "J = {Jn, T}": {
+            "color": "green",
+            "text-anchor": "start",
+            "label_offset": 0.2
+        },
+        "I = {In, T}": {
+            "label_offset": -0.7
+        },
+        " " : {
+            "hide": true
+        }
+    },
+    "edge_labels": [" ", "I = {In, T}", "J = {Jn, T}"],
+    "settings": {
+        "margin_right": 75
+    }
+}

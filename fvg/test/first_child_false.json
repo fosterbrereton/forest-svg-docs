@@ -1,0 +1,19 @@
+{
+    "forest": [
+        "H_n", "I_n"
+    ],
+    "edges": {
+        "H = {Hn, T}": {
+            "color": "red",
+            "label_offset": -0.8
+        },
+        "I = {In, L}": {
+            "label_offset": 0.7
+        }
+    },
+    "edge_labels": ["H = {Hn, T}", "I = {In, L}"],
+    "settings": {
+        "margin_left": 50,
+        "margin_top": 50
+    }
+}

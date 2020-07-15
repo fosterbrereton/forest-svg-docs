@@ -1,0 +1,15 @@
+{
+    "forest": [
+        "N"
+    ],
+    "edges": {
+        "{N, T}" : {
+            "color": "blue",
+            "label_offset": -0.65
+        }
+    },
+    "edge_labels": ["{N, T}"],
+    "settings": {
+        "margin_width": 50
+    }
+}

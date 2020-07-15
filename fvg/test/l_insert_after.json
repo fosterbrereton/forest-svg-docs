@@ -1,0 +1,22 @@
+{
+    "forest": [
+        "S_prior", "N"
+    ],
+    "nodes": {
+        "N" : {
+            "color": "blue"
+        },
+        "S_prior" : {
+            "color": "black"
+        }
+    },
+    "edges": {
+        "{N, L}" : {
+            "color": "blue"
+        }
+    },
+    "edge_labels": ["", "", "{N, L}"],
+    "settings": {
+        "with_root": true
+    }
+}
