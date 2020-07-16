@@ -98,6 +98,8 @@ tab: Forest
 
 A forest is a hierarchical, node-based data structure. This document serves to cover the high-level concepts of a forest, `adobe::forest<T>` implementation details, as well as examples of frequent patterns.
 
+Sean Parent is the author of `adobe::forest<T>`. He spoke at length about the data structure in a [CppCon talk from 2015](https://youtu.be/sWgDk-o-6ZE?t=2668).
+
 ## The Root Node
 
 Every forest has a root node, which is not a node used to store values in the forest. Rather, its primary purpose is as the anchor to which all top-level nodes in the forest are attached. In this document we will draw the root node as a rectangle:
