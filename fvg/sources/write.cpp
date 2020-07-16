@@ -266,7 +266,7 @@ auto svg_bezier(const cubic_bezier& b) {
 /**************************************************************************************************/
 
 //static const point n_k{std::cos(6*M_PI_4), std::sin(6*M_PI_4)};
-//static const point nne_k{std::cos(6.5*M_PI_4), std::sin(6.5*M_PI_4)};
+static const point nne_k{std::cos(6.5*M_PI_4), std::sin(6.5*M_PI_4)};
 static const point ne_k{std::cos(7*M_PI_4), std::sin(7*M_PI_4)};
 static const point ene_k{std::cos(7.5*M_PI_4), std::sin(7.5*M_PI_4)};
 //static const point e_k{std::cos(M_PI_4), std::sin(M_PI_4)};
@@ -280,7 +280,7 @@ static const point sw_k{std::cos(3*M_PI_4), std::sin(3*M_PI_4)};
 //static const point w_k{std::cos(4*M_PI_4), std::sin(4*M_PI_4)};
 static const point wnw_k{std::cos(4.5*M_PI_4), std::sin(4.5*M_PI_4)};
 static const point nw_k{std::cos(5*M_PI_4), std::sin(5*M_PI_4)};
-//static const point nnw_k{std::cos(5.5*M_PI_4), std::sin(5.5*M_PI_4)};
+static const point nnw_k{std::cos(5.5*M_PI_4), std::sin(5.5*M_PI_4)};
 
 /**************************************************************************************************/
 
@@ -390,34 +390,36 @@ auto edge_to_self(const point& from, const point& to, bool rect) {
 
 /**************************************************************************************************/
 
+auto edge_to_self_top(const point& root) {
+    constexpr point node_scale_k{node_size_k, node_size_k};
+    static const auto out_unit{lerp(ne_k, nne_k, 0.5)};
+    static const auto in_unit{lerp(nw_k, nnw_k, 0.5)};
+    cubic_bezier result;
+
+    result._e = root + point{node_size_k / 4, 0};
+    result._s = result._e + point{node_size_k / 2, 0};
+    result._c1 = result._s + out_unit * node_scale_k;
+    result._c2 = result._e + in_unit * node_scale_k;
+
+    return result;
+}
+
+/**************************************************************************************************/
+
 auto merge(edge_properties a, const edge_properties& b) {
-    static const edge_properties defalt;
+    static const auto apply{[](auto& a, const auto& b, auto f){
+        static const edge_properties defalt;
+        const auto& fb{b.*f};
+        if (fb == defalt.*f) return;
+        a.*f = fb;
+    }};
 
-    // If b's value isn't a default value, it wins over whatever value was in a.
-
-    if (b._hide != defalt._hide) {
-        a._hide = b._hide;
-    }
-
-    if (b._color != defalt._color) {
-        a._color = b._color;
-    }
-
-    if (b._t != defalt._t) {
-        a._t = b._t;
-    }
-
-    if (b._stroke_dasharray != defalt._stroke_dasharray) {
-        a._stroke_dasharray = b._stroke_dasharray;
-    }
-
-    if (b._label_offset != defalt._label_offset) {
-        a._label_offset = b._label_offset;
-    }
-
-    if (b._text_anchor != defalt._text_anchor) {
-        a._text_anchor = b._text_anchor;
-    }
+    apply(a, b, &edge_properties::_hide);
+    apply(a, b, &edge_properties::_color);
+    apply(a, b, &edge_properties::_t);
+    apply(a, b, &edge_properties::_stroke_dasharray);
+    apply(a, b, &edge_properties::_label_offset);
+    apply(a, b, &edge_properties::_text_anchor);
 
     return a;
 }
@@ -445,7 +447,8 @@ auto derive_edges(const adobe::forest<svg::node>& f,
                   const edge_map& map,
                   bool leaf_edges,
                   bool leading_edges,
-                  bool trailing_edges) {
+                  bool trailing_edges,
+                  bool with_root_top) {
     // The goal is to have the lines look as natural as possible. This should include the arrowhead
     // at the end of the line. SVG allows you to attach an arrowhead at the end of the line via the
     // marker attribute. The bad news is this arrowhead's base is at the end of the line, and the
@@ -492,6 +495,36 @@ auto derive_edges(const adobe::forest<svg::node>& f,
     bool  prev_rect{prev_square != nullptr};
     point prev{prev_rect ? prev_square->_p : prev_circle->_c};
 
+    auto add_edge{[&_result = result](cubic_bezier bezier,
+                                      const edge_properties& properties,
+                                      bool cur_leading,
+                                      std::string label) mutable {
+        if (bezier == cubic_bezier{} || properties._hide) return;
+
+        // get the arrowhead normal pre-trim, so it for sure points at the node.
+        const auto arrowhead_normal{bezier.derivative(1).unit()};
+
+        // trim back the bezier path to account for the arrow.
+        bezier = bezier.subdivide(alp(bezier).rfind(12)).first;
+
+        _result.push_back(svg::cubic_path{bezier,
+                                          properties._color,
+                                          stroke_width_k,
+                                          properties._stroke_dasharray,
+                                          cur_leading,
+                                          std::move(label)});
+
+        _result.push_back(svg::arrowhead{bezier._e,
+                                         arrowhead_normal,
+                                         properties._color});
+
+#if 0
+        // Print the control points of the curve. Save these for debugging.
+        _result.push_back(svg::line{bezier._s, bezier._c1, "green", 0.5});
+        _result.push_back(svg::line{bezier._e, bezier._c2, "green", 0.5});
+#endif
+    }};
+
     ++first;
 
     // min/max edge length delerp values
@@ -513,6 +546,25 @@ auto derive_edges(const adobe::forest<svg::node>& f,
         const auto t{delerp<double>(cur_mag, min_mag_k, max_mag_k)};
         cubic_bezier bezier;
 
+        if (with_root_top) {
+            // A special case for the root top loop. Do not advance `first` so it'll
+            // get properly reused. However, we do advance the label iterator because
+            // we used a label for this loop.
+
+            add_edge(edge_to_self_top(prev),
+                     derive_edge_properties(label, map, true),
+                     true,
+                     label);
+
+            if (label_first != label_last) {
+                ++label_first;
+            }
+
+            with_root_top = false;
+            continue;
+        }
+
+
         if (prev_leading) {
             if (cur_leading && leading_edges) {
                 bezier = edge_to_child(prev, cur, t, prev_rect);
@@ -527,30 +579,7 @@ auto derive_edges(const adobe::forest<svg::node>& f,
             }
         }
 
-        if (bezier != cubic_bezier{} && !properties._hide) {
-            // get the arrowhead normal pre-trim, so it for sure points at the node.
-            const auto arrowhead_normal{bezier.derivative(1).unit()};
-
-            // trim back the bezier path to account for the arrow.
-            bezier = bezier.subdivide(alp(bezier).rfind(12)).first;
-
-            result.push_back(svg::cubic_path{bezier,
-                                             properties._color,
-                                             stroke_width_k,
-                                             properties._stroke_dasharray,
-                                             cur_leading,
-                                             label});
-
-            result.push_back(svg::arrowhead{bezier._e,
-                                            arrowhead_normal,
-                                            properties._color});
-
-#if 0
-            // Print the control points of the curve. Save these for debugging.
-            result.push_back(svg::line{bezier._s, bezier._c1, "green", 0.5});
-            result.push_back(svg::line{bezier._e, bezier._c2, "green", 0.5});
-#endif
-        }
+        add_edge(bezier, properties, cur_leading, label);
 
         prev_rect = cur_rect;
         prev_leading = cur_leading;
@@ -870,7 +899,8 @@ void write_svg(state state, const std::filesystem::path& path) {
                                 state._e,
                                 state._s._with_leaf_edges,
                                 !state._e["_leading"]._hide,
-                                !state._e["_trailing"]._hide)};
+                                !state._e["_trailing"]._hide,
+                                state._s._with_root && state._s._with_root_top)};
 
     // Construct the node labels.
 

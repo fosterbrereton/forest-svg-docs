@@ -40,6 +40,7 @@ struct edge_properties {
 struct graph_settings {
     bool _with_root{false};
     bool _with_leaf_edges{true};
+    bool _with_root_top{false};
     extents _margin{25, 10, 25, 10};
 };
 

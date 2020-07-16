@@ -98,17 +98,17 @@ tab: Forest
 
 A forest is a hierarchical, node-based data structure. This document serves to cover the high-level concepts of a forest, `adobe::forest<T>` implementation details, as well as examples of frequent patterns.
 
-## Nodes
-
-Forest's fundamental element type is the node. They are heap-allocated by the forest as necessary for storing a value. Each node has exactly one parent and zero or more children. In this document we will draw nodes as circles:
-
-<img class='svg-img' src='{{site.baseurl}}/svg/node.svg'/>
-
 ## The Root Node
 
 Every forest has a root node, which is not a node used to store values in the forest. Rather, its primary purpose is as the anchor to which all top-level nodes in the forest are attached. In this document we will draw the root node as a rectangle:
 
 <img class='svg-img' src='{{site.baseurl}}/svg/root.svg'/>
+
+## Nodes
+
+Forest's fundamental element type is the node. They are heap-allocated by the forest as necessary for storing a value. Each node has exactly one parent and zero or more children. In this document we will draw nodes as circles:
+
+<img class='svg-img' src='{{site.baseurl}}/svg/node.svg'/>
 
 ## Edges
 
@@ -151,57 +151,113 @@ The two edges that point to $N$ are known as **in edges** and the edges that poi
 
 It is worth noting that the terms "in" and "out" are relative to $N$. In other words, an in edge for $N$ will also be an out edge for some other node.
 
+## Iterators
+
+Forest iterators are bidirectional, and come in forward, reverse, fullorder, preorder, and postorder variants. All are comprised of two pieces of data:
+
+- The node ($N$) to which they point
+- Whether they are on the leading ($L$) or trailing ($T$) edge of the node
+
+In this documentation, iterators will be described by this pair as `{node, edge}`.
+
+### Examples
+
+- `{P, L}` is an iterator that points to node $P$ on the leading edge:
+
+<svg width='112.5' height='112.5' viewBox='0 0 225 225'>
+    <use xlink:href='#edge_li' x='150' y = '150'/>
+    <use xlink:href='#parent' x='150' y='150'/>
+    <text font-size='{{small_font_size}}' x='25' y='30' dominant-baseline="central">{P, L}</text>
+</svg>
+
+- `{N, T}` is an iterator that points to node $N$ on the trailing edge:
+
+<svg width='112.5' height='112.5' viewBox='0 0 225 225'>
+    <use xlink:href='#node' x='75' y='75'/>
+    <use xlink:href='#edge_ti' x='75' y = '75'/>
+    <text font-size='{{small_font_size}}' x='150' y='200' dominant-baseline="central">{N, T}</text>
+</svg>
+
+Since iterators always point to a node, we never speak of an iterator being on the out edge of a node it is leaving. Rather, we always consider it on the in edge of the node that it points to. Visually, iterators will only ever be on the northwest or southeast edge of the node to which they point.
+
+### Edge Flipping
+
+Utility functions `adobe::leading_of(I)` and `adobe::trailing_of(I)` change the edge of an iterator to leading or trailing, respectively. It does not matter what edge the iterator was originally on, and the iterator will still point to the same node. These are free functions, not members of `adobe::forest<T>`. In this document we will represent these routines in pseudocode as such:
+
+- `leading_of({P, X})` &rarr; `{P, L}`
+- `trailing_of({N, X})` &rarr; `{N, T}`
+
+In C++, these calls are straightforward:
+
+```c++
+adobe::forest<char> f;
+
+auto leading_iter = f.insert(f.end(), 'A');
+assert(leading_iter.edge() == adobe::forest_leading_edge);
+assert(*leading_iter == 'A');
+
+auto trailing_iter = adobe::trailing_of(leading_iter);
+assert(trailing_iter.edge() == adobe::forest_trailing_edge);
+assert(*trailing_iter == 'A');
+```
+
+### A note on `begin()` and `end()`
+
+`begin()` and `end()` in a forest behave just like their equivalent member functions found in a typical standard library container.
+
+- `forest<T>::end()` will always return `{R, T}`. This is true regardless of whether or not the forest is empty.
+
+- `forest<T>::begin()` will always return `++{R, L}`. This follows the rules of the leading out edge explained above, meaning that it will either point to the first node in the forest (if it is not empty), or `end()` (if it is).
+
+While iterators pointing to the root node $R$ are valid, they should never be dereferenced.
+
+## Forest Edge Constraints
+
+Now that we know about nodes, edges, and iterators, there are additional constraints the forest imposes upon its edges that maintain its structure.
+
 ### Leading In Edge
 
-Visually, the northwest edge is the **leading in edge**. It originates (is an out edge) from one of two possible nodes:
-
-- If $N$ is the first child of its parent node $P$, this edge is the leading out edge of $P$:
+Visually, the northwest edge is the **leading in edge**. It originates (is an out edge) from one of two possible nodes. First, if $N$ is the first child of its parent node $P$, this edge is the leading out edge of $P$:
 
 <img class='svg-img' src='{{site.baseurl}}/svg/li_child.svg'/>
 
-- Otherwise, this edge is the trailing edge of $N$'s prior sibling $S_{prior}$:
+Otherwise, this edge is the trailing out edge of $N$'s prior sibling $S_{prior}$:
 
 <img class='svg-img' src='{{site.baseurl}}/svg/li_sibling.svg'/>
 
 ### Leading Out Edge
 
-The southwest edge is the leading out edge. It terminates (is an in edge) at one of two possible nodes:
-
-- If $N$ is a parent, this edge is the leading edge of the first child of $N$, $C_{first}$:
+The southwest edge is the **leading out edge**. It terminates (is an in edge) at one of two possible nodes. First, if $N$ is a parent, this edge is the leading out edge of the first child of $N$, $C_{first}$:
 
 <img class='svg-img' src='{{site.baseurl}}/svg/lo_parent.svg'/>
 
-- Otherwise, this edge is the trailing edge of $N$ itself:
+Otherwise, this edge is the trailing out edge of $N$ itself:
 
 <img class='svg-img' src='{{site.baseurl}}/svg/lo_self.svg'/>
 
 ### Trailing In Edge
 
-The southeast edge is the trailing in edge. It terminates (is an in edge) at one of two possible nodes:
-
-- If $N$ is a parent, it comes from the trailing edge of $N$'s last child, $C_{last}$:
+The southeast edge is the **trailing in edge**. It originates (is an out edge) from one of two possible nodes. First, if $N$ is a parent, it comes from the trailing out edge of $N$'s last child, $C_{last}$:
 
 <img class='svg-img' src='{{site.baseurl}}/svg/ti_parent.svg'/>
 
-- Otherwise, it comes from the leading edge of $N$ itself:
+Otherwise, it comes from the leading out edge of $N$ itself:
 
 <img class='svg-img' src='{{site.baseurl}}/svg/ti_self.svg'/>
 
 ### Trailing Out Edge
 
-The northeast edge is the trailing out edge. It points to one of two related nodes:
-
-- If $N$ is the last child of $P$, this edge points to the trailing edge of $P$:
+The northeast edge is the **trailing out edge**. It terminates (is an in edge) at one of two related nodes. First, if $N$ is the last child of $P$, this edge points to the trailing out edge of $P$:
 
 <img class='svg-img' src='{{site.baseurl}}/svg/to_child.svg'/>
 
-- Otherwise, this edge points to the leading edge of $N$'s next sibling:
+Otherwise, this edge points to the leading out edge of $N$'s next sibling:
 
 <img class='svg-img' src='{{site.baseurl}}/svg/to_sibling.svg'/>
 
 ## Example Forests
 
-With the fundamental building blocks in place, here is how they combine to form some of the basic relationships in a forest. Note that (with the exception of the root node) every node in the forest maintains four relationships with the nodes around it.
+With the fundamental building blocks in place, here is how they combine to form some of the basic relationships in a forest. Note that every node in the forest maintains four relationships with the nodes around it.
 
 The examples also include C++ that would construct the forest in question. If the code does not make sense at this point in time, don't worry: we'll cover what's missing in following sections. If you'd like, you can skip over it now and revisit it later.
 
@@ -216,7 +272,13 @@ adobe::forest<int> f;
 assert(f.empty());
 ```
 
-The root does have a trailing-out edge which always points to the root leading-in edge. This creates a unique and detectible termination case, which is a useful property. For example, the end iterator for a preorder traversal (which always points to a leading edge) is this trailing-out to leading-in edge of the root.
+#### The Root Top Loop
+
+The root has a trailing-out edge which always points to its leading-in edge:
+
+<img class='svg-img' src='{{site.baseurl}}/svg/root_topped.svg'/>
+
+This "root top loop" is a unique property of the forest, and is used as a termination case in some traversals. For example, since preorder traversal iterators always point to a leading edge, the end iterator is the root top loop.
 
 ### One Node
 
@@ -270,70 +332,6 @@ f.insert(d_iter, 'K');
 
 The frequent use of `adobe::trailing_of` is necessary to insert subsequent nodes as children of the newly inserted nodes. Without flipping the iterator to the trailing edge, new nodes inserted with those iterators would be added as prior siblings, not children.
 
-## Iterators
-
-Iterators are comprised of two pieces of data:
-
-- The node ($N$) to which they point
-- Whether they are on the leading ($L$) or trailing ($T$) edge of the node
-
-In this documentation, iterators will be described by this pair as `{node, edge}`.
-
-### Examples
-
-- `{P, L}` is an iterator that points to node $P$ on the leading edge:
-
-<svg width='112.5' height='112.5' viewBox='0 0 225 225'>
-    <use xlink:href='#edge_li' x='150' y = '150'/>
-    <use xlink:href='#parent' x='150' y='150'/>
-    <text font-size='{{small_font_size}}' x='25' y='30' dominant-baseline="central">{P, L}</text>
-</svg>
-
-- `{N, T}` is an iterator that points to node $N$ on the trailing edge:
-
-<svg width='112.5' height='112.5' viewBox='0 0 225 225'>
-    <use xlink:href='#node' x='75' y='75'/>
-    <use xlink:href='#edge_ti' x='75' y = '75'/>
-    <text font-size='{{small_font_size}}' x='150' y='200' dominant-baseline="central">{N, T}</text>
-</svg>
-
-Since iterators always point to a node, we never speak of an iterator being on the out edge of a node it is leaving. Rather, we always consider it on the in edge of the node that it points to. Visually, iterators will only ever be on the northwest or southeast edge of the node to which they point.
-
-### Edge Flipping
-
-Utility functions `adobe::leading_of(I)` and `adobe::trailing_of(I)` change the edge of an iterator to leading or trailing, respectively. It does not matter what edge the iterator was originally on, and the iterator will still point to the same node. These are free functions, not members of `adobe::forest<T>`. In this document we will represent these routines in pseudocode as such:
-
-- `leading_of({P, X})` &rarr; `{P, L}`
-- `trailing_of({N, X})` &rarr; `{N, T}`
-
-In C++, these calls are straightforward:
-
-```c++
-adobe::forest<char> f;
-
-auto leading_iter = f.insert(f.end(), 'A');
-assert(leading_iter.edge() == adobe::forest_leading_edge);
-assert(*leading_iter == 'A');
-
-auto trailing_iter = adobe::trailing_of(leading_iter);
-assert(trailing_iter.edge() == adobe::forest_trailing_edge);
-assert(*trailing_iter == 'A');
-```
-
-### Iterator Adaptors
-
-Although there is one iterator type for forest, there are several iterator adaptors that facilitate various methods of traversal. More will be said about these later.
-
-### A note on `begin()` and `end()`
-
-`begin()` and `end()` in a forest behave just like their equivalent member functions found in a typical standard library container.
-
-- `forest<T>::end()` will always return `{R, T}`. This is true regardless of whether or not the forest is empty.
-
-- `forest<T>::begin()` will always return `++{R, L}`. This follows the rules of the leading out edge explained above, meaning that it will either point to the first node in the forest (if it is not empty), or `end()` (if it is).
-
-While iterators pointing to the root node $R$ are valid, they should never be dereferenced.
-
 ## Forest Traversal
 
 ### Fullorder
@@ -342,14 +340,14 @@ The traversal behavior of `adobe::forest<T>::iterator` is always fullorder. This
 
 <img class='svg-img' src='{{site.baseurl}}/svg/fullorder_one.svg'/>
 
-In C++, one might output the above labels with the following code. The exception of course is `7`, which would not be output because it is the last iterator in the forest, and cannot be dereferenced.
+In C++, one might output the above labels with the following code. The exception of course is `7`, which cannot be output because it is the forest's `end()` iterator.
 
 ```c++
 adobe::forest<int> f;
 
-auto n1 = adobe::trailing_of(f.insert(f.end(), 1));
+auto n1 = f.insert(f.end(), 1);
 f.insert(f.end(), 2);
-f.insert(n1, 3);
+f.insert(adobe::trailing_of(n1), 3);
 
 std::size_t count = 0;
 
@@ -410,19 +408,79 @@ Note this technique does not work if $N==R$. In that case though, you'd be trave
 
 ### Preorder Traversal
 
-A preorder traversal of the forest will visit every node once. During preorder traversal a parent will be visited before its children. We achieve preorder iteration by incrementing fullorder repeatedly, visiting a node only when the iterator is on a leading edge:
-
-- `do ++{node, edge} while edge == trailing`
+A preorder traversal of the forest will visit every node once. During preorder traversal a parent will be visited before its children. We achieve preorder iteration by incrementing fullorder repeatedly, visiting a node only when the iterator is on a leading edge. Note the use of the root top loop as the terminating iterator for a full-forest preorder traversal:
 
 <img class='svg-img' src='{{site.baseurl}}/svg/preorder.svg'/>
+
+### Implementation
+
+A C++ implementation of preorder traversal may look like this:
+
+```c++
+template <typename T, typename F>
+void preorder_traversal(const adobe::forest<T>& f, F&& f) {
+    auto preorder_next{[](auto i){
+        do {
+            ++i;
+        } while (i.edge() == adobe::forest_trailing_edge);
+        return i;
+    }};
+    auto first{preorder_next(f.begin())};
+    auto last{preorder_next(f.end())};
+
+    while (first != last) {
+        f(*first);
+        first = preorder_next(first);
+    }
+}
+```
+
+A better solution would be to use the `preorder_range` utility already provided by `adobe::forest<T>`:
+
+```c++
+for (const auto& i : preorder_range(my_forest)) {
+    // each node in the forest will be visited once, in preorder order.
+}
+
+``` 
 
 ### Postorder Traversal
 
 A postorder traversal of the forest will visit every node once. During postorder traversal a parent will be visited after its children. We achieve postorder iteration by incrementing fullorder repeatedly, visiting a node only when the iterator is on a trailing edge:
 
-- `do ++{node, edge} while edge == leading`
-
 <img class='svg-img' src='{{site.baseurl}}/svg/postorder.svg'/>
+
+### Implementation
+
+A C++ implementation of postorder traversal may look like this:
+
+```c++
+template <typename T, typename F>
+void postorder_traversal(const adobe::forest<T>& f, F&& f) {
+    auto postorder_next{[](auto i){
+        do {
+            ++i;
+        } while (i.edge() == adobe::forest_leading_edge);
+        return i;
+    }};
+    auto first{postorder_next(f.begin())};
+    auto last{postorder_next(f.end())};
+
+    while (first != last) {
+        f(*first);
+        first = postorder_next(first);
+    }
+}
+```
+
+A better solution would be to use the `postorder_range` utility already provided by `adobe::forest<T>`:
+
+```c++
+for (const auto& i : postorder_range(my_forest)) {
+    // each node in the forest will be visited once, in postorder order.
+}
+
+``` 
 
 ### Child Traversal
 
@@ -431,6 +489,41 @@ A child traversal of a node P traverses only its immediate children; P itself is
 - `++trailing_of({Cn, L})` &rarr; `{Cn+1, L}` (next child) or `{P, T}` (the end of the range)
 
 <img class='svg-img' src='{{site.baseurl}}/svg/child_iteration.svg'/>
+
+### Implementation
+
+A C++ implementation of child traversal may look like this. Note that the iterator passed points to the parent whose children we are going to traverse:
+
+```c++
+template <typename ForestIterator, typename F>
+void child_traversal(ForestIterator i, F&& f) {
+    auto first{++adobe::leading_of(i)};
+    auto last{adobe::trailing_of(i)};
+
+    while (first != last) {
+        f(*first);
+        first = ++adobe::trailing_of(first);
+    }
+}
+```
+
+A better solution would be to use the `child_range` utility already provided by `adobe::forest<T>`:
+
+```c++
+for (const auto& i : child_range(my_forest_iterator) {
+    // each child of the node at my_forest_iterator will be visited once
+}
+
+``` 
+
+To iterate just the top-level nodes in the forest, use `adobe::forest<T>::root` to get an iterator to the root node:
+
+```c++
+for (const auto& i : child_range(my_forest.root()) {
+    // each top-level node will be visited once
+}
+
+``` 
 
 ## Node Insertion
 
@@ -501,7 +594,7 @@ iterator h{--leading_of(i)};
 bool     is_first_child{h.edge() == forest_leading_edge};
 ```
 
-### Visually
+### Visualization
 
 Here is the case where the node is the first child:
 
@@ -530,7 +623,7 @@ iterator j{++trailing_of(i)};
 bool     is_last_child{j.edge() == forest_trailing_edge};
 ```
 
-### Visually
+### Visualization
 
 Here is the case where the node is the last child:
 
@@ -559,7 +652,7 @@ iterator j{++leading_of(i)};
 bool     has_children{j.edge() == forest_leading_edge};
 ```
 
-### Visually
+### Visualization
 
 Here is the case where the node has children:
 

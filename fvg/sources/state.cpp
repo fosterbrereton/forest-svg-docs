@@ -161,6 +161,7 @@ auto make_state_graph_settings(const json_object& object) {
 
     maybe_get(result._with_root, object, "with_root");
     maybe_get(result._with_leaf_edges, object, "with_leaf_edges");
+    maybe_get(result._with_root_top, object, "with_root_top");
     maybe_get(result._margin, object, "margin");
 
     return result;

@@ -10,8 +10,10 @@
             "color": "#bbb"
         }
     },
-    "edge_labels": ["1", "2", "3", "4", "5", "6", "7"],
+    "edge_labels": ["8", "1", "2", "3", "4", "5", "6", "7"],
     "settings": {
-        "with_root": true
+        "with_root": true,
+        "with_root_top": true,
+        "margin_top": 50
     }
 }
