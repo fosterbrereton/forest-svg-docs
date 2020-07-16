@@ -3,7 +3,7 @@
 // stdc++
 #include <iostream>
 
-#define FORESTVG_USING_STLAB_FOREST() 0
+#define FORESTVG_USING_STLAB_FOREST() 1
 
 // application
 #include "../headers/forest_algorithms.hpp"
