@@ -19,18 +19,18 @@ namespace fvg {
 /**************************************************************************************************/
 // REVISIT: Hmmm, this is transcribe_forest, but with proj(first) instead of proj(*first).
 auto child_counts(const state& state) {
-    adobe::forest<std::size_t> result;
+    fvg::forest<std::size_t> result;
     auto pos{result.root()};
     auto first{state._f.begin()};
     const auto last{state._f.end()};
 
     while (first != last) {
         ++pos;
-        if (first.edge() == adobe::forest_leading_edge) {
-            auto child_count = std::distance(adobe::child_begin(first), adobe::child_end(first));
+        if (first.edge() == FNS::forest_leading_edge) {
+            auto child_count = std::distance(FNS::child_begin(first), FNS::child_end(first));
             pos = result.insert(pos, child_count);
         } else {
-            pos = adobe::trailing_of(pos);
+            pos = FNS::trailing_of(pos);
         }
         ++first;
     }
@@ -50,23 +50,23 @@ constexpr auto root_name_k{"&#x211C;"};
 
 /**************************************************************************************************/
 
-auto derive_widths(const adobe::forest<std::size_t>& counts) {
-    adobe::forest<std::size_t> result;
+auto derive_widths(const fvg::forest<std::size_t>& counts) {
+    fvg::forest<std::size_t> result;
     auto pos{result.root()};
     auto first{counts.begin()};
     const auto last{counts.end()};
 
     while (first != last) {
         ++pos;
-        if (first.edge() == adobe::forest_leading_edge) {
+        if (first.edge() == FNS::forest_leading_edge) {
             pos = result.insert(pos, 0);
         } else {
             // now that all the children have gone, let's update our width
-            if (!adobe::has_children(pos)) {
+            if (!FNS::has_children(pos)) {
                 *pos = node_size_k;
             } else {
-                auto child_first{adobe::child_begin(pos)};
-                auto child_last{adobe::child_end(pos)};
+                auto child_first{FNS::child_begin(pos)};
+                auto child_last{FNS::child_end(pos)};
                 while (child_first != child_last) {
                     *pos += *child_first + node_spacing_k;
                     ++child_first;
@@ -74,7 +74,7 @@ auto derive_widths(const adobe::forest<std::size_t>& counts) {
                 // pull out one spacing amount (it's between nodes, not one for each.)
                 *pos -= node_spacing_k;
             }
-            pos = adobe::trailing_of(pos);
+            pos = FNS::trailing_of(pos);
         }
         ++first;
     }
@@ -84,14 +84,14 @@ auto derive_widths(const adobe::forest<std::size_t>& counts) {
 
 /**************************************************************************************************/
 
-auto derive_height(const adobe::forest<std::size_t>& counts, bool leaf_edges, double margin_height) {
-    adobe::depth_fullorder_iterator first{counts.begin()};
-    adobe::depth_fullorder_iterator last{counts.end()};
+auto derive_height(const fvg::forest<std::size_t>& counts, bool leaf_edges, double margin_height) {
+    FNS::depth_fullorder_iterator first{counts.begin()};
+    FNS::depth_fullorder_iterator last{counts.end()};
     using depth_type = decltype(first.depth());
     depth_type max_depth{0};
 
     while (first != last) {
-        if (first.edge() == adobe::forest_leading_edge) {
+        if (first.edge() == FNS::forest_leading_edge) {
             max_depth = std::max(max_depth, first.depth());
         }
         ++first;
@@ -112,10 +112,10 @@ auto derive_height(const adobe::forest<std::size_t>& counts, bool leaf_edges, do
 
 /**************************************************************************************************/
 
-auto derive_width(const adobe::forest<std::size_t>& widths, double margin_width) {
+auto derive_width(const FNS::forest<std::size_t>& widths, double margin_width) {
     auto root{widths.root()};
-    auto first{adobe::child_begin(root)};
-    auto last{adobe::child_end(root)};
+    auto first{FNS::child_begin(root)};
+    auto last{FNS::child_end(root)};
     auto count{0};
     auto result{0};
 
@@ -139,13 +139,13 @@ namespace detail {
 
 /**************************************************************************************************/
 
-void derive_x_offsets(adobe::forest<std::size_t>::const_iterator src,
-                      adobe::forest<std::size_t>::iterator dst,
+void derive_x_offsets(FNS::forest<std::size_t>::const_iterator src,
+                      FNS::forest<std::size_t>::iterator dst,
                       std::size_t parent_x_offset) {
     // It is assumed that the src and dst forest have the same shape.
-    auto src_first{adobe::child_begin(src)};
-    auto src_last{adobe::child_end(src)};
-    auto dst_first{adobe::child_begin(dst)};
+    auto src_first{FNS::child_begin(src)};
+    auto src_last{FNS::child_end(src)};
+    auto dst_first{FNS::child_begin(dst)};
 
     while (src_first != src_last) {
         auto old_width{*dst_first};
@@ -163,8 +163,8 @@ void derive_x_offsets(adobe::forest<std::size_t>::const_iterator src,
 
 /**************************************************************************************************/
 
-auto derive_x_offsets(const adobe::forest<std::size_t>& widths, double left_margin) {
-    adobe::forest<std::size_t> result{widths};
+auto derive_x_offsets(const FNS::forest<std::size_t>& widths, double left_margin) {
+    FNS::forest<std::size_t> result{widths};
     detail::derive_x_offsets(widths.root(), result.root(), left_margin);
     return result;
 }
@@ -172,14 +172,14 @@ auto derive_x_offsets(const adobe::forest<std::size_t>& widths, double left_marg
 /**************************************************************************************************/
 
 auto derive_y_offsets(const state& state, double margin_top) {
-    adobe::forest<std::size_t> result;
+    FNS::forest<std::size_t> result;
     auto pos{result.root()};
-    adobe::depth_fullorder_iterator first{state._f.begin()};
-    adobe::depth_fullorder_iterator last{state._f.end()};
+    FNS::depth_fullorder_iterator first{state._f.begin()};
+    FNS::depth_fullorder_iterator last{state._f.end()};
 
     while (first != last) {
         ++pos;
-        if (first.edge() == adobe::forest_leading_edge) {
+        if (first.edge() == FNS::forest_leading_edge) {
             pos = result.insert(pos, margin_top + (tier_height_k + node_spacing_k) * first.depth());
         }
         ++first;
@@ -205,14 +205,14 @@ void indent(std::size_t amount, std::ofstream& out) {
 
 /**************************************************************************************************/
 
-void print_xml(adobe::forest<xml_node> xml, std::ofstream& out) {
-    adobe::depth_fullorder_iterator first{xml.begin()};
-    adobe::depth_fullorder_iterator last{xml.end()};
+void print_xml(FNS::forest<xml_node> xml, std::ofstream& out) {
+    FNS::depth_fullorder_iterator first{xml.begin()};
+    FNS::depth_fullorder_iterator last{xml.end()};
 
     while (first != last) {
         auto depth{first.depth()};
         auto has_content{!first->_content.empty()};
-        if (first.edge() == adobe::forest_leading_edge) {
+        if (first.edge() == FNS::forest_leading_edge) {
             indent(depth, out);
 
             out << "<" << first->_tag;
@@ -221,7 +221,7 @@ void print_xml(adobe::forest<xml_node> xml, std::ofstream& out) {
                 out << " " << a.first << "='" << a.second << "'";
             }
 
-            if (adobe::has_children(first) || has_content) {
+            if (FNS::has_children(first) || has_content) {
                 out << ">\n";
             } else {
                 out << "/>\n";
@@ -230,7 +230,7 @@ void print_xml(adobe::forest<xml_node> xml, std::ofstream& out) {
             if (has_content) {
                 out << first->_content << '\n';
             }
-        } else if (adobe::has_children(first) || has_content) {
+        } else if (FNS::has_children(first) || has_content) {
             indent(depth, out);
 
             out << "</" << first->_tag << ">\n";
@@ -442,7 +442,7 @@ auto derive_edge_properties(const std::string& edge_name, const edge_map& map, b
 
 /**************************************************************************************************/
 
-auto derive_edges(const adobe::forest<svg::node>& f,
+auto derive_edges(const FNS::forest<svg::node>& f,
                   const edge_labels& labels,
                   const edge_map& map,
                   bool leaf_edges,
@@ -486,7 +486,7 @@ auto derive_edges(const adobe::forest<svg::node>& f,
     auto  last{f.end()};
     auto  label_first{labels.begin()};
     auto  label_last{labels.end()};
-    bool  prev_leading{first.edge() == adobe::forest_leading_edge};
+    bool  prev_leading{first.edge() == FNS::forest_leading_edge};
     const auto* prev_circle{std::get_if<svg::circle>(&*first)};
     const auto* prev_square{std::get_if<svg::square>(&*first)};
 
@@ -532,7 +532,7 @@ auto derive_edges(const adobe::forest<svg::node>& f,
     constexpr double max_mag_k{min_mag_k * 2};
 
     while (first != last) {
-        bool  cur_leading{first.edge() == adobe::forest_leading_edge};
+        bool  cur_leading{first.edge() == FNS::forest_leading_edge};
         const auto* cur_circle{std::get_if<svg::circle>(&*first)};
         const auto* cur_square{std::get_if<svg::square>(&*first)};
         auto label{label_first != label_last ? *label_first : ""};
@@ -829,8 +829,8 @@ void write_svg(state state, const std::filesystem::path& path) {
 
     // Add optional root
     if (state._s._with_root) {
-        auto first{adobe::child_begin(state._f.root())};
-        auto last{adobe::child_end(state._f.root())};
+        auto first{FNS::child_begin(state._f.root())};
+        auto last{FNS::child_end(state._f.root())};
         state._f.insert_parent(first, last, root_name_k);
     }
 
@@ -932,10 +932,10 @@ void write_svg(state state, const std::filesystem::path& path) {
 
     out << "<?xml version='1.0' encoding='utf-8'?>\n";
 
-    adobe::forest<xml_node> xml;
+    FNS::forest<xml_node> xml;
 
     // Trailing ensures the inserted elements are a child of the svg entry.
-    auto p = adobe::trailing_of(xml.insert(xml.begin(), xml_node{
+    auto p = FNS::trailing_of(xml.insert(xml.begin(), xml_node{
         "svg",
         {
             { "xmlns", "http://www.w3.org/2000/svg" },
@@ -953,11 +953,11 @@ void write_svg(state state, const std::filesystem::path& path) {
         xml.insert(p, svg_to_xml(std::move(label)));
     }
 
-    for (auto& node : adobe::preorder_range(svg_nodes)) {
+    for (auto& node : FNS::preorder_range(svg_nodes)) {
         xml.insert(p, svg_to_xml(std::move(node)));
     }
 
-    for (auto& label : adobe::preorder_range(svg_labels)) {
+    for (auto& label : FNS::preorder_range(svg_labels)) {
         xml.insert(p, svg_to_xml(std::move(label)));
     }
 

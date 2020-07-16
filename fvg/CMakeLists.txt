@@ -27,10 +27,13 @@ get_filename_component(JSON_PATH ${CMAKE_CURRENT_SOURCE_DIR}/json ABSOLUTE)
 
 get_filename_component(ASL_PATH ${CMAKE_CURRENT_SOURCE_DIR}/adobe_source_libraries ABSOLUTE)
 
+get_filename_component(STLAB_PATH ${CMAKE_CURRENT_SOURCE_DIR}/stlab ABSOLUTE)
+
 get_filename_component(APP_HEADERS_PATH ${CMAKE_CURRENT_SOURCE_DIR}/headers ABSOLUTE)
 
 include_directories(fvg AFTER
                     ${ASL_PATH}
+                    ${STLAB_PATH}
                     ${BOOST_PATH}
                     ${APP_HEADERS_PATH}
                     ${JSON_PATH}
@@ -43,3 +46,11 @@ add_executable(fvg ${APP_SRC})
 
 set_target_properties(fvg PROPERTIES XCODE_ATTRIBUTE_CLANG_CXX_LANGUAGE_STANDARD c++17)
 set_target_properties(fvg PROPERTIES XCODE_ATTRIBUTE_CLANG_CXX_LIBRARY libc++)
+
+####################################################################################################
+# forest unit test header paths and sources
+
+file(GLOB FOREST_TEST_SRC ${CMAKE_CURRENT_SOURCE_DIR}/forest_test/*.cpp)
+
+add_executable(forest_test ${FOREST_TEST_SRC})
+

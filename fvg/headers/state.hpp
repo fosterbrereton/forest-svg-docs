@@ -8,10 +8,8 @@
 // stdc++
 #include <unordered_map>
 
-// asl
-#include <adobe/forest.hpp>
-
 // application
+#include "forest_fwd.hpp"
 #include "geometry.hpp"
 #include "json.hpp"
 
@@ -44,14 +42,14 @@ struct graph_settings {
     extents _margin{25, 10, 25, 10};
 };
 
-using node_forest = adobe::forest<std::string>;
+using node_forest = fvg::forest<std::string>;
 using node_iterator = node_forest::iterator;
 using node_map = std::unordered_map<std::string, node_properties>;
 using edge_map = std::unordered_map<std::string, edge_properties>;
 using edge_labels = std::vector<std::string>;
 
 struct state {
-    adobe::forest<std::string> _f;
+    node_forest _f;
     node_map _n;
     edge_map _e;
     edge_labels _l;

@@ -23,7 +23,7 @@ void make_state_forest(node_forest& f, node_iterator p, const json_array& array)
                 throw std::runtime_error("children missing parent definition");
             }
 
-            make_state_forest(f, adobe::trailing_of(last_node), as<json_array>(n));
+            make_state_forest(f, FNS::trailing_of(last_node), as<json_array>(n));
 
             last_node = f.end();
         } else {
