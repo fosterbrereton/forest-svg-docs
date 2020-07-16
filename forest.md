@@ -334,6 +334,34 @@ f.insert(d_iter, 'K');
 
 The frequent use of `adobe::trailing_of` is necessary to insert subsequent nodes as children of the newly inserted nodes. Without flipping the iterator to the trailing edge, new nodes inserted with those iterators would be added as prior siblings, not children.
 
+## Node Insertion
+
+`forest<T>::insert` requires an iterator (where to insert) and a value (what to insert). The iterator is never invalidated during an insertion. `insert` returns a leading edge iterator to the new node.
+
+### Leading Edge Insertion
+
+When the location for insertion is on the leading edge of $N$ (that is, $I$ is `{N, L}`) the new node will be created as $N$'s new prior sibling. So:
+
+<img class='svg-img' src='{{site.baseurl}}/svg/l_insert_before.svg'/>
+
+becomes the following. Note that the iterator $I$ is unchanged:
+
+<img class='svg-img' src='{{site.baseurl}}/svg/l_insert_after.svg'/>
+
+In this case insert returns `{Sprior, L}`. Leading edge insertion can be used to repeatedly "push back" prior siblings of $N$. To repeatedly "push front" prior siblings of $N$, use the resulting iterator of `insert` as the next insertion position.
+
+### Trailing Edge Insertion
+
+When the location for insertion is on the trailing edge of $N$ (that is, $I$ is `{N, T}`) the new node will be created as $N$'s new last child. So:
+
+<img class='svg-img' src='{{site.baseurl}}/svg/t_insert_before.svg'/>
+
+becomes the following. Note that the iterator $I$ is unchanged:
+
+<img class='svg-img' src='{{site.baseurl}}/svg/t_insert_after.svg'/>
+
+In this case insert returns `{Clast, L}`. Trailing edge insertion can be used to repeatedly "push back" children of $N$. To repeatedly "push front" children of $N$, use the resulting iterator of `insert` as the next insertion position.
+
 ## Forest Traversal
 
 ### Fullorder
@@ -386,7 +414,6 @@ while (first != last) {
     ++first;
 }
 ```
-
 
 ### Fullorder Traversal of $N$'s Subtree
 
@@ -466,7 +493,7 @@ void postorder_traversal(const adobe::forest<T>& f, F&& f) {
         return i;
     }};
     auto first{postorder_next(f.begin())};
-    auto last{postorder_next(f.end())};
+    auto last{f.end()};
 
     while (first != last) {
         f(*first);
@@ -518,7 +545,7 @@ for (const auto& i : child_range(my_forest_iterator) {
 
 ``` 
 
-To iterate just the top-level nodes in the forest, use `adobe::forest<T>::root` to get an iterator to the root node:
+To iterate just the top-level nodes in the forest, use `adobe::forest<T>::root()` to get an iterator to the root node:
 
 ```c++
 for (const auto& i : child_range(my_forest.root()) {
@@ -526,34 +553,6 @@ for (const auto& i : child_range(my_forest.root()) {
 }
 
 ``` 
-
-## Node Insertion
-
-`forest<T>::insert` requires an iterator (where to insert) and a value (what to insert). The iterator is never invalidated during an insertion. `insert` returns a leading edge iterator to the new node.
-
-### Leading Edge Insertion
-
-When the location for insertion is on the leading edge of $N$ (that is, $I$ is `{N, L}`) the new node will be created as $N$'s new prior sibling. So:
-
-<img class='svg-img' src='{{site.baseurl}}/svg/l_insert_before.svg'/>
-
-becomes the following. Note that the iterator $I$ is unchanged:
-
-<img class='svg-img' src='{{site.baseurl}}/svg/l_insert_after.svg'/>
-
-In this case insert returns `{Sprior, L}`. Leading edge insertion can be used to repeatedly "push back" prior siblings of $N$. To repeatedly "push front" prior siblings of $N$, use the resulting iterator of `insert` as the next insertion position.
-
-### Trailing Edge Insertion
-
-When the location for insertion is on the trailing edge of $N$ (that is, $I$ is `{N, T}`) the new node will be created as $N$'s new last child. So:
-
-<img class='svg-img' src='{{site.baseurl}}/svg/t_insert_before.svg'/>
-
-becomes the following. Note that the iterator $I$ is unchanged:
-
-<img class='svg-img' src='{{site.baseurl}}/svg/t_insert_after.svg'/>
-
-In this case insert returns `{Clast, L}`. Trailing edge insertion can be used to repeatedly "push back" children of $N$. To repeatedly "push front" children of $N$, use the resulting iterator of `insert` as the next insertion position.
 
 # Erasing Nodes
 
