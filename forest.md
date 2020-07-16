@@ -203,11 +203,18 @@ The northeast edge is the trailing out edge. It points to one of two related nod
 
 With the fundamental building blocks in place, here is how they combine to form some of the basic relationships in a forest. Note that (with the exception of the root node) every node in the forest maintains four relationships with the nodes around it.
 
+The examples also include C++ that would construct the forest in question. If the code does not make sense at this point in time, don't worry: we'll cover what's missing in following sections. If you'd like, you can skip over it now and revisit it later.
+
 ### Empty
 
 <img class='svg-img' src='{{site.baseurl}}/svg/empty.svg'/>
 
-Given a forest that contains only the root node, `forest<T>::empty()` will return `true`. Otherwise, it will return `false`.
+Given a forest that contains only the root node, `forest<T>::empty()` will return `true`. Otherwise, it will return `false`:
+
+```c++
+adobe::forest<int> f;
+assert(f.empty());
+```
 
 The root does have a trailing-out edge which always points to the root leading-in edge. This creates a unique and detectible termination case, which is a useful property. For example, the end iterator for a preorder traversal (which always points to a leading edge) is this trailing-out to leading-in edge of the root.
 
@@ -215,13 +222,53 @@ The root does have a trailing-out edge which always points to the root leading-i
 
 <img class='svg-img' src='{{site.baseurl}}/svg/one_node.svg'/>
 
+To construct the above forest, the code might look like this:
+
+```c++
+adobe::forest<char> f;
+f.insert(f.end(), 'A');
+```
+
+`f.begin()` would work equally well as `f.end()` in the above case: they are equal when a forest is empty.
+
 ### Two Sibling Nodes
 
 <img class='svg-img' src='{{site.baseurl}}/svg/two_nodes.svg'/>
 
+To construct the above forest, the code might look like this:
+
+```c++
+adobe::forest<char> f;
+f.insert(f.end(), 'A');
+f.insert(f.end(), 'B');
+```
+
 ### Many Nodes and Levels
 
 <img class='svg-img' src='{{site.baseurl}}/svg/sample.svg'/>
+
+```c++
+adobe::forest<char> f;
+
+auto a_iter = adobe::trailing_of(f.insert(f.end(), 'A'));
+
+auto b_iter = adobe::trailing_of(f.insert(a_iter, 'B'));
+
+auto c_iter = adobe::trailing_of(f.insert(b_iter, 'C'));
+auto d_iter = adobe::trailing_of(f.insert(b_iter, 'D'));
+f.insert(b_iter, 'E');
+
+f.insert(c_iter, 'F');
+f.insert(c_iter, 'G');
+f.insert(c_iter, 'H');
+
+f.insert(d_iter, 'I');
+f.insert(d_iter, 'J');
+f.insert(d_iter, 'K');
+
+```
+
+The frequent use of `adobe::trailing_of` is necessary to insert subsequent nodes as children of the newly inserted nodes. Without flipping the iterator to the trailing edge, new nodes inserted with those iterators would be added as prior siblings, not children.
 
 ## Iterators
 
@@ -259,6 +306,20 @@ Utility functions `adobe::leading_of(I)` and `adobe::trailing_of(I)` change the 
 - `leading_of({P, X})` &rarr; `{P, L}`
 - `trailing_of({N, X})` &rarr; `{N, T}`
 
+In C++, these calls are straightforward:
+
+```c++
+adobe::forest<char> f;
+
+auto leading_iter = f.insert(f.end(), 'A');
+assert(leading_iter.edge() == adobe::forest_leading_edge);
+assert(*leading_iter == 'A');
+
+auto trailing_iter = adobe::trailing_of(leading_iter);
+assert(trailing_iter.edge() == adobe::forest_trailing_edge);
+assert(*trailing_iter == 'A');
+```
+
 ### Iterator Adaptors
 
 Although there is one iterator type for forest, there are several iterator adaptors that facilitate various methods of traversal. More will be said about these later.
@@ -281,9 +342,51 @@ The traversal behavior of `adobe::forest<T>::iterator` is always fullorder. This
 
 <img class='svg-img' src='{{site.baseurl}}/svg/fullorder_one.svg'/>
 
+In C++, one might output the above labels with the following code. The exception of course is `7`, which would not be output because it is the last iterator in the forest, and cannot be dereferenced.
+
+```c++
+adobe::forest<int> f;
+
+auto n1 = adobe::trailing_of(f.insert(f.end(), 1));
+f.insert(f.end(), 2);
+f.insert(n1, 3);
+
+std::size_t count = 0;
+
+for (const auto& i : f) {
+    std::cout << ++count << '\n';
+}
+```
+
 Here is the same diagram with the leading and trailing edges colorized green and red, respectively:
 
 <img class='svg-img' src='{{site.baseurl}}/svg/fullorder_two.svg'/>
+
+To output the "color" of the edges, one might write the following:
+
+```c++
+adobe::forest<int> f;
+
+auto n1 = adobe::trailing_of(f.insert(f.end(), 1));
+f.insert(f.end(), 2);
+f.insert(n1, 3);
+
+auto first = f.begin();
+auto last = f.end();
+std::size_t count = 0;
+
+while (first != last) {
+    std::cout << ++count;
+
+    if (first.edge() == adobe::forest_leading_edge) {
+        std::cout << " green\n";
+    } else {
+        std::cout << " red\n";
+    }
+    ++first;
+}
+```
+
 
 ### Fullorder Traversal of $N$'s Subtree
 
