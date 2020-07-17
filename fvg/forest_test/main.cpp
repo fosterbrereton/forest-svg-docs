@@ -244,7 +244,7 @@ TEST_CASE("find parent") {
 
 /**************************************************************************************************/
 
-TEST_CASE("has_children") {
+TEST_CASE("has children") {
     auto f{big_test_forest()};
 
     {
@@ -257,6 +257,30 @@ TEST_CASE("has_children") {
         auto node{std::find_if(f.begin(), f.end(), [](auto& x){ return x == "J"; })};
         REQUIRE(*node == "J");
         REQUIRE(!has_children(node));
+    }
+}
+
+/**************************************************************************************************/
+
+TEST_CASE("erase") {
+    auto f{big_test_forest()};
+
+    SECTION("single node") {
+        auto node{std::find_if(f.begin(), f.end(), [](auto& x){ return x == "J"; })};
+        REQUIRE(*node == "J");
+        auto erased_result = f.erase(node);
+        std::string result{to_string(preorder_range(f))};
+        REQUIRE(result == "ABCFGHDIKE");
+        REQUIRE(*erased_result == "K");
+    }
+
+    SECTION("multiple nodes") {
+        auto node{std::find_if(f.begin(), f.end(), [](auto& x){ return x == "D"; })};
+        REQUIRE(*node == "D");
+        auto erased_result = f.erase(leading_of(node), std::next(trailing_of(node)));
+        std::string result{to_string(preorder_range(f))};
+        REQUIRE(result == "ABCFGHE");
+        REQUIRE(*erased_result == "E");
     }
 }
 
