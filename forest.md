@@ -441,7 +441,7 @@ A preorder traversal of the forest will visit every node once. During preorder t
 
 <img class='svg-img' src='{{site.baseurl}}/svg/preorder.svg'/>
 
-### Implementation
+#### Implementation
 
 A C++ implementation of preorder traversal may look like this:
 
@@ -479,7 +479,7 @@ A postorder traversal of the forest will visit every node once. During postorder
 
 <img class='svg-img' src='{{site.baseurl}}/svg/postorder.svg'/>
 
-### Implementation
+#### Implementation
 
 A C++ implementation of postorder traversal may look like this:
 
@@ -519,7 +519,7 @@ A child traversal of a node P traverses only its immediate children; P itself is
 
 <img class='svg-img' src='{{site.baseurl}}/svg/child_iteration.svg'/>
 
-### Implementation
+#### Implementation
 
 A C++ implementation of child traversal may look like this. Note that the iterator passed points to the parent whose children we are going to traverse:
 
