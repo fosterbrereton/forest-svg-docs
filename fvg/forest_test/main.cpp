@@ -3,10 +3,12 @@
 // stdc++
 #include <iostream>
 
-#define FORESTVG_USING_STLAB_FOREST() 1
-
+// catch
 #define CATCH_CONFIG_MAIN
 #include "catch/catch.hpp"
+
+// must be defined before forest_fwd to select the forest we want to test.
+#define FORESTVG_USING_STLAB_FOREST() 1
 
 // application
 #include "../headers/forest_algorithms.hpp"
@@ -32,6 +34,7 @@ SCENARIO("single node forest") {
 
     auto il = f.insert(f.end(), 42);
     REQUIRE(il.edge() == FNS::forest_leading_edge);
+    REQUIRE(*il == 42);
     REQUIRE(!f.empty());
 
     REQUIRE(f.begin() != f.end());
@@ -76,16 +79,29 @@ auto big_test_forest() {
 
 /**************************************************************************************************/
 
+template <typename R>
+inline auto to_string(R&& r) {
+    std::string result;
+    for (const auto& x : r) {
+        result += x;
+    }
+    return result;
+}
+
+template <typename I>
+inline auto to_string(I first, I last) {
+    std::string result;
+    while (first != last) {
+        result += *first++;
+    }
+    return result;
+}
+
+/**************************************************************************************************/
+
 template <typename Iterator>
 void test_fullorder_traversal(Iterator first, Iterator last, std::string expected) {
-    std::string result;
-
-    while (first != last) {
-        result += *first;
-        ++first;
-    }
-
-    REQUIRE(result == expected);
+    REQUIRE(to_string(first, last) == expected);
 }
 
 /**************************************************************************************************/
@@ -108,57 +124,11 @@ auto test_edge_traversal(Forest& f, Iterator fi, Iterator li) {
     {
         edge_iterator<Iterator, Edge> first(fi);
         edge_iterator<Iterator, Edge> last(li);
-        std::string result;
-        while (first != last) {
-            result += *first;
-            ++first;
-        }
+        std::string result{to_string(first, last)};
         REQUIRE(result == expected);
     }
 
     return expected;
-}
-
-/**************************************************************************************************/
-
-void test_reverse_preorder_traversal() {
-    std::string expected;
-    const auto f{big_test_forest()};
-
-    {
-        auto first{f.rbegin()};
-        auto last{f.rend()};
-        while (first != last) {
-            if (first.edge() == FNS::forest_leading_edge)
-                expected += *first;
-            ++first;
-        }
-        REQUIRE(expected.size() == f.size());
-    }
-
-    {
-        using const_iterator = forest<std::string>::const_reverse_iterator;
-        using iterator = edge_iterator<const_iterator, forest_leading_edge>;
-        iterator first(f.rbegin());
-        iterator last(f.rend());
-        std::string result;
-        while (first != last) {
-            result += *first;
-            ++first;
-        }
-        REQUIRE(result == expected);
-    }
-}
-
-/**************************************************************************************************/
-
-template <typename R>
-auto range_value(R&& r) {
-    std::string result;
-    for (const auto& x : r) {
-        result += x;
-    }
-    return result;
 }
 
 /**************************************************************************************************/
@@ -189,14 +159,14 @@ TEST_CASE("forward traversal") {
         auto a = test_edge_traversal<iterator_t, FNS::forest_leading_edge>(f, first, last);
         auto b = test_edge_traversal<const_iterator_t, FNS::forest_leading_edge>(f, first, last);
         REQUIRE(a == b);
-        REQUIRE(range_value(preorder_range(f)) == a);
+        REQUIRE(to_string(preorder_range(f)) == a);
     }
 
     SECTION("postorder") {
         auto a = test_edge_traversal<iterator_t, FNS::forest_trailing_edge>(f, first, last);
         auto b = test_edge_traversal<const_iterator_t, FNS::forest_trailing_edge>(f, first, last);
         REQUIRE(a == b);
-        REQUIRE(range_value(postorder_range(f)) == a);
+        REQUIRE(to_string(postorder_range(f)) == a);
     }
 }
 
@@ -211,7 +181,7 @@ TEST_CASE("reverse traversal") {
         static const auto expected{"ABEEDKKJJIIDCHHGGFFCBA"};
         test_fullorder_traversal<reverse_iterator_t>(rfirst, rlast, expected);
         test_fullorder_traversal<const_reverse_iterator_t>(rfirst, rlast, expected);
-        REQUIRE(range_value(reverse_fullorder_range(f)) == expected);
+        REQUIRE(to_string(reverse_fullorder_range(f)) == expected);
     }
 
     SECTION("preorder") {
@@ -231,16 +201,7 @@ TEST_CASE("reverse traversal") {
 
 TEST_CASE("child traversal") {
     auto f{big_test_forest()};
-    auto parent{[&]{
-        auto first{f.begin()};
-        auto last{f.end()};
-        while (first != last) {
-            if (*first == "B")
-                return first;
-            ++first;
-        }
-        return last;
-    }()};
+    auto parent{std::find_if(f.begin(), f.end(), [](auto& x){ return x == "B"; })};
     std::string expected;
 
     REQUIRE(*parent == "B");
@@ -248,21 +209,15 @@ TEST_CASE("child traversal") {
     {
         auto first{child_begin(parent)};
         auto last{child_end(parent)};
-        while (first != last) {
-            expected += *first++;
-        }
+        expected = to_string(first, last);
     }
 
-    REQUIRE(range_value(child_range(parent)) == expected);
+    REQUIRE(to_string(child_range(parent)) == expected);
 
-    if constexpr (false) {
-        std::string result;
+    if constexpr (false) { // I'm not sure this ever worked.
         FNS::forest<std::string>::reverse_child_iterator first{child_begin(parent)};
         FNS::forest<std::string>::reverse_child_iterator last{child_end(parent)};
-        while (first != last) {
-            result += *first++;
-        }
-
+        std::string result{to_string(first, last)};
         REQUIRE(result == expected);
     }
 }
