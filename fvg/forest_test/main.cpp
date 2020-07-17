@@ -214,7 +214,7 @@ TEST_CASE("child traversal") {
 
     REQUIRE(to_string(child_range(parent)) == expected);
 
-    if constexpr (false) { // I'm not sure this ever worked.
+    if constexpr (false) { // I'm not sure reverse_child_iterator ever worked.
         FNS::forest<std::string>::reverse_child_iterator first{child_begin(parent)};
         FNS::forest<std::string>::reverse_child_iterator last{child_end(parent)};
         std::string result{to_string(first, last)};
@@ -247,13 +247,13 @@ TEST_CASE("find parent") {
 TEST_CASE("has children") {
     auto f{big_test_forest()};
 
-    {
+    SECTION("pass") {
         auto node{std::find_if(f.begin(), f.end(), [](auto& x){ return x == "B"; })};
         REQUIRE(*node == "B");
         REQUIRE(has_children(node));
     }
 
-    {
+    SECTION("fail") {
         auto node{std::find_if(f.begin(), f.end(), [](auto& x){ return x == "J"; })};
         REQUIRE(*node == "J");
         REQUIRE(!has_children(node));

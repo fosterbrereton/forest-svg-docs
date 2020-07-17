@@ -539,7 +539,7 @@ void child_traversal(ForestIterator i, F&& f) {
 A better solution would be to use the `child_range` utility already provided by `adobe::forest<T>`:
 
 ```c++
-for (const auto& i : child_range(my_forest_iterator) {
+for (const auto& i : child_range(my_forest_iterator)) {
     // each child of the node at my_forest_iterator will be visited once
 }
 
@@ -548,7 +548,7 @@ for (const auto& i : child_range(my_forest_iterator) {
 To iterate just the top-level nodes in the forest, use `adobe::forest<T>::root()` to get an iterator to the root node:
 
 ```c++
-for (const auto& i : child_range(my_forest.root()) {
+for (const auto& i : child_range(my_forest.root())) {
     // each top-level node will be visited once
 }
 
