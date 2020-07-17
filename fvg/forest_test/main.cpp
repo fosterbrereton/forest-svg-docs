@@ -106,7 +106,7 @@ void test_fullorder_traversal(Iterator first, Iterator last, std::string expecte
 
 /**************************************************************************************************/
 
-template <typename Iterator, std::size_t Edge, typename Forest>
+template <typename Iterator, FNS::forest_edge Edge, typename Forest>
 auto test_edge_traversal(Forest& f, Iterator fi, Iterator li) {
     std::string expected;
 
@@ -219,6 +219,44 @@ TEST_CASE("child traversal") {
         FNS::forest<std::string>::reverse_child_iterator last{child_end(parent)};
         std::string result{to_string(first, last)};
         REQUIRE(result == expected);
+    }
+}
+
+/**************************************************************************************************/
+
+TEST_CASE("find parent") {
+    auto f{big_test_forest()};
+
+    {
+        auto child{std::find_if(f.begin(), f.end(), [](auto& x){ return x == "B"; })};
+        REQUIRE(*child == "B");
+        auto parent{find_parent(child)};
+        REQUIRE(*parent == "A");
+    }
+
+    {
+        auto child{std::find_if(f.begin(), f.end(), [](auto& x){ return x == "J"; })};
+        REQUIRE(*child == "J");
+        auto parent{find_parent(child)};
+        REQUIRE(*parent == "D");
+    }
+}
+
+/**************************************************************************************************/
+
+TEST_CASE("has_children") {
+    auto f{big_test_forest()};
+
+    {
+        auto node{std::find_if(f.begin(), f.end(), [](auto& x){ return x == "B"; })};
+        REQUIRE(*node == "B");
+        REQUIRE(has_children(node));
+    }
+
+    {
+        auto node{std::find_if(f.begin(), f.end(), [](auto& x){ return x == "J"; })};
+        REQUIRE(*node == "J");
+        REQUIRE(!has_children(node));
     }
 }
 

@@ -12,8 +12,8 @@
 
 #include <cassert>
 #include <cstddef>
-#include <iterator>
 #include <functional>
+#include <iterator>
 
 #include <stlab/algorithm/reverse.hpp>
 #include <stlab/iterator/set_next.hpp>
@@ -24,26 +24,22 @@ namespace stlab {
 
 /**************************************************************************************************/
 
-/*
-    NOTE (sparent) : These are the edge index value - trailing as 0 and leading as 1 is done to
-    reflect that it used to be a leading bool value. Changing the order of this enum requires
-    code review as some code relies on the test for leading.
-*/
+enum class forest_edge : bool { trailing, leading };
 
-enum {
-    forest_trailing_edge,
-    forest_leading_edge
-};
+constexpr auto forest_trailing_edge{forest_edge::trailing};
+constexpr auto forest_leading_edge{forest_edge::leading};
 
 /**************************************************************************************************/
 
+inline auto pivot(forest_edge e) { return forest_edge(static_cast<bool>(e) ^ 1); }
+
 template <typename I> // I models FullorderIterator
 inline void pivot(I& i) {
-    i.edge() ^= 1;
+    i.edge() = pivot(i.edge());
 }
 
 template <typename I> // I models FullorderIterator
-inline I pivot_of(I i) {
+inline auto pivot_of(I i) {
     pivot(i);
     return i;
 }
@@ -51,15 +47,27 @@ inline I pivot_of(I i) {
 /**************************************************************************************************/
 
 template <typename I> // I models a FullorderIterator
-inline I leading_of(I i) {
-    i.edge() = forest_leading_edge;
+inline auto leading_of(I i) {
+    i.edge() = forest_edge::leading;
     return i;
 }
 
 template <typename I> // I models a FullorderIterator
-inline I trailing_of(I i) {
-    i.edge() = forest_trailing_edge;
+inline auto trailing_of(I i) {
+    i.edge() = forest_edge::trailing;
     return i;
+}
+
+/**************************************************************************************************/
+
+template <typename I> // I models a FullorderIterator
+inline auto is_leading(I i) {
+    return i.edge() == forest_edge::leading;
+}
+
+template <typename I> // I models a FullorderIterator
+inline auto is_trailing(I i) {
+    return i.edge() == forest_edge::trailing;
 }
 
 /**************************************************************************************************/
@@ -67,9 +75,8 @@ inline I trailing_of(I i) {
 template <typename I> // I models FullorderIterator
 I find_parent(I i) {
     do {
-        i = trailing_of(i);
-        ++i;
-    } while (i.edge() != forest_trailing_edge);
+        i = std::next(trailing_of(i));
+    } while (i.edge() != forest_edge::trailing);
     return i;
 }
 
@@ -83,8 +90,7 @@ bool has_children(const I& i) {
 /**************************************************************************************************/
 
 template <typename I> // I models FullorderIterator
-class child_iterator {
-public:
+struct child_iterator {
     using value_type = typename std::iterator_traits<I>::value_type;
     using difference_type = typename std::iterator_traits<I>::difference_type;
     using reference = typename std::iterator_traits<I>::reference;
@@ -93,23 +99,36 @@ public:
 
     child_iterator() = default;
     explicit child_iterator(I x) : _x(std::move(x)) {}
-    template <typename U> child_iterator(const child_iterator<U>& u) : _x(u.base()) {}
+    template <typename U>
+    child_iterator(const child_iterator<U>& u) : _x(u.base()) {}
 
     I base() const { return _x; }
 
     reference operator*() { return dereference(); }
     pointer operator->() { return &dereference(); }
-    auto& operator++() { increment(); return *this; }
-    auto operator++(int) { auto result{*this}; increment(); return result; }
-    auto& operator--() { decrement(); return *this; }
-    auto operator--(int) { auto result{*this}; decrement(); return result; }
+    auto& operator++() {
+        increment();
+        return *this;
+    }
+    auto operator++(int) {
+        auto result{*this};
+        increment();
+        return result;
+    }
+    auto& operator--() {
+        decrement();
+        return *this;
+    }
+    auto operator--(int) {
+        auto result{*this};
+        decrement();
+        return result;
+    }
 
     friend bool operator==(const child_iterator& a, const child_iterator& b) {
         return a.base() == b.base();
     }
-    friend bool operator!=(const child_iterator& a, const child_iterator& b) {
-        return !(a == b);
-    }
+    friend bool operator!=(const child_iterator& a, const child_iterator& b) { return !(a == b); }
 
 private:
     I _x;
@@ -122,20 +141,21 @@ private:
         --_x;
         pivot(_x);
     }
+
     reference dereference() { return *_x; }
 };
 
 /**************************************************************************************************/
 
 template <typename I> // I models FullorderIterator
-I find_edge(I x, std::size_t edge) {
+I find_edge(I x, forest_edge edge) {
     while (x.edge() != edge)
         ++x;
     return x;
 }
 
 template <typename I> // I models FullorderIterator
-I find_edge_reverse(I x, std::size_t edge) {
+I find_edge_reverse(I x, forest_edge edge) {
     while (x.edge() != edge)
         --x;
     return x;
@@ -143,9 +163,8 @@ I find_edge_reverse(I x, std::size_t edge) {
 
 /**************************************************************************************************/
 
-template <typename I, std::size_t Edge> // I models FullorderIterator
-class edge_iterator {
-public:
+template <typename I, forest_edge Edge> // I models FullorderIterator
+struct edge_iterator {
     using value_type = typename std::iterator_traits<I>::value_type;
     using difference_type = typename std::iterator_traits<I>::difference_type;
     using reference = typename std::iterator_traits<I>::reference;
@@ -154,53 +173,52 @@ public:
 
     edge_iterator() = default;
     explicit edge_iterator(I x) : _x(find_edge(x, Edge)) {}
-    template <typename U> edge_iterator(const edge_iterator<U, Edge>& u) : _x(u.base()) {}
+    template <typename U>
+    edge_iterator(const edge_iterator<U, Edge>& u) : _x(u.base()) {}
 
     I base() const { return _x; }
 
     reference operator*() { return dereference(); }
     pointer operator->() { return &dereference(); }
-    auto& operator++() { increment(); return *this; }
-    auto operator++(int) { auto result{*this}; increment(); return result; }
-    auto& operator--() { decrement(); return *this; }
-    auto operator--(int) { auto result{*this}; decrement(); return result; }
+    auto& operator++() {
+        increment();
+        return *this;
+    }
+    auto operator++(int) {
+        auto result{*this};
+        increment();
+        return result;
+    }
+    auto& operator--() {
+        decrement();
+        return *this;
+    }
+    auto operator--(int) {
+        auto result{*this};
+        decrement();
+        return result;
+    }
 
     friend bool operator==(const edge_iterator& a, const edge_iterator& b) {
         return a.base() == b.base();
     }
-    friend bool operator!=(const edge_iterator& a, const edge_iterator& b) {
-        return !(a == b);
-    }
+    friend bool operator!=(const edge_iterator& a, const edge_iterator& b) { return !(a == b); }
 
 private:
     I _x;
 
-    void increment() {
-        _x = find_edge(std::next(_x), Edge);
-    }
+    void increment() { _x = find_edge(std::next(_x), Edge); }
 
-    void decrement() {
-        _x = find_edge_reverse(std::prev(_x), Edge);
-    }
+    void decrement() { _x = find_edge_reverse(std::prev(_x), Edge); }
 
-    reference dereference() {
-        return *_x;
-    }
+    reference dereference() { return *_x; }
 };
 
 /**************************************************************************************************/
 
-/*
-    I need to establish dereferencable range vs. traversable range.
-
-    Here [f, l) must be a dereferencable range and p() will not be applied outside that range
-    although the iterators may travel beyond that range.
-*/
-
 template <typename I, // I models a Forest
           typename P> // P models UnaryPredicate of value_type(I)
-class filter_fullorder_iterator {
-public:
+struct filter_fullorder_iterator {
     using value_type = typename std::iterator_traits<I>::value_type;
     using difference_type = typename std::iterator_traits<I>::difference_type;
     using reference = typename std::iterator_traits<I>::reference;
@@ -209,23 +227,21 @@ public:
 
     filter_fullorder_iterator() = default;
 
-    filter_fullorder_iterator(I f, I l, P p)
-        : _x(skip_forward(f, l, p)), inside_m(true),
-          first_m(f), last_m(l), predicate_m(p) {}
+    filter_fullorder_iterator(I f, I l, P p) :
+        _x(skip_forward(f, l, p)), _inside(true), _first(f), _last(l), _predicate(p) {}
 
-    filter_fullorder_iterator(I f, I l)
-        : _x(skip_forward(f, l, P())), inside_m(true),
-          first_m(f), last_m(l) {}
+    filter_fullorder_iterator(I f, I l) :
+        _x(skip_forward(f, l, P())), _inside(true), _first(f), _last(l) {}
 
     template <typename U>
-    filter_fullorder_iterator(const filter_fullorder_iterator<U, P>& x)
-        : _x(x.base()), inside_m(x.inside_m),
-          first_m(x.first_m), last_m(x.last_m), predicate_m(x.predicate_m) {}
+    filter_fullorder_iterator(const filter_fullorder_iterator<U, P>& x) :
+        _x(x.base()), _inside(x._inside), _first(x._first), _last(x._last),
+        _predicate(x._predicate) {}
 
-    P predicate() const { return predicate_m; }
+    P predicate() const { return _predicate; }
 
-    std::size_t edge() const { return this->base().edge(); }
-    std::size_t& edge() { return this->base_reference().edge(); }
+    forest_edge edge() const { return this->base().edge(); }
+    forest_edge& edge() { return this->base_reference().edge(); }
 
     bool equal_node(const filter_fullorder_iterator& y) const {
         return this->base().equal_node(y.base());
@@ -235,10 +251,24 @@ public:
 
     reference operator*() { return dereference(); }
     pointer operator->() { return &dereference(); }
-    auto& operator++() { increment(); return *this; }
-    auto operator++(int) { auto result{*this}; increment(); return result; }
-    auto& operator--() { decrement(); return *this; }
-    auto operator--(int) { auto result{*this}; decrement(); return result; }
+    auto& operator++() {
+        increment();
+        return *this;
+    }
+    auto operator++(int) {
+        auto result{*this};
+        increment();
+        return result;
+    }
+    auto& operator--() {
+        decrement();
+        return *this;
+    }
+    auto operator--(int) {
+        auto result{*this};
+        decrement();
+        return result;
+    }
 
     friend bool operator==(const filter_fullorder_iterator& a, const filter_fullorder_iterator& b) {
         return a.base() == b.base();
@@ -248,34 +278,37 @@ public:
     }
 
 private:
+    I _x;
+    bool _inside;
+    I _first;
+    I _last;
+    P _predicate;
+
     void increment() {
         I i = this->base();
 
-        if (i == last_m)
-            inside_m = false;
+        if (i == _last) _inside = false;
         ++i;
-        if (i == first_m)
-            inside_m = true;
-        if (inside_m)
-            i = skip_forward(i, last_m, predicate_m);
+        if (i == _first) _inside = true;
+        if (_inside) i = skip_forward(i, _last, _predicate);
         this->base_reference() = i;
     }
 
     static I skip_forward(I f, I l, P p)
-        // Precondition: l is on a leading edge
+    // Precondition: l is on a leading edge
     {
-        while ((f.edge() == forest_leading_edge) && (f != l) && !p(*f)) {
-            f.edge() = forest_trailing_edge;
+        while ((f.edge() == forest_edge::leading) && (f != l) && !p(*f)) {
+            f.edge() = forest_edge::trailing;
             ++f;
         }
         return f;
     }
 
     static I skip_backward(I f, I l, P p)
-        // Precondition: f is on a trailing edge
+    // Precondition: f is on a trailing edge
     {
-        while ((l.edge() == forest_trailing_edge) && (f != l) && !p(*l)) {
-            l.edge() = forest_leading_edge;
+        while ((l.edge() == forest_edge::trailing) && (f != l) && !p(*l)) {
+            l.edge() = forest_edge::leading;
             --l;
         }
         return l;
@@ -284,44 +317,20 @@ private:
     void decrement() {
         I i = this->base();
 
-        if (i == first_m)
-            inside_m = false;
+        if (i == _first) _inside = false;
         --i;
-        if (i == last_m)
-            inside_m = true;
-        if (inside_m)
-            i = skip_backward(first_m, i, predicate_m);
+        if (i == _last) _inside = true;
+        if (_inside) i = skip_backward(_first, i, _predicate);
         this->base_reference() = i;
     }
 
-    reference dereference() {
-        return *_x;
-    }
-
-    I _x;
-    bool inside_m;
-    I first_m;
-    I last_m;
-    P predicate_m;
+    reference dereference() { return *_x; }
 };
 
 /**************************************************************************************************/
 
-/*
-    REVISIT (sparent) : This is an interesting case - an edge is a property of an iterator but it
-    is determined by examining a vertex in the graph. Here we need to examine the prior vertex
-    to determine the edge. If the range is empty (or we are at the "end" of the range) then this
-    examination is questionable.
-
-    We let it go, because we know the forest structure is an infinite loop through the root. One
-    answer to this would be to construct a reverse iterator which was not "off by one" for forest -
-    but that might break people who assume base() is off by one for a reverse iterator, and it still
-    assumes a root().
-*/
-
 template <typename I> // I models a FullorderIterator
-class reverse_fullorder_iterator {
-public:
+struct reverse_fullorder_iterator {
     typedef I iterator_type;
 
     using value_type = typename std::iterator_traits<I>::value_type;
@@ -330,77 +339,89 @@ public:
     using pointer = typename std::iterator_traits<I>::pointer;
     using iterator_category = typename std::iterator_traits<I>::iterator_category;
 
-    reverse_fullorder_iterator() : edge_m(forest_trailing_edge) {}
-    explicit reverse_fullorder_iterator(I x) : base_m(--x), edge_m(forest_leading_edge - base_m.edge()) {}
+    reverse_fullorder_iterator() : _edge(forest_edge::trailing) {}
+    explicit reverse_fullorder_iterator(I x) : _base(--x), _edge(pivot(_base.edge())) {}
     template <typename U>
-    reverse_fullorder_iterator(const reverse_fullorder_iterator<U>& x)
-        : base_m(--x.base()), edge_m(forest_leading_edge - base_m.edge()) {}
+    reverse_fullorder_iterator(const reverse_fullorder_iterator<U>& x) :
+        _base(--x.base()), _edge(pivot(_base.edge())) {}
 
-    iterator_type base() const { return std::next(base_m); }
+    iterator_type base() const { return std::next(_base); }
 
-    std::size_t edge() const { return edge_m; }
-    std::size_t& edge() { return edge_m; }
+    forest_edge edge() const { return _edge; }
+    forest_edge& edge() { return _edge; }
 
-    bool equal_node(const reverse_fullorder_iterator& y) const {
-        return base_m.equal_node(y.base_m);
-    }
+    bool equal_node(const reverse_fullorder_iterator& y) const { return _base.equal_node(y._base); }
 
     reference operator*() { return dereference(); }
     pointer operator->() { return &dereference(); }
-    auto& operator++() { increment(); return *this; }
-    auto operator++(int) { auto result{*this}; increment(); return result; }
-    auto& operator--() { decrement(); return *this; }
-    auto operator--(int) { auto result{*this}; decrement(); return result; }
-
-    friend bool operator==(const reverse_fullorder_iterator& a, const reverse_fullorder_iterator& b) {
-        return a.base() == b.base();
+    auto& operator++() {
+        increment();
+        return *this;
     }
-    friend bool operator!=(const reverse_fullorder_iterator& a, const reverse_fullorder_iterator& b) {
+    auto operator++(int) {
+        auto result{*this};
+        increment();
+        return result;
+    }
+    auto& operator--() {
+        decrement();
+        return *this;
+    }
+    auto operator--(int) {
+        auto result{*this};
+        decrement();
+        return result;
+    }
+
+    friend bool operator==(const reverse_fullorder_iterator& a,
+                           const reverse_fullorder_iterator& b) {
+        return a.equal(b);
+    }
+    friend bool operator!=(const reverse_fullorder_iterator& a,
+                           const reverse_fullorder_iterator& b) {
         return !(a == b);
     }
 
 private:
+    I _base;
+    forest_edge _edge;
+
     void increment() {
-        base_m.edge() = forest_leading_edge - edge_m;
-        --base_m;
-        edge_m = forest_leading_edge - base_m.edge();
+        _base.edge() = pivot(_edge);
+        --_base;
+        _edge = pivot(_base.edge());
     }
     void decrement() {
-        base_m.edge() = forest_leading_edge - edge_m;
-        ++base_m;
-        edge_m = forest_leading_edge - base_m.edge();
+        _base.edge() = pivot(_edge);
+        ++_base;
+        _edge = pivot(_base.edge());
     }
-    reference dereference() const { return *base_m; }
+    reference dereference() const { return *_base; }
 
     bool equal(const reverse_fullorder_iterator& y) const {
-        return (base_m == y.base_m) && (edge_m == y.edge_m);
+        return (_base == y._base) && (_edge == y._edge);
     }
-
-    I base_m;
-    std::size_t edge_m;
 };
 
 /**************************************************************************************************/
 
 template <typename I> // I models FullorderIterator
-class depth_fullorder_iterator {
-public:
+struct depth_fullorder_iterator {
     using value_type = typename std::iterator_traits<I>::value_type;
     using difference_type = typename std::iterator_traits<I>::difference_type;
     using reference = typename std::iterator_traits<I>::reference;
     using pointer = typename std::iterator_traits<I>::pointer;
     using iterator_category = typename std::iterator_traits<I>::iterator_category;
 
-    depth_fullorder_iterator(difference_type d = 0) : depth_m(d) {}
-    explicit depth_fullorder_iterator(I x, difference_type d = 0)
-        : _x(x), depth_m(d) {}
+    depth_fullorder_iterator(difference_type d = 0) : _depth(d) {}
+    explicit depth_fullorder_iterator(I x, difference_type d = 0) : _x(x), _depth(d) {}
     template <typename U>
-    depth_fullorder_iterator(const depth_fullorder_iterator<U>& x)
-        : _x(x.base()), depth_m(x.depth_m) {}
+    depth_fullorder_iterator(const depth_fullorder_iterator<U>& x) :
+        _x(x.base()), _depth(x._depth) {}
 
-    difference_type depth() const { return depth_m; }
-    std::size_t edge() const { return this->base().edge(); }
-    std::size_t& edge() { return _x.edge(); }
+    difference_type depth() const { return _depth; }
+    forest_edge edge() const { return this->base().edge(); }
+    forest_edge& edge() { return _x.edge(); }
     bool equal_node(depth_fullorder_iterator const& y) const {
         return this->base().equal_node(y.base());
     }
@@ -409,10 +430,24 @@ public:
 
     reference operator*() { return dereference(); }
     pointer operator->() { return &dereference(); }
-    auto& operator++() { increment(); return *this; }
-    auto operator++(int) { auto result{*this}; increment(); return result; }
-    auto& operator--() { decrement(); return *this; }
-    auto operator--(int) { auto result{*this}; decrement(); return result; }
+    auto& operator++() {
+        increment();
+        return *this;
+    }
+    auto operator++(int) {
+        auto result{*this};
+        increment();
+        return result;
+    }
+    auto& operator--() {
+        decrement();
+        return *this;
+    }
+    auto operator--(int) {
+        auto result{*this};
+        decrement();
+        return result;
+    }
 
     friend bool operator==(const depth_fullorder_iterator& a, const depth_fullorder_iterator& b) {
         return a.base() == b.base();
@@ -423,25 +458,23 @@ public:
 
 private:
     I _x;
-    difference_type depth_m;
+    difference_type _depth;
 
     void increment() {
-        std::size_t old_edge(edge());
+        forest_edge old_edge(edge());
         ++_x;
         if (old_edge == edge())
-            depth_m += difference_type(old_edge << 1) - 1;
+            _depth += difference_type(static_cast<std::size_t>(old_edge) << 1) - 1;
     }
 
     void decrement() {
-        std::size_t old_edge(edge());
+        forest_edge old_edge(edge());
         --_x;
         if (old_edge == edge())
-            depth_m -= difference_type(old_edge << 1) - 1;
+            _depth -= difference_type(static_cast<std::size_t>(old_edge) << 1) - 1;
     }
 
-    reference dereference() {
-        return *_x;
-    }
+    reference dereference() { return *_x; }
 };
 
 /**************************************************************************************************/
@@ -453,38 +486,30 @@ class forest;
 
 /**************************************************************************************************/
 
-#if !defined(ADOBE_NO_DOCUMENTATION)
-namespace implementation {
+namespace detail {
+
+/**************************************************************************************************/
 
 template <typename D> // derived class
 struct node_base {
-    enum next_prior_t {
-        prior_s,
-        next_s
-    };
+    enum next_prior_t { prior_s, next_s };
 
     typedef D* node_ptr;
     typedef node_ptr& reference;
 
-    node_ptr& link(std::size_t edge, next_prior_t link) { return nodes_m[edge][std::size_t(link)]; }
-
-    node_ptr link(std::size_t edge, next_prior_t link) const {
-        return nodes_m[edge][std::size_t(link)];
+    node_ptr& link(forest_edge edge, next_prior_t link) {
+        return nodes_m[static_cast<std::size_t>(edge)][static_cast<std::size_t>(link)];
     }
 
-    #if 0
-    node_ptr nodes_m[2][2] = {
-        { static_cast<node_ptr>(this), static_cast<node_ptr>(this) },
-        { static_cast<node_ptr>(this), static_cast<node_ptr>(this) }
-    };
-    #else
+    node_ptr link(forest_edge edge, next_prior_t link) const {
+        return nodes_m[static_cast<std::size_t>(edge)][static_cast<std::size_t>(link)];
+    }
+
     node_ptr nodes_m[2][2];
 
-    node_base() : nodes_m {
-        { static_cast<node_ptr>(this), static_cast<node_ptr>(this) },
-        { static_cast<node_ptr>(this), static_cast<node_ptr>(this) }
-    } { }
-    #endif
+    node_base() :
+        nodes_m{{static_cast<node_ptr>(this), static_cast<node_ptr>(this)},
+                {static_cast<node_ptr>(this), static_cast<node_ptr>(this)}} {}
 };
 
 template <typename T> // T models Regular
@@ -499,112 +524,135 @@ struct node : public node_base<node<T>> {
 /**************************************************************************************************/
 
 template <typename T>
-class forest_const_iterator;
+struct forest_const_iterator;
 
 template <typename T> // T is value_type
-class forest_iterator {
-public:
+struct forest_iterator {
     using value_type = T;
     using difference_type = std::ptrdiff_t;
     using reference = T&;
     using pointer = T*;
     using iterator_category = std::bidirectional_iterator_tag;
 
-    forest_iterator() : node_m(0), edge_m(forest_leading_edge) {}
+    forest_iterator() = default;
 
-    forest_iterator(const forest_iterator& x) : node_m(x.node_m), edge_m(x.edge_m) {}
+    forest_iterator(const forest_iterator& x) : node_m(x.node_m), _edge(x._edge) {}
 
-    std::size_t edge() const { return edge_m; }
-    std::size_t& edge() { return edge_m; }
+    forest_edge edge() const { return _edge; }
+    forest_edge& edge() { return _edge; }
+
     bool equal_node(forest_iterator const& y) const { return node_m == y.node_m; }
 
     reference operator*() const { return dereference(); }
     pointer operator->() const { return &dereference(); }
-    auto& operator++() { increment(); return *this; }
-    auto operator++(int) { auto result{*this}; increment(); return result; }
-    auto& operator--() { decrement(); return *this; }
-    auto operator--(int) { auto result{*this}; decrement(); return result; }
+    auto& operator++() {
+        increment();
+        return *this;
+    }
+    auto operator++(int) {
+        auto result{*this};
+        increment();
+        return result;
+    }
+    auto& operator--() {
+        decrement();
+        return *this;
+    }
+    auto operator--(int) {
+        auto result{*this};
+        decrement();
+        return result;
+    }
 
     friend bool operator==(const forest_iterator& a, const forest_iterator& b) {
         return a.equal(b);
     }
-    friend bool operator!=(const forest_iterator& a, const forest_iterator& b) {
-        return !(a == b);
-    }
+    friend bool operator!=(const forest_iterator& a, const forest_iterator& b) { return !(a == b); }
 
 private:
     friend class stlab::forest<value_type>;
-
     template <typename>
-    friend class forest_iterator;
+    friend struct forest_iterator;
     template <typename>
-    friend class forest_const_iterator;
+    friend struct forest_const_iterator;
     friend struct unsafe::set_next_fn<forest_iterator>;
 
-    typedef node<T> node_t;
+    using node_t = node<T>;
 
     reference dereference() const { return node_m->data_m; }
 
     void increment() {
-        node_t* next(node_m->link(edge_m, node_t::next_s));
+        node_t* next(node_m->link(_edge, node_t::next_s));
 
-        if (edge_m)
-            edge_m = std::size_t(next != node_m);
+        if (static_cast<bool>(_edge))
+            _edge = forest_edge(next != node_m);
         else
-            edge_m = std::size_t(next->link(forest_leading_edge, node_t::prior_s) == node_m);
+            _edge = forest_edge(next->link(forest_edge::leading, node_t::prior_s) == node_m);
 
         node_m = next;
     }
 
     void decrement() {
-        node_t* next(node_m->link(edge_m, node_t::prior_s));
+        node_t* next(node_m->link(_edge, node_t::prior_s));
 
-        if (edge_m)
-            edge_m = std::size_t(next->link(forest_trailing_edge, node_t::next_s) != node_m);
+        if (static_cast<bool>(_edge))
+            _edge = forest_edge(next->link(forest_edge::trailing, node_t::next_s) != node_m);
         else
-            edge_m = std::size_t(next == node_m);
+            _edge = forest_edge(next == node_m);
 
         node_m = next;
     }
 
     bool equal(const forest_iterator& y) const {
-        return (node_m == y.node_m) && (edge_m == y.edge_m);
+        return (node_m == y.node_m) && (_edge == y._edge);
     }
 
-    node_t* node_m;
-    std::size_t edge_m;
+    node_t* node_m{nullptr};
+    forest_edge _edge{forest_edge::leading};
 
-    forest_iterator(node_t* node, std::size_t edge) : node_m(node), edge_m(edge) {}
+    forest_iterator(node_t* node, forest_edge edge) : node_m(node), _edge(edge) {}
 };
-
 
 /**************************************************************************************************/
 
 template <typename T> // T is value_type
-class forest_const_iterator {
-public:
+struct forest_const_iterator {
     using value_type = const T;
     using difference_type = std::ptrdiff_t;
     using reference = const T&;
     using pointer = const T*;
     using iterator_category = std::bidirectional_iterator_tag;
 
-    forest_const_iterator() : node_m(0), edge_m(forest_leading_edge) {}
+    forest_const_iterator() = default;
 
-    forest_const_iterator(const forest_const_iterator& x) : node_m(x.node_m), edge_m(x.edge_m) {}
+    forest_const_iterator(const forest_const_iterator& x) : node_m(x.node_m), _edge(x._edge) {}
 
-    forest_const_iterator(const forest_iterator<T>& x) : node_m(x.node_m), edge_m(x.edge_m) {}
+    forest_const_iterator(const forest_iterator<T>& x) : node_m(x.node_m), _edge(x._edge) {}
 
-    std::size_t edge() const { return edge_m; }
-    std::size_t& edge() { return edge_m; }
+    forest_edge edge() const { return _edge; }
+    forest_edge& edge() { return _edge; }
     bool equal_node(forest_const_iterator const& y) const { return node_m == y.node_m; }
 
     reference operator*() const { return dereference(); }
     pointer operator->() const { return &dereference(); }
-    auto& operator++() { increment(); return *this; }
-    auto operator++(int) { auto result{*this}; increment(); return result; }
-    auto& operator--() { decrement(); return *this; }
-    auto operator--(int) { auto result{*this}; decrement(); return result; }
+    auto& operator++() {
+        increment();
+        return *this;
+    }
+    auto operator++(int) {
+        auto result{*this};
+        increment();
+        return result;
+    }
+    auto& operator--() {
+        decrement();
+        return *this;
+    }
+    auto operator--(int) {
+        auto result{*this};
+        decrement();
+        return result;
+    }
 
     friend bool operator==(const forest_const_iterator& a, const forest_const_iterator& b) {
         return a.equal(b);
@@ -614,8 +662,10 @@ public:
     }
 
 private:
-    template <typename> friend class stlab::forest;
-    template <typename> friend class forest_const_iterator;
+    template <typename>
+    friend class stlab::forest;
+    template <typename>
+    friend struct forest_const_iterator;
     friend struct unsafe::set_next_fn<forest_const_iterator>;
 
     using node_t = const node<T>;
@@ -623,56 +673,58 @@ private:
     reference dereference() const { return node_m->data_m; }
 
     void increment() {
-        node_t* next(node_m->link(edge_m, node_t::next_s));
+        node_t* next(node_m->link(_edge, node_t::next_s));
 
-        if (edge_m)
-            edge_m = std::size_t(next != node_m);
+        if (static_cast<bool>(_edge))
+            _edge = forest_edge(next != node_m);
         else
-            edge_m = std::size_t(next->link(forest_leading_edge, node_t::prior_s) == node_m);
+            _edge = forest_edge(next->link(forest_edge::leading, node_t::prior_s) == node_m);
 
         node_m = next;
     }
 
     void decrement() {
-        node_t* next(node_m->link(edge_m, node_t::prior_s));
+        node_t* next(node_m->link(_edge, node_t::prior_s));
 
-        if (edge_m)
-            edge_m = std::size_t(next->link(forest_trailing_edge, node_t::next_s) != node_m);
+        if (static_cast<bool>(_edge))
+            _edge = forest_edge(next->link(forest_edge::trailing, node_t::next_s) != node_m);
         else
-            edge_m = std::size_t(next == node_m);
+            _edge = forest_edge(next == node_m);
 
         node_m = next;
     }
 
     bool equal(const forest_const_iterator& y) const {
-        return (node_m == y.node_m) && (edge_m == y.edge_m);
+        return (node_m == y.node_m) && (_edge == y._edge);
     }
 
-    node_t* node_m;
-    std::size_t edge_m;
+    node_t* node_m{nullptr};
+    forest_edge _edge{forest_edge::leading};
 
-    forest_const_iterator(node_t* node, std::size_t edge) : node_m(node), edge_m(edge) {}
+    forest_const_iterator(node_t* node, forest_edge edge) : node_m(node), _edge(edge) {}
 };
 
 /**************************************************************************************************/
 
-} // namespace implementation
-#endif
+} // namespace detail
 
 /**************************************************************************************************/
 
 namespace unsafe {
 
+/**************************************************************************************************/
+
 template <typename T> // T is node<T>
-struct set_next_fn<implementation::forest_iterator<T>> {
-    void operator()(implementation::forest_iterator<T> x,
-                    implementation::forest_iterator<T> y) const {
-        typedef typename implementation::node<T> node_t;
+struct set_next_fn<detail::forest_iterator<T>> {
+    void operator()(detail::forest_iterator<T> x, detail::forest_iterator<T> y) const {
+        using node_t = typename detail::node<T>;
 
         x.node_m->link(x.edge(), node_t::next_s) = y.node_m;
         y.node_m->link(y.edge(), node_t::prior_s) = x.node_m;
     }
 };
+
+/**************************************************************************************************/
 
 } // namespace unsafe
 
@@ -681,15 +733,15 @@ struct set_next_fn<implementation::forest_iterator<T>> {
 template <typename T>
 class forest {
 private:
-    typedef implementation::node<T> node_t;
+    typedef detail::node<T> node_t;
     friend class child_adaptor<forest<T>>;
 
 public:
     // types
     typedef T& reference;
     typedef const T& const_reference;
-    typedef implementation::forest_iterator<T> iterator;
-    typedef implementation::forest_const_iterator<T> const_iterator;
+    typedef detail::forest_iterator<T> iterator;
+    typedef detail::forest_const_iterator<T> const_iterator;
     typedef std::size_t size_type;
     typedef std::ptrdiff_t difference_type;
     typedef T value_type;
@@ -705,12 +757,11 @@ public:
     typedef stlab::child_iterator<const_iterator> const_child_iterator;
     typedef std::reverse_iterator<child_iterator> reverse_child_iterator;
 
-    typedef edge_iterator<iterator, forest_leading_edge> preorder_iterator;
-    typedef edge_iterator<const_iterator, forest_leading_edge> const_preorder_iterator;
-    typedef edge_iterator<iterator, forest_trailing_edge> postorder_iterator;
-    typedef edge_iterator<const_iterator, forest_trailing_edge> const_postorder_iterator;
+    typedef edge_iterator<iterator, forest_edge::leading> preorder_iterator;
+    typedef edge_iterator<const_iterator, forest_edge::leading> const_preorder_iterator;
+    typedef edge_iterator<iterator, forest_edge::trailing> postorder_iterator;
+    typedef edge_iterator<const_iterator, forest_edge::trailing> const_postorder_iterator;
 
-#if !defined(ADOBE_NO_DOCUMENTATION)
     forest() = default;
     ~forest() { clear(); }
 
@@ -728,7 +779,6 @@ public:
     }
 
     void swap(forest&);
-#endif
 
     size_type size() const;
     size_type max_size() const { return size_type(-1); }
@@ -736,13 +786,13 @@ public:
     bool empty() const { return begin() == end(); } // Don't test size which may be expensive
 
     // iterators
-    iterator root() { return iterator(tail(), forest_leading_edge); }
-    const_iterator root() const { return const_iterator(tail(), forest_leading_edge); }
+    iterator root() { return iterator(tail(), forest_edge::leading); }
+    const_iterator root() const { return const_iterator(tail(), forest_edge::leading); }
 
     iterator begin() { return ++root(); }
-    iterator end() { return iterator(tail(), forest_trailing_edge); }
+    iterator end() { return iterator(tail(), forest_edge::trailing); }
     const_iterator begin() const { return ++root(); }
-    const_iterator end() const { return const_iterator(tail(), forest_trailing_edge); }
+    const_iterator end() const { return const_iterator(tail(), forest_edge::trailing); }
 
     reverse_iterator rbegin() { return reverse_iterator(end()); }
     reverse_iterator rend() { return reverse_iterator(begin()); }
@@ -776,10 +826,9 @@ public:
     iterator erase(const iterator& first, const iterator& last);
 
     iterator insert(const iterator& position, T x) {
-        iterator result(new node_t(std::move(x)), true);
+        iterator result(new node_t(std::move(x)), forest_edge::leading);
 
-        if (size_valid())
-            ++size_m;
+        if (size_valid()) ++size_m;
 
         unsafe::set_next(std::prev(position), result);
         unsafe::set_next(std::next(result), position);
@@ -803,46 +852,41 @@ public:
     iterator splice(iterator position, forest<T>& x);
     iterator splice(iterator position, forest<T>& x, iterator i);
     iterator splice(iterator position, forest<T>& x, child_iterator first, child_iterator last);
-    iterator splice(iterator position, forest<T>& x, child_iterator first, child_iterator last,
+    iterator splice(iterator position,
+                    forest<T>& x,
+                    child_iterator first,
+                    child_iterator last,
                     size_type count);
 
     iterator insert_parent(child_iterator front, child_iterator back, const T& x);
     void reverse(child_iterator first, child_iterator last);
 
 private:
-#if !defined(ADOBE_NO_DOCUMENTATION)
-
-    friend class implementation::forest_iterator<value_type>;
-    friend class implementation::forest_const_iterator<value_type>;
+    friend struct detail::forest_iterator<value_type>;
+    friend struct detail::forest_const_iterator<value_type>;
     friend struct unsafe::set_next_fn<iterator>;
 
-    mutable size_type size_m = 0;
-    implementation::node_base<node_t> tail_m;
+    mutable size_type size_m{0};
+    detail::node_base<node_t> tail_m;
 
     node_t* tail() { return static_cast<node_t*>(&tail_m); }
     const node_t* tail() const { return static_cast<const node_t*>(&tail_m); }
-#endif
 };
 
 /**************************************************************************************************/
 
 template <typename T>
 bool operator==(const forest<T>& x, const forest<T>& y) {
-    if (x.size() != y.size())
-        return false;
+    if (x.size() != y.size()) return false;
 
     for (typename forest<T>::const_iterator first(x.begin()), last(x.end()), pos(y.begin());
          first != last; ++first, ++pos) {
-        if (first.edge() != pos.edge())
-            return false;
-        if (first.edge() && (*first != *pos))
-            return false;
+        if (first.edge() != pos.edge()) return false;
+        if (first.edge() && (*first != *pos)) return false;
     }
 
     return true;
 }
-
-/**************************************************************************************************/
 
 template <typename T>
 bool operator!=(const forest<T>& x, const forest<T>& y) {
@@ -853,6 +897,8 @@ bool operator!=(const forest<T>& x, const forest<T>& y) {
 
 namespace unsafe {
 
+/**************************************************************************************************/
+
 template <typename I> // I models a FullorderIterator
 struct set_next_fn<child_iterator<I>> {
     void operator()(child_iterator<I> x, child_iterator<I> y) {
@@ -860,25 +906,21 @@ struct set_next_fn<child_iterator<I>> {
     }
 };
 
+/**************************************************************************************************/
+
 } // namespace unsafe
 
 /**************************************************************************************************/
 
-#if !defined(ADOBE_NO_DOCUMENTATION)
-
-/**************************************************************************************************/
-
 template <typename T>
-forest<T>::forest(const forest& x)
-    : forest() {
+forest<T>::forest(const forest& x) : forest() {
     insert(end(), const_child_iterator(x.begin()), const_child_iterator(x.end()));
 }
 
 /**************************************************************************************************/
 
 template <typename T>
-forest<T>::forest(forest&& x) noexcept
-    : forest() {
+forest<T>::forest(forest&& x) noexcept : forest() {
     splice(end(), x);
 }
 
@@ -888,8 +930,6 @@ template <typename T>
 void forest<T>::swap(forest& x) {
     std::swap(*this, x);
 }
-
-#endif
 
 /**************************************************************************************************/
 
@@ -913,7 +953,7 @@ typename forest<T>::iterator forest<T>::erase(const iterator& first, const itera
     iterator position(first);
 
     while (position != last) {
-        if (position.edge() == forest_leading_edge) {
+        if (position.edge() == forest_edge::leading) {
             ++stack_depth;
             ++position;
         } else {
@@ -933,12 +973,11 @@ template <typename T>
 typename forest<T>::iterator forest<T>::erase(const iterator& position) {
     /*
         NOTE (sparent) : After the first call to set_next() the invariants of the forest are
-        violated and we can't determing leading/trailing if we navigate from the effected node.
+        violated and we can't determing leading/trailing if we navigate from the affected node.
         So we gather all the iterators up front then do the set_next calls.
     */
 
-    if (size_valid())
-        --size_m;
+    if (size_valid()) --size_m;
 
     iterator leading_prior(std::prev(leading_of(position)));
     iterator leading_next(std::next(leading_of(position)));
@@ -954,7 +993,7 @@ typename forest<T>::iterator forest<T>::erase(const iterator& position) {
 
     delete position.node_m;
 
-    return position.edge() ? std::next(leading_prior) : trailing_next;
+    return is_leading(position) ? std::next(leading_prior) : trailing_next;
 }
 
 /**************************************************************************************************/
@@ -969,18 +1008,18 @@ typename forest<T>::iterator forest<T>::splice(iterator position, forest<T>& x) 
 
 template <typename T>
 typename forest<T>::iterator forest<T>::splice(iterator position, forest<T>& x, iterator i) {
-    i.edge() = forest_leading_edge;
+    i.edge() = forest_edge::leading;
     return splice(position, x, child_iterator(i), ++child_iterator(i), has_children(i) ? 0 : 1);
 }
 
 /**************************************************************************************************/
 
 template <typename T>
-typename forest<T>::iterator forest<T>::insert(iterator pos, const_child_iterator f,
+typename forest<T>::iterator forest<T>::insert(iterator pos,
+                                               const_child_iterator f,
                                                const_child_iterator l) {
     for (const_iterator first(f.base()), last(l.base()); first != last; ++first, ++pos) {
-        if (first.edge())
-            pos = insert(pos, *first);
+        if (first.edge()) pos = insert(pos, *first);
     }
 
     return pos;
@@ -989,17 +1028,14 @@ typename forest<T>::iterator forest<T>::insert(iterator pos, const_child_iterato
 /**************************************************************************************************/
 
 template <typename T>
-typename forest<T>::iterator forest<T>::splice(iterator pos, forest<T>& x, child_iterator first,
-                                               child_iterator last, size_type count) {
-    if (first == last || first.base() == pos)
-        return pos;
+typename forest<T>::iterator forest<T>::splice(
+    iterator pos, forest<T>& x, child_iterator first, child_iterator last, size_type count) {
+    if (first == last || first.base() == pos) return pos;
 
     if (&x != this) {
         if (count) {
-            if (size_valid())
-                size_m += count;
-            if (x.size_valid())
-                x.size_m -= count;
+            if (size_valid()) size_m += count;
+            if (x.size_valid()) x.size_m -= count;
         } else {
             size_m = 0;
             x.size_m = 0;
@@ -1019,19 +1055,21 @@ typename forest<T>::iterator forest<T>::splice(iterator pos, forest<T>& x, child
 /**************************************************************************************************/
 
 template <typename T>
-inline typename forest<T>::iterator forest<T>::splice(iterator pos, forest<T>& x,
-                                                      child_iterator first, child_iterator last) {
+inline typename forest<T>::iterator forest<T>::splice(iterator pos,
+                                                      forest<T>& x,
+                                                      child_iterator first,
+                                                      child_iterator last) {
     return splice(pos, x, first, last, 0);
 }
 
 /**************************************************************************************************/
 
 template <typename T>
-typename forest<T>::iterator forest<T>::insert_parent(child_iterator first, child_iterator last,
+typename forest<T>::iterator forest<T>::insert_parent(child_iterator first,
+                                                      child_iterator last,
                                                       const T& x) {
     iterator result(insert(last.base(), x));
-    if (first == last)
-        return result;
+    if (first == last) return result;
     splice(trailing_of(result), *this, first, child_iterator(result));
     return result;
 }
@@ -1106,7 +1144,7 @@ struct forest_range {
 
 template <typename I> // I models FullorderIterator
 inline auto child_range(const I& x) {
-    return forest_range<child_iterator<I>>{ child_begin(x), child_end(x) };
+    return forest_range<child_iterator<I>>{child_begin(x), child_end(x)};
 }
 
 /**************************************************************************************************/
@@ -1115,14 +1153,16 @@ template <typename R, typename P> // R models FullorderRange
 inline auto filter_fullorder_range(R& x, P p) {
     typedef filter_fullorder_iterator<typename R::iterator, P> iterator;
 
-    return forest_range<iterator>{ iterator(std::begin(x), std::end(x), p), iterator(std::end(x), std::end(x), p) };
+    return forest_range<iterator>{iterator(std::begin(x), std::end(x), p),
+                                  iterator(std::end(x), std::end(x), p)};
 }
 
 template <typename R, typename P> // R models FullorderRange
 inline auto filter_fullorder_range(const R& x, P p) {
     typedef filter_fullorder_iterator<typename R::const_iterator, P> iterator;
 
-    return forest_range<iterator>{ iterator(std::begin(x), std::end(x), p), iterator(std::end(x), std::end(x), p) };
+    return forest_range<iterator>{iterator(std::begin(x), std::end(x), p),
+                                  iterator(std::end(x), std::end(x), p)};
 }
 
 /**************************************************************************************************/
@@ -1131,16 +1171,15 @@ template <typename R> // R models FullorderRange
 inline auto reverse_fullorder_range(R& x) {
     typedef reverse_fullorder_iterator<typename R::iterator> iterator;
 
-    return forest_range<iterator>{ iterator(std::end(x)), iterator(std::begin(x)) };
+    return forest_range<iterator>{iterator(std::end(x)), iterator(std::begin(x))};
 }
 
 template <typename R> // R models FullorderRange
 inline auto reverse_fullorder_range(const R& x) {
     typedef reverse_fullorder_iterator<typename R::const_iterator> iterator;
 
-    return forest_range<iterator>{ iterator(std::end(x)), iterator(std::begin(x)) };
+    return forest_range<iterator>{iterator(std::end(x)), iterator(std::begin(x))};
 }
-
 
 /**************************************************************************************************/
 
@@ -1148,46 +1187,46 @@ template <typename R> // R models FullorderRange
 inline auto depth_range(R& x) {
     typedef depth_fullorder_iterator<typename R::iterator> iterator;
 
-    return forest_range<iterator>{ iterator(std::begin(x)), iterator(std::end(x)) };
+    return forest_range<iterator>{iterator(std::begin(x)), iterator(std::end(x))};
 }
 
 template <typename R> // R models FullorderRange
 inline auto depth_range(const R& x) {
     typedef depth_fullorder_iterator<typename R::const_iterator> iterator;
 
-    return forest_range<iterator>{ iterator(std::begin(x)), iterator(std::end(x)) };
+    return forest_range<iterator>{iterator(std::begin(x)), iterator(std::end(x))};
 }
 
 /**************************************************************************************************/
 
 template <typename R> // R models FullorderRange
 inline auto postorder_range(R& x) {
-    typedef edge_iterator<typename R::iterator, forest_trailing_edge> iterator;
+    typedef edge_iterator<typename R::iterator, forest_edge::trailing> iterator;
 
-    return forest_range<iterator>{ iterator(std::begin(x)), iterator(std::end(x)) };
+    return forest_range<iterator>{iterator(std::begin(x)), iterator(std::end(x))};
 }
 
 template <typename R> // R models FullorderRange
 inline auto postorder_range(const R& x) {
-    typedef edge_iterator<typename R::const_iterator, forest_trailing_edge> iterator;
+    typedef edge_iterator<typename R::const_iterator, forest_edge::trailing> iterator;
 
-    return forest_range<iterator>{ iterator(std::begin(x)), iterator(std::end(x)) };
+    return forest_range<iterator>{iterator(std::begin(x)), iterator(std::end(x))};
 }
 
 /**************************************************************************************************/
 
 template <typename R> // R models FullorderRange
 inline auto preorder_range(R& x) {
-    using iterator = edge_iterator<typename R::iterator, forest_leading_edge>;
+    using iterator = edge_iterator<typename R::iterator, forest_edge::leading>;
 
-    return forest_range<iterator>{ iterator(std::begin(x)), iterator(std::end(x)) };
+    return forest_range<iterator>{iterator(std::begin(x)), iterator(std::end(x))};
 }
 
 template <typename R> // R models FullorderRange
 inline auto preorder_range(const R& x) {
-    using iterator = edge_iterator<typename R::const_iterator, forest_leading_edge>;
+    using iterator = edge_iterator<typename R::const_iterator, forest_edge::leading>;
 
-    return forest_range<iterator>{ iterator(std::begin(x)), iterator(std::end(x)) };
+    return forest_range<iterator>{iterator(std::begin(x)), iterator(std::end(x))};
 }
 
 /**************************************************************************************************/
