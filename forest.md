@@ -441,7 +441,7 @@ A preorder traversal of the forest will visit every node once. During preorder t
 
 <img class='svg-img' src='{{site.baseurl}}/svg/preorder.svg'/>
 
-### Implementation
+#### Implementation
 
 A C++ implementation of preorder traversal may look like this:
 
@@ -479,7 +479,7 @@ A postorder traversal of the forest will visit every node once. During postorder
 
 <img class='svg-img' src='{{site.baseurl}}/svg/postorder.svg'/>
 
-### Implementation
+#### Implementation
 
 A C++ implementation of postorder traversal may look like this:
 
@@ -519,7 +519,7 @@ A child traversal of a node P traverses only its immediate children; P itself is
 
 <img class='svg-img' src='{{site.baseurl}}/svg/child_iteration.svg'/>
 
-### Implementation
+#### Implementation
 
 A C++ implementation of child traversal may look like this. Note that the iterator passed points to the parent whose children we are going to traverse:
 
@@ -539,7 +539,7 @@ void child_traversal(ForestIterator i, F&& f) {
 A better solution would be to use the `child_range` utility already provided by `adobe::forest<T>`:
 
 ```c++
-for (const auto& i : child_range(my_forest_iterator) {
+for (const auto& i : child_range(my_forest_iterator)) {
     // each child of the node at my_forest_iterator will be visited once
 }
 
@@ -548,7 +548,7 @@ for (const auto& i : child_range(my_forest_iterator) {
 To iterate just the top-level nodes in the forest, use `adobe::forest<T>::root()` to get an iterator to the root node:
 
 ```c++
-for (const auto& i : child_range(my_forest.root()) {
+for (const auto& i : child_range(my_forest.root())) {
     // each top-level node will be visited once
 }
 
