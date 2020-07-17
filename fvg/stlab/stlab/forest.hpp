@@ -334,7 +334,7 @@ public:
     explicit reverse_fullorder_iterator(I x) : base_m(--x), edge_m(forest_leading_edge - base_m.edge()) {}
     template <typename U>
     reverse_fullorder_iterator(const reverse_fullorder_iterator<U>& x)
-        : base_m(x.base()), edge_m(x.edge_m) {}
+        : base_m(--x.base()), edge_m(forest_leading_edge - base_m.edge()) {}
 
     iterator_type base() const { return std::next(base_m); }
 
@@ -518,8 +518,8 @@ public:
     std::size_t& edge() { return edge_m; }
     bool equal_node(forest_iterator const& y) const { return node_m == y.node_m; }
 
-    reference operator*() { return dereference(); }
-    pointer operator->() { return &dereference(); }
+    reference operator*() const { return dereference(); }
+    pointer operator->() const { return &dereference(); }
     auto& operator++() { increment(); return *this; }
     auto operator++(int) { auto result{*this}; increment(); return result; }
     auto& operator--() { decrement(); return *this; }
@@ -599,8 +599,8 @@ public:
     std::size_t& edge() { return edge_m; }
     bool equal_node(forest_const_iterator const& y) const { return node_m == y.node_m; }
 
-    reference operator*() { return dereference(); }
-    pointer operator->() { return &dereference(); }
+    reference operator*() const { return dereference(); }
+    pointer operator->() const { return &dereference(); }
     auto& operator++() { increment(); return *this; }
     auto operator++(int) { auto result{*this}; increment(); return result; }
     auto& operator--() { decrement(); return *this; }
@@ -1105,46 +1105,21 @@ struct forest_range {
 /**************************************************************************************************/
 
 template <typename I> // I models FullorderIterator
-auto child_range(const I& x) {
+inline auto child_range(const I& x) {
     return forest_range{ child_begin(x), child_end(x) };
 }
 
 /**************************************************************************************************/
 
-/*
-    NOTE (fbrereto) : The Doxygen documentation is inline for the functions below because their
-                      signatures are particularly prone to translation error.
-*/
-
-/*!
-\relates adobe::forest
-
-\param x the FullorderRange to which the filter will be applied
-\param p the predicate to be applied to the FullorderIterator
-
-\return
-    A filtered FullorderRange
-*/
-
 template <typename R, typename P> // R models FullorderRange
-auto filter_fullorder_range(R& x, P p) {
+inline auto filter_fullorder_range(R& x, P p) {
     typedef filter_fullorder_iterator<typename R::iterator, P> iterator;
 
     return forest_range<iterator>{ iterator(std::begin(x), std::end(x), p), iterator(std::end(x), std::end(x), p) };
 }
 
-/*!
-\relates adobe::forest
-
-\param x the const FullorderRange to which the filter will be applied
-\param p the predicate to be applied to value_type(R)
-
-\return
-    A filtered FullorderRange
-*/
-
 template <typename R, typename P> // R models FullorderRange
-auto filter_fullorder_range(const R& x, P p) {
+inline auto filter_fullorder_range(const R& x, P p) {
     typedef filter_fullorder_iterator<typename R::const_iterator, P> iterator;
 
     return forest_range<iterator>{ iterator(std::begin(x), std::end(x), p), iterator(std::end(x), std::end(x), p) };
@@ -1152,44 +1127,15 @@ auto filter_fullorder_range(const R& x, P p) {
 
 /**************************************************************************************************/
 
-/*
-    REVISIT (sparent) : There should be some way to generalize this into a make_range - which is
-    specialized.
-
-    One option -
-
-    reverse_range(R& x)
-
-    Hmmm - maybe reverse_fullorder_iterator should be a specialization of std::reverse_iterator?
-*/
-
-/*!
-\relates adobe::forest
-
-\param x the FullorderRange which will be reversed
-
-\return
-    A reverse FullorderRange
-*/
-
 template <typename R> // R models FullorderRange
-auto reverse_fullorder_range(R& x) {
+inline auto reverse_fullorder_range(R& x) {
     typedef reverse_fullorder_iterator<typename R::iterator> iterator;
 
     return forest_range<iterator>{ iterator(std::end(x)), iterator(std::begin(x)) };
 }
 
-/*!
-\relates adobe::forest
-
-\param x the const FullorderRange which will be reversed
-
-\return
-    A const reverse FullorderRange
-*/
-
 template <typename R> // R models FullorderRange
-auto reverse_fullorder_range(const R& x) {
+inline auto reverse_fullorder_range(const R& x) {
     typedef reverse_fullorder_iterator<typename R::const_iterator> iterator;
 
     return forest_range<iterator>{ iterator(std::end(x)), iterator(std::begin(x)) };
@@ -1198,30 +1144,12 @@ auto reverse_fullorder_range(const R& x) {
 
 /**************************************************************************************************/
 
-/*!
-\relates adobe::forest
-
-\param x the FullorderRange which will be made into a depth FullorderRange
-
-\return
-    A depth FullorderRange
-*/
-
 template <typename R> // R models FullorderRange
 inline auto depth_range(R& x) {
     typedef depth_fullorder_iterator<typename R::iterator> iterator;
 
     return forest_range<iterator>{ iterator(std::begin(x)), iterator(std::end(x)) };
 }
-
-/*!
-\relates adobe::forest
-
-\param x the const FullorderRange which will be made into a const depth FullorderRange
-
-\return
-    A const depth FullorderRange
-*/
 
 template <typename R> // R models FullorderRange
 inline auto depth_range(const R& x) {
@@ -1232,30 +1160,12 @@ inline auto depth_range(const R& x) {
 
 /**************************************************************************************************/
 
-/*!
-\relates adobe::forest
-
-\param x the FullorderRange which will be made into a postorder range
-
-\return
-    A postorder range
-*/
-
 template <typename R> // R models FullorderRange
 inline auto postorder_range(R& x) {
     typedef edge_iterator<typename R::iterator, forest_trailing_edge> iterator;
 
     return forest_range<iterator>{ iterator(std::begin(x)), iterator(std::end(x)) };
 }
-
-/*!
-\relates adobe::forest
-
-\param x the const FullorderRange which will be made into a const postorder range
-
-\return
-    A const postorder range
-*/
 
 template <typename R> // R models FullorderRange
 inline auto postorder_range(const R& x) {
@@ -1266,30 +1176,12 @@ inline auto postorder_range(const R& x) {
 
 /**************************************************************************************************/
 
-/*!
-\relates adobe::forest
-
-\param x the FullorderRange which will be made into a preorder range
-
-\return
-    A preorder range
-*/
-
 template <typename R> // R models FullorderRange
 inline auto preorder_range(R& x) {
     using iterator = edge_iterator<typename R::iterator, forest_leading_edge>;
 
     return forest_range<iterator>{ iterator(std::begin(x)), iterator(std::end(x)) };
 }
-
-/*!
-\relates adobe::forest
-
-\param x the const FullorderRange which will be made into a const preorder range
-
-\return
-    A const preorder range
-*/
 
 template <typename R> // R models FullorderRange
 inline auto preorder_range(const R& x) {

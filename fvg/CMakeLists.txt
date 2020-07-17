@@ -52,5 +52,7 @@ set_target_properties(fvg PROPERTIES XCODE_ATTRIBUTE_CLANG_CXX_LIBRARY libc++)
 
 file(GLOB FOREST_TEST_SRC ${CMAKE_CURRENT_SOURCE_DIR}/forest_test/*.cpp)
 
+include_directories(forest_test AFTER ${CMAKE_CURRENT_SOURCE_DIR}/forest_test/)
+
 add_executable(forest_test ${FOREST_TEST_SRC})
 

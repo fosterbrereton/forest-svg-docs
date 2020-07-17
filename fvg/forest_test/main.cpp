@@ -5,6 +5,9 @@
 
 #define FORESTVG_USING_STLAB_FOREST() 1
 
+#define CATCH_CONFIG_MAIN
+#include "catch/catch.hpp"
+
 // application
 #include "../headers/forest_algorithms.hpp"
 #include "../headers/forest_fwd.hpp"
@@ -15,25 +18,28 @@ using namespace FNS; // either adobe or stlab, depending.
 
 /**************************************************************************************************/
 
-auto test_empty() {
+TEST_CASE("empty forest") {
     forest<int> f;
-
-    assert(f.empty());
-    assert(f.begin() == f.end());
+    REQUIRE(f.empty());
+    REQUIRE(f.size() == 0);
+    REQUIRE(f.begin() == f.end());
 }
 
 /**************************************************************************************************/
 
-auto test_one_node() {
+SCENARIO("single node forest") {
     forest<int> f;
 
     auto il = f.insert(f.end(), 42);
-    assert(il.edge() == FNS::forest_leading_edge);
-    assert(!f.empty());
+    REQUIRE(il.edge() == FNS::forest_leading_edge);
+    REQUIRE(!f.empty());
+
+    REQUIRE(f.begin() != f.end());
+    REQUIRE(f.size() == 1);
 
     auto it = trailing_of(il);
-    assert(it.edge() == FNS::forest_trailing_edge);
-    assert(*it == *il);
+    REQUIRE(it.edge() == FNS::forest_trailing_edge);
+    REQUIRE(*it == *il);
 }
 
 /**************************************************************************************************/
@@ -57,24 +63,21 @@ auto big_test_forest() {
     f.insert(d_iter, "J");
     f.insert(d_iter, "K");
 
-    assert(f.size() == 11);
+    REQUIRE(f.size() == 11);
 
-    assert(has_children(a_iter));
-    assert(has_children(b_iter));
-    assert(has_children(c_iter));
-    assert(has_children(d_iter));
-    assert(!has_children(e_iter));
+    REQUIRE(has_children(a_iter));
+    REQUIRE(has_children(b_iter));
+    REQUIRE(has_children(c_iter));
+    REQUIRE(has_children(d_iter));
+    REQUIRE(!has_children(e_iter));
 
     return f;
 }
 
 /**************************************************************************************************/
 
-void test_fullorder_traversal() {
-    const auto f{big_test_forest()};
-    auto first{f.begin()};
-    auto last{f.end()};
-    std::string expected{"ABCFFGGHHCDIIJJKKDEEBA"};
+template <typename Iterator>
+void test_fullorder_traversal(Iterator first, Iterator last, std::string expected) {
     std::string result;
 
     while (first != last) {
@@ -82,101 +85,149 @@ void test_fullorder_traversal() {
         ++first;
     }
 
-    assert(result == expected);
+    REQUIRE(result == expected);
 }
 
 /**************************************************************************************************/
 
-void test_preorder_traversal() {
+template <typename Iterator, std::size_t Edge, typename Forest>
+auto test_edge_traversal(Forest& f, Iterator fi, Iterator li) {
+    std::string expected;
+
+    {
+        Iterator first{fi};
+        Iterator last{li};
+        while (first != last) {
+            if (first.edge() == Edge)
+                expected += *first;
+            ++first;
+        }
+        REQUIRE(expected.size() == f.size());
+    }
+
+    {
+        edge_iterator<Iterator, Edge> first(fi);
+        edge_iterator<Iterator, Edge> last(li);
+        std::string result;
+        while (first != last) {
+            result += *first;
+            ++first;
+        }
+        REQUIRE(result == expected);
+    }
+
+    return expected;
+}
+
+/**************************************************************************************************/
+
+template <std::size_t Edge, typename Forest>
+auto test_range_traversal(Forest& f, const std::string& expected) {
+    if constexpr (Edge == FNS::forest_leading_edge) {
+        std::string result;
+        for (const auto& x : preorder_range(f)) {
+            result += x;
+        }
+        REQUIRE(result == expected);
+    } else if constexpr (Edge == FNS::forest_trailing_edge) {
+        std::string result;
+        for (const auto& x : postorder_range(f)) {
+            result += x;
+        }
+        REQUIRE(result == expected);
+    }
+}
+
+/**************************************************************************************************/
+
+void test_reverse_preorder_traversal() {
     std::string expected;
     const auto f{big_test_forest()};
 
     {
-        auto first{f.begin()};
-        auto last{f.end()};
+        auto first{f.rbegin()};
+        auto last{f.rend()};
         while (first != last) {
             if (first.edge() == FNS::forest_leading_edge)
                 expected += *first;
             ++first;
         }
-        assert(expected.size() == f.size());
+        REQUIRE(expected.size() == f.size());
     }
 
     {
-        forest<std::string>::const_preorder_iterator first(f.begin());
-        forest<std::string>::const_preorder_iterator last(f.end());
+        using const_iterator = forest<std::string>::const_reverse_iterator;
+        using iterator = edge_iterator<const_iterator, forest_leading_edge>;
+        iterator first(f.rbegin());
+        iterator last(f.rend());
         std::string result;
         while (first != last) {
             result += *first;
             ++first;
         }
-        assert(result == expected);
-    }
-
-    {
-        std::string result;
-        for (const auto& x : preorder_range(f)) {
-            result += x;
-        }
-        assert(result == expected);
+        REQUIRE(result == expected);
     }
 }
 
 /**************************************************************************************************/
 
-void test_postorder_traversal() {
-    std::string expected;
-    const auto f{big_test_forest()};
+using iterator_t = FNS::forest<std::string>::iterator;
+using const_iterator_t = FNS::forest<std::string>::const_iterator;
+using reverse_iterator_t = FNS::forest<std::string>::reverse_iterator;
+using const_reverse_iterator_t = FNS::forest<std::string>::const_reverse_iterator;
 
-    {
-        auto first{f.begin()};
-        auto last{f.end()};
-        while (first != last) {
-            if (first.edge() == FNS::forest_trailing_edge)
-                expected += *first;
-            ++first;
-        }
-        assert(expected.size() == f.size());
+/**************************************************************************************************/
+
+TEST_CASE("forward traversal") {
+    auto f{big_test_forest()};
+    auto first{std::begin(f)};
+    auto last{std::end(f)};
+    static const auto expected{"ABCFFGGHHCDIIJJKKDEEBA"};
+
+    SECTION("fullorder") {
+        test_fullorder_traversal<iterator_t>(first, last, expected);
+        test_fullorder_traversal<const_iterator_t>(first, last, expected);
     }
 
-    {
-        forest<std::string>::const_postorder_iterator first(f.begin());
-        forest<std::string>::const_postorder_iterator last(f.end());
-        std::string result;
-        while (first != last) {
-            result += *first;
-            ++first;
-        }
-        assert(result == expected);
+    SECTION("preorder") {
+        auto a = test_edge_traversal<iterator_t, FNS::forest_leading_edge>(f, first, last);
+        auto b = test_edge_traversal<const_iterator_t, FNS::forest_leading_edge>(f, first, last);
+        REQUIRE(a == b);
+        test_range_traversal<FNS::forest_leading_edge>(f, a);
     }
 
-    {
-        std::string result;
-        for (const auto& x : postorder_range(f)) {
-            result += x;
-        }
-        assert(result == expected);
+    SECTION("postorder") {
+        auto a = test_edge_traversal<iterator_t, FNS::forest_trailing_edge>(f, first, last);
+        auto b = test_edge_traversal<const_iterator_t, FNS::forest_trailing_edge>(f, first, last);
+        REQUIRE(a == b);
+        test_range_traversal<FNS::forest_trailing_edge>(f, a);
     }
 }
 
 /**************************************************************************************************/
 
-int main(int argc, const char * argv[]) try {
-    test_empty();
-    test_one_node();
-    test_fullorder_traversal();
-    test_preorder_traversal();
-    test_postorder_traversal();
+TEST_CASE("reverse traversal") {
+    auto f{big_test_forest()};
+    auto rfirst{std::rbegin(f)};
+    auto rlast{std::rend(f)};
+    static const auto expected{"ABEEDKKJJIIDCHHGGFFCBA"};
 
-    // fvg::print(big_test_forest());
+    SECTION("fullorder") {
+        test_fullorder_traversal<reverse_iterator_t>(rfirst, rlast, expected);
+        test_fullorder_traversal<const_reverse_iterator_t>(rfirst, rlast, expected);
+    }
 
-    return EXIT_SUCCESS;
-} catch (const std::exception& error) {
-    std::cerr << "Fatal exception: " << error.what() << '\n';
-    return EXIT_FAILURE;
-} catch (...) {
-    std::cerr << "Fatal exception: unknown\n";
-    return EXIT_FAILURE;
+    SECTION("preorder") {
+        auto a = test_edge_traversal<reverse_iterator_t, FNS::forest_leading_edge>(f, rfirst, rlast);
+        auto b = test_edge_traversal<const_reverse_iterator_t, FNS::forest_leading_edge>(f, rfirst, rlast);
+        REQUIRE(a == b);
+    }
+
+    SECTION("postorder") {
+        auto a = test_edge_traversal<reverse_iterator_t, FNS::forest_trailing_edge>(f, rfirst, rlast);
+        auto b = test_edge_traversal<const_reverse_iterator_t, FNS::forest_trailing_edge>(f, rfirst, rlast);
+        REQUIRE(a == b);
+    }
 }
 
 /**************************************************************************************************/
