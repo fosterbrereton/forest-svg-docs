@@ -1106,7 +1106,7 @@ struct forest_range {
 
 template <typename I> // I models FullorderIterator
 inline auto child_range(const I& x) {
-    return forest_range{ child_begin(x), child_end(x) };
+    return forest_range<child_iterator<I>>{ child_begin(x), child_end(x) };
 }
 
 /**************************************************************************************************/
