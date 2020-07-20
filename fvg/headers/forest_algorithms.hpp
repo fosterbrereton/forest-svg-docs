@@ -5,9 +5,11 @@
 
 /**************************************************************************************************/
 
+// stdc++
 #include <iostream>
 
-#include "forest_fwd.hpp"
+// stlab
+#include <stlab/forest.hpp>
 
 /**************************************************************************************************/
 
@@ -16,7 +18,7 @@ namespace fvg {
 /**************************************************************************************************/
 
 template <typename T>
-void print(const forest<T>& f) {
+void print(const stlab::forest<T>& f) {
     auto first{f.begin()};
     auto last{f.end()};
     std::size_t depth{0};
@@ -43,8 +45,8 @@ void print(const forest<T>& f) {
 /**************************************************************************************************/
 
 template <typename T, typename P, typename U = decltype(std::declval<P>()(T()))>
-forest<U> transcribe_forest(const forest<T>& f, P&& proj) {
-    forest<U> result;
+stlab::forest<U> transcribe_forest(const stlab::forest<T>& f, P&& proj) {
+    stlab::forest<U> result;
     auto pos{result.root()};
     auto first{f.begin()};
     const auto last{f.end()};
@@ -83,10 +85,10 @@ I2 transform_forest(I1 first, I1 last, I2 out, P&& proj) {
 // REVISIT: More closely model this after back_insert_iterator?
 template <typename T>
 struct forest_inserter {
-    forest<T>& _f;
-    typename forest<T>::iterator _p;
+    stlab::forest<T>& _f;
+    typename stlab::forest<T>::iterator _p;
 
-    explicit forest_inserter(forest<T>& f) : _f{f}, _p{_f.root()} {}
+    explicit forest_inserter(stlab::forest<T>& f) : _f{f}, _p{_f.root()} {}
 
     forest_inserter& operator++() { ++_p; return *this; }
 

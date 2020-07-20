@@ -19,7 +19,7 @@ namespace fvg {
 /**************************************************************************************************/
 // REVISIT: Hmmm, this is transcribe_forest, but with proj(first) instead of proj(*first).
 auto child_counts(const state& state) {
-    fvg::forest<std::size_t> result;
+    stlab::forest<std::size_t> result;
     auto pos{result.root()};
     auto first{state._f.begin()};
     const auto last{state._f.end()};
@@ -50,8 +50,8 @@ constexpr auto root_name_k{"&#x211C;"};
 
 /**************************************************************************************************/
 
-auto derive_widths(const fvg::forest<std::size_t>& counts) {
-    fvg::forest<std::size_t> result;
+auto derive_widths(const stlab::forest<std::size_t>& counts) {
+    stlab::forest<std::size_t> result;
     auto pos{result.root()};
     auto first{counts.begin()};
     const auto last{counts.end()};
@@ -84,7 +84,7 @@ auto derive_widths(const fvg::forest<std::size_t>& counts) {
 
 /**************************************************************************************************/
 
-auto derive_height(const fvg::forest<std::size_t>& counts, bool leaf_edges, double margin_height) {
+auto derive_height(const stlab::forest<std::size_t>& counts, bool leaf_edges, double margin_height) {
     stlab::depth_fullorder_iterator first{counts.begin()};
     stlab::depth_fullorder_iterator last{counts.end()};
     decltype(first.depth()) max_depth{0};
