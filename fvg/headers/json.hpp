@@ -8,8 +8,6 @@
 #include <type_traits>
 #include <filesystem>
 
-#include <boost/logic/tribool.hpp>
-
 #include <nlohmann/json.hpp>
 
 /**************************************************************************************************/
@@ -64,15 +62,6 @@ inline bool json_value(const json_t& json, bool& value) {
 }
 
 template <>
-inline bool json_value(const json_t& json, boost::tribool& value) {
-    value = json.is_boolean() ?
-                boost::tribool(json.get<bool>()) :
-                boost::tribool(boost::indeterminate);
-
-    return true;
-}
-
-template <>
 inline bool json_value(const json_t& json, std::string& value) {
     bool is_string = json.is_string();
 
@@ -100,7 +89,6 @@ const T& get_no_value() {
 }
 
 template <typename T> struct jget_return_type { using type = const T&; };
-template <> struct jget_return_type<boost::tribool> { using type = boost::tribool; };
 template <> struct jget_return_type<json_int> { using type = json_int; };
 template <> struct jget_return_type<json_uint> { using type = json_uint; };
 template <> struct jget_return_type<json_float> { using type = json_float; };
@@ -118,14 +106,6 @@ inline auto as<json_float>(const json_t& json) -> typename jget_return_type<json
     if (json.is_number_integer()) return json.get_ref<const json_int&>();
 
     return get_no_value<json_float>();
-}
-
-template <>
-inline auto as<boost::tribool>(const json_t& json) -> jget_return_type<boost::tribool>::type {
-    if (json.is_boolean()) {
-        return json.get_ref<const bool&>();
-    }
-    return get_no_value<boost::tribool>();
 }
 
 template <typename T, typename Key>

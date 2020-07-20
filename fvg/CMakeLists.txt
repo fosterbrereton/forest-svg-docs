@@ -14,7 +14,7 @@ set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} ${GCC_COVERAGE_LINK_FLAGS}
 #file(GLOB BOOST_THREAD_SRC ${CMAKE_CURRENT_SOURCE_DIR}/boost/libs/thread/src/pthread/*.cpp)
 #add_library(boost_sources STATIC ${BOOST_SRC} ${BOOST_THREAD_SRC})
 
-get_filename_component(BOOST_PATH ${CMAKE_CURRENT_SOURCE_DIR}/boost ABSOLUTE)
+#get_filename_component(BOOST_PATH ${CMAKE_CURRENT_SOURCE_DIR}/boost ABSOLUTE)
 
 # target_include_directories(boost_sources PUBLIC ${BOOST_PATH})
 
@@ -25,16 +25,16 @@ file(GLOB APP_SRC ${CMAKE_CURRENT_SOURCE_DIR}/sources/*.cpp)
 
 get_filename_component(JSON_PATH ${CMAKE_CURRENT_SOURCE_DIR}/json ABSOLUTE)
 
-get_filename_component(ASL_PATH ${CMAKE_CURRENT_SOURCE_DIR}/adobe_source_libraries ABSOLUTE)
+#get_filename_component(ASL_PATH ${CMAKE_CURRENT_SOURCE_DIR}/adobe_source_libraries ABSOLUTE)
 
 get_filename_component(STLAB_PATH ${CMAKE_CURRENT_SOURCE_DIR}/stlab ABSOLUTE)
 
 get_filename_component(APP_HEADERS_PATH ${CMAKE_CURRENT_SOURCE_DIR}/headers ABSOLUTE)
 
 include_directories(fvg AFTER
-                    ${ASL_PATH}
+                    #${ASL_PATH}
                     ${STLAB_PATH}
-                    ${BOOST_PATH}
+                    #${BOOST_PATH}
                     ${APP_HEADERS_PATH}
                     ${JSON_PATH}
                     )

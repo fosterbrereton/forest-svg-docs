@@ -22,16 +22,19 @@ void print(const forest<T>& f) {
     std::size_t depth{0};
 
     while (first != last) {
-        if (first.edge() == FNS::forest_trailing_edge) {
+        if (is_trailing(first)) {
             --depth;
         }
+
         for (std::size_t i{0}; i < depth*4; ++i) std::cout << ' ';
-        if (first.edge() == FNS::forest_leading_edge) {
+
+        if (is_leading(first)) {
             std::cout << "<";
             ++depth;
         } else {
             std::cout << "</";
         }
+
         std::cout << *first << ">\n";
         ++first;
     }
@@ -48,10 +51,10 @@ forest<U> transcribe_forest(const forest<T>& f, P&& proj) {
 
     while (first != last) {
         ++pos;
-        if (first.edge() == FNS::forest_leading_edge) {
+        if (stlab::is_leading(first)) {
             pos = result.insert(pos, proj(*first));
         } else {
-            pos = FNS::trailing_of(pos);
+            pos = stlab::trailing_of(pos);
         }
         ++first;
     }
@@ -65,7 +68,7 @@ template <typename I1, typename I2, typename P>
 I2 transform_forest(I1 first, I1 last, I2 out, P&& proj) {
     while (first != last) {
         ++out;
-        if (first.edge() == FNS::forest_leading_edge) {
+        if (stlab::is_leading(first)) {
             out.insert(proj(*first));
         } else {
             out.trailing();
