@@ -7,16 +7,12 @@
 #define CATCH_CONFIG_MAIN
 #include "catch/catch.hpp"
 
-// must be defined before forest_fwd to select the forest we want to test.
-#define FORESTVG_USING_STLAB_FOREST() 1
-
 // application
 #include "../headers/forest_algorithms.hpp"
-#include "../headers/forest_fwd.hpp"
 
 /**************************************************************************************************/
 
-using namespace FNS; // either adobe or stlab, depending.
+using namespace stlab;
 
 /**************************************************************************************************/
 
@@ -33,7 +29,7 @@ SCENARIO("single node forest") {
     forest<int> f;
 
     auto il = f.insert(f.end(), 42);
-    REQUIRE(il.edge() == FNS::forest_leading_edge);
+    REQUIRE(il.edge() == stlab::forest_leading_edge);
     REQUIRE(*il == 42);
     REQUIRE(!f.empty());
 
@@ -41,7 +37,7 @@ SCENARIO("single node forest") {
     REQUIRE(f.size() == 1);
 
     auto it = trailing_of(il);
-    REQUIRE(it.edge() == FNS::forest_trailing_edge);
+    REQUIRE(it.edge() == stlab::forest_trailing_edge);
     REQUIRE(*it == *il);
 }
 
@@ -106,7 +102,7 @@ void test_fullorder_traversal(Iterator first, Iterator last, std::string expecte
 
 /**************************************************************************************************/
 
-template <typename Iterator, FNS::forest_edge Edge, typename Forest>
+template <typename Iterator, stlab::forest_edge Edge, typename Forest>
 auto test_edge_traversal(Forest& f, Iterator fi, Iterator li) {
     std::string expected;
 
@@ -133,10 +129,10 @@ auto test_edge_traversal(Forest& f, Iterator fi, Iterator li) {
 
 /**************************************************************************************************/
 
-using iterator_t = FNS::forest<std::string>::iterator;
-using const_iterator_t = FNS::forest<std::string>::const_iterator;
-using reverse_iterator_t = FNS::forest<std::string>::reverse_iterator;
-using const_reverse_iterator_t = FNS::forest<std::string>::const_reverse_iterator;
+using iterator_t = stlab::forest<std::string>::iterator;
+using const_iterator_t = stlab::forest<std::string>::const_iterator;
+using reverse_iterator_t = stlab::forest<std::string>::reverse_iterator;
+using const_reverse_iterator_t = stlab::forest<std::string>::const_reverse_iterator;
 
 /**************************************************************************************************/
 
@@ -156,15 +152,15 @@ TEST_CASE("forward traversal") {
     }
 
     SECTION("preorder") {
-        auto a = test_edge_traversal<iterator_t, FNS::forest_leading_edge>(f, first, last);
-        auto b = test_edge_traversal<const_iterator_t, FNS::forest_leading_edge>(f, first, last);
+        auto a = test_edge_traversal<iterator_t, stlab::forest_leading_edge>(f, first, last);
+        auto b = test_edge_traversal<const_iterator_t, stlab::forest_leading_edge>(f, first, last);
         REQUIRE(a == b);
         REQUIRE(to_string(preorder_range(f)) == a);
     }
 
     SECTION("postorder") {
-        auto a = test_edge_traversal<iterator_t, FNS::forest_trailing_edge>(f, first, last);
-        auto b = test_edge_traversal<const_iterator_t, FNS::forest_trailing_edge>(f, first, last);
+        auto a = test_edge_traversal<iterator_t, stlab::forest_trailing_edge>(f, first, last);
+        auto b = test_edge_traversal<const_iterator_t, stlab::forest_trailing_edge>(f, first, last);
         REQUIRE(a == b);
         REQUIRE(to_string(postorder_range(f)) == a);
     }
@@ -185,14 +181,14 @@ TEST_CASE("reverse traversal") {
     }
 
     SECTION("preorder") {
-        auto a = test_edge_traversal<reverse_iterator_t, FNS::forest_leading_edge>(f, rfirst, rlast);
-        auto b = test_edge_traversal<const_reverse_iterator_t, FNS::forest_leading_edge>(f, rfirst, rlast);
+        auto a = test_edge_traversal<reverse_iterator_t, stlab::forest_leading_edge>(f, rfirst, rlast);
+        auto b = test_edge_traversal<const_reverse_iterator_t, stlab::forest_leading_edge>(f, rfirst, rlast);
         REQUIRE(a == b);
     }
 
     SECTION("postorder") {
-        auto a = test_edge_traversal<reverse_iterator_t, FNS::forest_trailing_edge>(f, rfirst, rlast);
-        auto b = test_edge_traversal<const_reverse_iterator_t, FNS::forest_trailing_edge>(f, rfirst, rlast);
+        auto a = test_edge_traversal<reverse_iterator_t, stlab::forest_trailing_edge>(f, rfirst, rlast);
+        auto b = test_edge_traversal<const_reverse_iterator_t, stlab::forest_trailing_edge>(f, rfirst, rlast);
         REQUIRE(a == b);
     }
 }
@@ -215,8 +211,8 @@ TEST_CASE("child traversal") {
     REQUIRE(to_string(child_range(parent)) == expected);
 
     if constexpr (false) { // I'm not sure reverse_child_iterator ever worked.
-        FNS::forest<std::string>::reverse_child_iterator first{child_begin(parent)};
-        FNS::forest<std::string>::reverse_child_iterator last{child_end(parent)};
+        stlab::forest<std::string>::reverse_child_iterator first{child_begin(parent)};
+        stlab::forest<std::string>::reverse_child_iterator last{child_end(parent)};
         std::string result{to_string(first, last)};
         REQUIRE(result == expected);
     }
@@ -282,6 +278,27 @@ TEST_CASE("erase") {
         REQUIRE(result == "ABCFGHE");
         REQUIRE(*erased_result == "E");
     }
+}
+
+/**************************************************************************************************/
+
+template <typename Forest>
+void erase_parents(Forest& f, typename Forest::iterator node) {
+    typename Forest::iterator parent;
+    while ((parent = find_parent(node)) != f.end()) {
+        f.erase(parent);
+    }
+}
+
+/**************************************************************************************************/
+
+TEST_CASE("erase parents") {
+    auto f{big_test_forest()};
+    auto node{std::find_if(f.begin(), f.end(), [](auto& x){ return x == "J"; })};
+    REQUIRE(*node == "J");
+    erase_parents(f, node);
+    std::string result{to_string(preorder_range(f))};
+    REQUIRE(result == "CFGHIJKE");
 }
 
 /**************************************************************************************************/
